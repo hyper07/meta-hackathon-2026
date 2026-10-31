@@ -70,7 +70,7 @@ Keep the screen on: the page asks for a wake lock, but a phone browser stops the
                                ▼ marked, loud, or every 30 s
                            Analyst ── Muse Spark: categories, exact quotes (checked), score, reason
                                ▼ score ≥ 0.45
-                           Decider ── Jev-style decision model: discard / ask / alert, ~0.1–0.5 s
+                           Decider ── Muse Spark 1.1: discard / ask / alert probabilities, ~2 s
                                │       rules: discard only if p ≥ 0.83; "alert" → urgent ask
                                ▼ ask
                            Check-in ── "Are you OK?" (vibrate + voice), 30 s (15 s urgent)
@@ -107,7 +107,7 @@ Each agent can use its own model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITER_MOD
 | Notice reviewer | Muse Wonder 1.0: 40 of 40 public training cases |
 | Alerts and summaries | Muse Spark 1.3 |
 
-## Measured (2026-10-29, M5 Max, Baseten)
+## Measured (M5 Max)
 
 | Step | Time | Note |
 |---|---|---|
@@ -115,7 +115,7 @@ Each agent can use its own model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITER_MOD
 | Voiceprint (ECAPA), a sentence | ~50 ms | the closest other voice scored 0.328; the stop bar is 0.36. See [scenarios/README.md](scenarios/README.md) |
 | Analyst (Muse Spark Open, reasoning low) | 0.7–1.1 s | coercion example 0.88; banter ("haha stop it") 0.0 |
 | Analyst (Muse Spark 1.3 on the Meta Model API, reasoning low; 2026-10-31) | 2.6–4.1 s | drink pressure 0.85; "don't tell anyone" 0.75; banter and a gym trainer 0.0. At the default effort it reasoned for 1,500 tokens and cut its answer off |
-| Decider (mammoth-27b on Baseten) | median 0.26 s | chosen over joey-2b and elephant-9b: the only one with no needless check-ins on the hard cases |
+| Decider (Muse Spark 1.1 on the Meta Model API; 2026-10-31) | ~2 s | on the 22 scenes: 9 of 11 harmful asked, 0 of 9 needless check-ins, the same as Baseten's mammoth-27b (median 0.26 s; 2026-10-29), which is still an option |
 | Alert text (Muse Spark Open) | 2.9 s | template fallback is instant |
 
 Detection and voice-lock results on the 20 test scenes are in [scenarios/README.md](scenarios/README.md). The scenes are synthetic and n is small: calibrate with real people before relying on them.

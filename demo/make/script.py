@@ -20,7 +20,7 @@ NARRATION = {
     "notice3": "And it counts patterns. This is the third time from the same professor, kept in a dated record "
                "that shows if anyone changes it.",
     "hood": "Under the hood, every agent has its own model. Whisper and a voiceprint on the device. Muse Spark "
-            "as the live analyst. A decision model on Baseten. Muse Wonder for reviews, and Muse Voice Transcribe "
+            "as the live analyst, and again as the decider. Muse Wonder for reviews, and Muse Voice Transcribe "
             "for spoken accounts. On twenty two realistic scenes, it asked in nine of eleven harmful ones, with no "
             "needless check ins. On forty public training cases, the reviewer got all forty right.",
     "close": "Watch Me. You turn it on. Only your voice turns it off. And only you decide what happened.",

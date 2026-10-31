@@ -12,6 +12,7 @@ import shutil
 import sys
 from pathlib import Path
 
+import torch
 import torchaudio
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -29,7 +30,14 @@ APP_VOICE_DIR = Path(__file__).resolve().parents[2] / "app" / "static" / "voice"
 
 def words(text):
     text = text.lower().replace("e e o c", "eeoc").replace("i'm", "im").replace("'", "")
-    return re.findall(r"[a-z0-9]+", text)
+    text = re.sub(r"\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety) (one|two|three|four|five|six|seven|eight|nine)\b",
+                  lambda m: str(TENS[m[1]] + ONES[m[2]]), text)
+    return [str(ONES.get(w, TENS.get(w, w))) for w in re.findall(r"[a-z0-9]+", text)]
+
+
+ONES = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen "
+                                   "fifteen sixteen seventeen eighteen nineteen".split())}
+TENS = {w: 10 * i for i, w in enumerate("twenty thirty forty fifty sixty seventy eighty ninety".split(), 2)}
 
 
 def wer(ref, hyp):
@@ -56,14 +64,29 @@ def best_take(text, prompt=None, exaggeration=0.5, tries=4):
     return best[1], best[0][0]
 
 
+def split_line(text, max_words=24):
+    parts, current = [], []
+    for sentence in re.split(r"(?<=[.?!])\s+", text.strip()):
+        if current and len(" ".join(current + [sentence]).split()) > max_words:
+            parts.append(" ".join(current)); current = []
+        current.append(sentence)
+    return parts + [" ".join(current)]
+
+
 narr = json.loads((work / "narration" / "lines.json").read_text())
 index = json.loads((work / "lines" / "index.json").read_text())
 for key in keys:
     print(key)
     if key in NARRATION:
-        wav, score = best_take(NARRATION[key])
+        # Chatterbox stops after about 19 s, so a long line is made in parts of a few sentences, joined by short pauses.
+        parts = split_line(NARRATION[key])
+        takes = [best_take(part, tries=6) for part in parts]
+        gap = torch.zeros(1, int(0.3 * model.sr))
+        wav = torch.cat([piece for take, _ in takes for piece in (take.cpu(), gap)][:-1], dim=-1)
+        score = max(s for _, s in takes)
         torchaudio.save(str(work / "narration" / f"{key}.wav"), wav.cpu(), model.sr)
         narr["seconds"][key] = round(wav.shape[-1] / model.sr, 2)
+        narr["lines"][key] = NARRATION[key]   # the subtitles are made from this text
     elif key in APP_PROMPTS:
         wav, score = best_take(APP_PROMPTS[key], str(work / "refs" / "app.wav"), exaggeration=0.4)
         for folder in (work / "app-voice", APP_VOICE_DIR):

@@ -90,7 +90,7 @@ def card_hood(img):
     rows = [
         ("Listener", "Whisper + ECAPA voiceprint", "on the device", ACCENT),
         ("Analyst", "Muse Spark 1.3", "Meta Model API", ACCENT),
-        ("Decider", "mammoth-27b: discard · ask · alert", "Baseten, ~0.25 s", ACCENT),
+        ("Decider", "Muse Spark 1.1: discard · ask · alert", "Meta Model API", ACCENT),
         ("Check-in, Messenger", "Muse Spark writes · Twilio sends", "SMS, call, email", RED),
         ("Notice reviewer", "Muse Wonder 1.0", "Meta Model API", PURPLE),
         ("Spoken accounts", "Muse Voice Transcribe", "Meta Model API", PURPLE),
