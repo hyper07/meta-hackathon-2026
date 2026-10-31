@@ -29,6 +29,32 @@ On the Charm, Watch Me runs in **stealth**: while it listens and watches, the pe
 
 *Concept renders made with Muse Image (Meta Model API, [demo/make/charm_images.py](demo/make/charm_images.py)), using a Meta product photo of the Charm and the app's real screens as references. Not photos of a working product: today Watch Me runs on the phone, and the Charm becomes its always-on microphone once Meta opens it to developers.*
 
+## What was built during the hackathon
+
+The building period was Oct 27 – Nov 4, 2026. Everything that runs was written during it.
+
+- **Before the event (Oct 18), no code.** The idea and planning notes only: [MODELS.md](MODELS.md), [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md), and early drafts of this README and [DESIGN.md](DESIGN.md), which then described a "harassment and assault safety assistant" concept.
+- **Ideas from Kibaek's earlier projects, re-implemented here; no code copied:**
+  - asking a "System One" decision model to pick from a fixed menu of actions, with a probability for each (from the Deterrence simulator);
+  - hash-chained logs that show if anything was changed (from Knowledge-Addressed Transport).
+- **Built during the hackathon:**
+  - [app/](app/README.md): the server and its agents, the voice lock, Emergency and Notice modes, offline catch-up, and the web page;
+  - [app/scenarios/](app/scenarios/README.md): the 22 test scenes, 56 written cases and the evaluator;
+  - [mobile/](mobile/README.md): the iPhone and Android app;
+  - [demo/](demo/): the video, screenshots, Charm concept images and the scripts that make them;
+  - the tests, and the measurements in the docs.
+- **Open-source parts used, not written by us:** Whisper (faster-whisper) and SpeechBrain's ECAPA voiceprint model; FastAPI; Expo and React Native; the Kokoro and Chatterbox voices, used only for the demo and test scenes. The decision model (mammoth-27b) runs on Baseten.
+
+**Meta models in the project** (problem statement: *Build for Your World*):
+
+| Meta model | Where it's used |
+|---|---|
+| Muse Spark 1.3 (Meta Model API) | the live Analyst, the alert text, session summaries |
+| Muse Wonder 1.0 (Meta Model API) | the Notice reviewer: which exact words match how the EEOC describes harassment |
+| Muse Voice Transcribe 1.0 (Meta Model API) | spoken Notice accounts; checking the demo's synthetic voices |
+| Muse Image 1.0 (Meta Model API) | the Muse Charm concept images |
+| Muse Spark Open (open weights, on Baseten) | the Analyst when only a Baseten key is set |
+
 ## The idea
 
 A system that:
@@ -64,20 +90,16 @@ A tool that reads other people's private conversations to find victims without t
 - **Self-installed use:** the person installs it for their own messages.
 - **Organization channels:** for example a campus app where students choose to enable the feature.
 
-## Hackathon facts (from the event page, 2026-10-18)
+## Hackathon facts (from the participant guide)
 
 | Item | Detail |
 |---|---|
-| Applications | open Oct 13, close **Oct 25, 11:59 PM ET** (or earlier if 20,000 spots fill) |
-| Event | starts **Oct 26** with a kickoff livestream; workshops and Discord office hours Oct 27 to Nov 4 |
-| Submission | **Nov 4, 9:00 PM ET** |
-| Results | judging Nov 4 to 8, winners announced Nov 9 |
-| Format | virtual, worldwide, free if selected |
-| Tracks | Indie (individuals, students) or Startup (teams); themes: "Build for Your World" or "Push the Frontier" |
-| Suggested tools | Muse Spark series, Muse Image and SAM 3.1 through the Meta Model API; Meta open-weights models; Muse Code |
-| Judging | Indie: creativity, technical ambition, whether it works. Startup: technical execution, production readiness |
-
-The official rules are published before Oct 26 and must be read before building: data use, licences, demo requirements.
+| Building period | Oct 27 – Nov 4, 2026 |
+| Submission | **Wed, Nov 4, 9:00 PM ET**: public repo, a 3-minute demo video, and the live product |
+| Judging | Nov 5–8; closing ceremony and finalists Nov 9; community vote Nov 16 |
+| Track | Indie |
+| Problem statement | Build for Your World |
+| Rules that matter here | public repo; new work only, clearly marked (above); the demo shows only what was built during the hackathon; rights to every asset used |
 
 ## Documents
 

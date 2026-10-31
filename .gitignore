@@ -9,3 +9,6 @@ __pycache__/
 app/scenarios/out/
 app/scenarios/.cache/
 app/.models/
+
+# Notes kept locally only (the kickoff transcript is Meta/Cerebral Valley content)
+meta kickoff.md

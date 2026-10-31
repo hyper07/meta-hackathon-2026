@@ -36,7 +36,7 @@ Keys go in the repo-root `.env`; see [.env.example](.env.example). Everything is
 
 | Set | You get | Without it |
 |---|---|---|
-| `BASETEN_API_KEY` | Muse Spark Open (`meta-models/muse-spark-open`) as Analyst and Messenger; `decision-models/baseten-mammoth-27b-latest` as the Decider | phrase list and fixed rules |
+| `BASETEN_API_KEY` | Muse Spark Open (`meta-models/muse-spark-open`; the hackathon's `meta-models/muse-spark-open-1026` with `META_MODEL=meta-models/muse-spark-open-1026` once Baseten enables it on your key) as Analyst and Messenger; `decision-models/baseten-mammoth-27b-latest` as the Decider | phrase list and fixed rules |
 | `MODEL_API_KEY` (or `META_API_KEY`) | Muse Spark 1.3 on the Meta Model API (`api.meta.ai`) for the Analyst and Messenger, instead of Baseten | Baseten, if set |
 | `JEV_BASE_URL` | your own Jev or Kev for the Decider (e.g. Kev-4B on `:8009`) | Baseten, if set |
 | `TWILIO_*` | real SMS and voice calls | dry run: shown on screen and in the log |
