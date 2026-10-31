@@ -170,6 +170,10 @@ The agents that run on the phone or laptop (Listener, Gatekeeper, the phrase lis
 - a catch-up loop probes the API every 30 s and finishes the queue, appending `update` lines (marked `later`) to the session's hash-chained log and `review` lines to the notice book;
 - every log line carries a readable local time as well as the epoch time.
 
+### On the Muse Charm: stealth
+
+The Charm has a small screen that people around her can see, so Watch Me never shows its state there. Listening and watching look exactly like an idle Charm, with its usual character on the screen: no ring, no "Watching", no indicator light. The only Watch Me screen on the Charm is "Are you OK?" with its countdown, because she has to see it to answer, and it disappears as soon as she does. Everything else (the voice lock, the transcript, alerts) stays on her phone, which is normally locked in a pocket. This extends the duress phrase's idea, looking off while still listening, to the whole session.
+
 ## 7. Notice (school and work)
 
 Built 2026-10-31 in [app/watchme/notice.py](app/watchme/notice.py). The emergency mode asks "Are you OK?"; Notice asks nothing and helps her see, afterwards, whether something matched how harassment is described.

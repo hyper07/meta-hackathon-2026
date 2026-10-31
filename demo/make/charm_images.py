@@ -1,7 +1,7 @@
 """
 Concept images of Watch Me on Meta's Muse Charm, made with Muse Image (Meta Model API, /v1/images/edits).
 Each passes a photo of the Charm and a real app screenshot as references, so the device is drawn as it is
-and its screen shows Watch Me's own states ("Ready", "Watching", "Are you OK?").
+and its screen shows what Watch Me shows on it: nothing while it listens (stealth), and "Are you OK?".
 
     CHARM_REF=<photo of the Charm> python charm_images.py   -> demo/charm/*.jpg   (needs Pillow and httpx; key from the repo .env)
 
@@ -31,24 +31,20 @@ STYLE = ("Photorealistic product photography in the style of Meta's Muse Charm l
 DEVICE = ("The device is Meta's Muse Charm exactly as in the first reference photo: a small rounded-square pendant with a dark "
           "translucent case, a black screen with rounded corners, a tiny camera above the screen, and a dark braided cord with a knot. ")
 
+# Stealth: while Watch Me is listening or watching, the Charm looks exactly like any other Charm, with its usual
+# character on the screen. The only Watch Me screen it ever shows is "Are you OK?", because she has to answer it.
 SHOTS = {
-    "charm-watching": {
-        "refs": ["DEVICE", "watch.png"],
-        "prompt": DEVICE + "A hand holds the Charm against a soft blue sky, like the reference. Its screen shows the Watch Me app "
-                  "instead of the character: on black, a glowing red-to-coral gradient ring with the word 'Watching' in bold white "
-                  "inside it, in the style of the app screenshot. " + STYLE,
+    "charm-stealth": {
+        "refs": ["DEVICE"],
+        "prompt": DEVICE + "A young woman at a warm, softly lit house party, friends blurred in the background, wearing the Charm "
+                  "on its braided cord as a necklace. Its small screen shows its usual friendly white character, exactly as in the "
+                  "reference photo, and nothing else: no rings, no text, no indicator. She is relaxed and smiling. " + STYLE,
     },
     "charm-checkin": {
         "refs": ["DEVICE", "watch.png"],
         "prompt": DEVICE + "Close-up of the Charm worn on its braided cord over a dark coat, on a city street at night with soft "
                   "bokeh. Its screen shows, on black, the words 'Are you OK?' in bold white above a thin red countdown ring with the "
                   "number 9 inside, in the style of the app screenshot. Calm, reassuring mood. " + STYLE,
-    },
-    "charm-party": {
-        "refs": ["DEVICE", "watch.png"],
-        "prompt": DEVICE + "A young woman at a warm, softly lit house party, friends blurred in the background, wearing the Charm on "
-                  "its braided cord as a necklace. Its small screen shows Watch Me's glowing blue-to-pink gradient ring on black "
-                  "with the word 'Ready'. She is relaxed and smiling. " + STYLE,
     },
 }
 

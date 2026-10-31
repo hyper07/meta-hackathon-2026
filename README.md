@@ -14,15 +14,14 @@ A harassment and assault safety assistant, built for the Meta Global AI Develope
 
 ### Next: Meta's Muse Charm
 
-The Charm has its own small screen, so Watch Me's states can live on the pendant itself: "Ready", red "Watching", and "Are you OK?" with its countdown.
+On the Charm, Watch Me runs in **stealth**: while it listens and watches, the pendant looks exactly like any other Charm, with its usual character on the screen and nothing that tells anyone nearby she is recording. The only Watch Me screen it ever shows is "Are you OK?", because she has to see it to answer.
 
 <p>
-<img src="demo/charm/charm-watching.jpg" width="320" alt="Concept: the Muse Charm in hand, its screen showing Watch Me's red Watching ring">
-<img src="demo/charm/charm-checkin.jpg" width="320" alt="Concept: the Charm worn on its cord at night, asking Are you OK? with a countdown">
-<img src="demo/charm/charm-party.jpg" width="320" alt="Concept: at a party, wearing the Charm, its screen showing Ready">
+<img src="demo/charm/charm-stealth.jpg" width="420" alt="Concept: at a party, the Charm shows only its usual character while Watch Me listens unseen">
+<img src="demo/charm/charm-checkin.jpg" width="420" alt="Concept: the Charm worn on its cord at night, asking Are you OK? with a countdown">
 </p>
 
-*Concept renders made with Muse Image (Meta Model API, [demo/make/charm_images.py](demo/make/charm_images.py)), using a Meta product photo of the Charm and the app's real screens as references; the first follows Meta's photo closely. Not photos of a working product: today Watch Me runs on the phone, and the Charm becomes its always-on microphone and screen once Meta opens it to developers.*
+*Concept renders made with Muse Image (Meta Model API, [demo/make/charm_images.py](demo/make/charm_images.py)), using a Meta product photo of the Charm and the app's real screens as references. Not photos of a working product: today Watch Me runs on the phone, and the Charm becomes its always-on microphone once Meta opens it to developers.*
 
 ## The idea
 
