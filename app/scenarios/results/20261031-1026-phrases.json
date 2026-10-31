@@ -1,0 +1,18 @@
+[
+  {
+    "id": "party-drink",
+    "label": "harm",
+    "background": "party",
+    "started": false,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 9.8,
+    "delay": null,
+    "max_score": 0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [],
+    "analyst": []
+  }
+]

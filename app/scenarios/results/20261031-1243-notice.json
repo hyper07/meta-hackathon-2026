@@ -1,0 +1,272 @@
+[
+  {
+    "id": "office-hours",
+    "setting": "school",
+    "expect": [
+      "conditions"
+    ],
+    "match": "clear",
+    "types": [
+      "advances",
+      "after_no",
+      "conditions",
+      "isolation",
+      "retaliation"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 3.1,
+    "error": null,
+    "summary": "You described being invited to discuss your grade over drinks at his place and then being told B students don't get recommendation letters after you said you'd rather meet at school. That pattern matches common descriptions of tying academic benefits to a private meeting and continuing after a no.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "meeting-joke",
+    "setting": "work",
+    "expect": [
+      "appearance"
+    ],
+    "match": "clear",
+    "types": [
+      "appearance",
+      "bullying"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 2.2,
+    "error": null,
+    "summary": "You described a comment about how you were dressed made in a work meeting while others laughed. That kind of public remark about appearance can feel belittling at work.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "women-numbers",
+    "setting": "work",
+    "expect": [
+      "sex_based"
+    ],
+    "match": "clear",
+    "types": [
+      "sex_based"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 1.4,
+    "error": null,
+    "summary": "You described questioning the budget and hearing a comment about women on finance. That kind of remark can feel dismissive and tied to who you are at work.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "after-no",
+    "setting": "school",
+    "expect": [
+      "after_no"
+    ],
+    "match": "clear",
+    "types": [
+      "advances",
+      "after_no"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 2.3,
+    "error": null,
+    "summary": "You said you were not interested last week and he asked you out again. The note saying he will keep asking is what the categories for unwanted advances and continuing after a no describe.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "shift-swap",
+    "setting": "work",
+    "expect": [
+      "conditions"
+    ],
+    "match": "clear",
+    "types": [
+      "advances",
+      "conditions",
+      "isolation",
+      "sex_based"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 2.1,
+    "error": null,
+    "summary": "You described being told a weekend off and good shifts were linked to going out for a drink alone with your supervisor. That language matches several of the patterns you asked about.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "after-complaint",
+    "setting": "work",
+    "expect": [
+      "retaliation"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "conditions",
+      "retaliation"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 2.9,
+    "error": null,
+    "summary": "You described telling HR about comments and then being taken off a project and talked about to the team. That timing and change in work is what many workplace policies flag for a closer look.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "ta-touching",
+    "setting": "school",
+    "expect": [
+      "touching"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "touching"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 1.6,
+    "error": null,
+    "summary": "You described unwanted touching during lab that continued after you moved away twice. It makes sense that this would feel uncomfortable and that you would want to keep a record of it.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "transcript-coworker",
+    "setting": "work",
+    "expect": [
+      "sexual_comments"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "appearance",
+      "sexual_comments"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 2.8,
+    "error": null,
+    "summary": "You tried to keep it on work and the other person kept making sexual comments about your clothes and drinking. Those kinds of remarks about appearance and sexual jokes are listed as common descriptions of harassment.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "blunt-feedback",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 0.9,
+    "error": null,
+    "summary": "What you described sounds like direct feedback about your work, even if it was blunt. It doesn't include the kinds of comments listed above.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "fair-grade",
+    "setting": "school",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 1.1,
+    "error": null,
+    "summary": "What you described sounds like normal feedback about your grade. The professor explained the rubric the same way for everyone and offered to help with your next essay.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "mutual-joke",
+    "setting": "school",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 0.8,
+    "error": null,
+    "summary": "You described sharing and laughing about pickup lines with your TA. That sounds like a conversation you both enjoyed and welcomed.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "retelling",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 1.2,
+    "error": null,
+    "summary": "You shared a story a coworker told you about her old workplace. That sounds like a supportive conversation and doesn't contain unwelcome conduct directed at you.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "no-extension",
+    "setting": "school",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 1.0,
+    "error": null,
+    "summary": "You asked for an extension and your professor said no based on the deadline policy. The exchange you shared does not contain language that matches the types we look for.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "work-compliment",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 1.2,
+    "error": null,
+    "summary": "You shared positive feedback about your presentation at work. What you described does not include language that matches the types we look for.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "one-on-one",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 0.9,
+    "error": null,
+    "summary": "You described a routine one-on-one about your goals and training budget. Nothing in what you shared matches the types of unwelcome conduct listed.",
+    "official": null,
+    "source": null
+  },
+  {
+    "id": "transcript-study",
+    "setting": "school",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 0.7,
+    "error": null,
+    "summary": "You described planning a study meeting at the library before your exam. The messages you shared sound like normal coordination and don't include the kinds of comments listed above.",
+    "official": null,
+    "source": null
+  }
+]

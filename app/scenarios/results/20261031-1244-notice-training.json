@@ -1,0 +1,763 @@
+[
+  {
+    "id": "ny-boyfriend-question-dropped",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 2.8,
+    "error": null,
+    "summary": "You set a clear boundary about your personal life and it was respected in the moment. It makes sense that being asked that at work still felt awkward.",
+    "official": "NY State: not harassment; the manager asked once, dropped the subject when she said she would rather not discuss it, and it did not rise above a trivial inconvenience.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 1 'Accidentally on Purpose', slides 9-10"
+  },
+  {
+    "id": "ny-nanny-towel-accident",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 2.3,
+    "error": null,
+    "summary": "You ran into an embarrassing accident at work. Nothing you described matches the types above.",
+    "official": "NY State: not harassment; the encounter was accidental, and he apologized right away and left the shared space.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 5 'Domestic Disturbance', slides 47-48"
+  },
+  {
+    "id": "ny-coworker-first-date-ask",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 4.3,
+    "error": null,
+    "summary": "You described a friendly coworker asking you to dinner and a movie. What you shared does not match the descriptions above.",
+    "official": "NY State: asking a coworker on a date once, and making occasional comments about his personal life that are not sexually explicit, is not sexual harassment, even if she had said no.",
+    "source": "NYS Sexual Harassment Prevention Training Case Studies (Oct 2018), Ex. 1 'Not Taking No for an Answer', Question 1"
+  },
+  {
+    "id": "eeoc-coworkers-pray-and-invite",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 2.6,
+    "error": null,
+    "summary": "You described seeing coworkers pray and hearing them talk about beliefs, plus one study invite you declined. None of the words you shared show mockery or pressure about your faith.",
+    "official": "EEOC (2024, rescinded): colleagues praying in a designated room, inviting her once to an optional study group, and discussing their faith without disparaging anyone does not create a hostile work environment.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 47"
+  },
+  {
+    "id": "eeoc-coworker-private-posts",
+    "setting": "online",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 6.0,
+    "error": null,
+    "summary": "You found private posts with views about women that you find offensive. Because he has not said or sent any of this to you or about work, it does not match the descriptions used here.",
+    "official": "EEOC (2024, rescinded): a coworker's posts on his own private social media, with no link to the workplace and never directed at her, do not contribute to a hostile work environment for her.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 57"
+  },
+  {
+    "id": "eeoc-restaurant-shrine-music",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 2.2,
+    "error": null,
+    "summary": "You described religious art, a shrine, and traditional music where you work. Those displays on their own do not match the listed examples like mockery of your faith or pressure about beliefs.",
+    "official": "EEOC: the owner's religious art, Buddha shrine and traditional chants in his own restaurant would likely not amount to religious harassment, as long as he does not discriminate in hiring or supervision.",
+    "source": "EEOC Compliance Manual Section 12, Religious Discrimination, Example 23"
+  },
+  {
+    "id": "eeoc-overheard-meditation-talk",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 2.9,
+    "error": null,
+    "summary": "You overheard coworkers talking about their own beliefs at lunch. That talk was not aimed at you and does not match these descriptions.",
+    "official": "EEOC: coworkers talking with each other about meditation over lunch is not religious harassment of a listener, since it did not insult other religions and was not directed at him.",
+    "source": "EEOC Compliance Manual Section 12, Religious Discrimination, Example 25"
+  },
+  {
+    "id": "eeoc-youth-promotion-went-to-woman",
+    "setting": "work",
+    "expect": [],
+    "match": "none",
+    "types": [],
+    "right": true,
+    "all_named": null,
+    "seconds": 1.8,
+    "error": null,
+    "summary": "You shared that your manager explained the promotion with work reasons. The words you quoted do not match the listed types.",
+    "official": "EEOC Youth@Work: not discrimination; the manager promoted the coworker for her experience, attendance and customer feedback, not because she is a woman.",
+    "source": "EEOC Youth@Work video teacher manual, Fast Food Restaurant scenario, Question 3"
+  },
+  {
+    "id": "eeoc-time-of-the-month-remark",
+    "setting": "work",
+    "expect": [
+      "sex_based"
+    ],
+    "match": "clear",
+    "types": [
+      "sex_based"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 3.9,
+    "error": null,
+    "summary": "You described a remark about menstruation made to you in front of coworkers. It makes sense that those words stood out to you.",
+    "official": "EEOC (2024, rescinded): the remark was offensive and sex-based (menstruation), but one remark alone was not enough to create an objectively hostile work environment.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 37"
+  },
+  {
+    "id": "eeoc-basketball-grudge-threats",
+    "setting": "work",
+    "expect": [
+      "threats"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "threats",
+      "touching"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.3,
+    "error": null,
+    "summary": "You described being shoved, having paper thrown at you, and being threatened with harm at work. Those words line up with common descriptions of unwanted touching, bullying, and threats.",
+    "official": "EEOC (2024, rescinded): the throwing, shoving and threats started after a basketball dispute, and nothing linked them to his national origin or color, so it was not harassment based on a protected trait under federal law. The conduct is still threats and physical intimidation.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 27"
+  },
+  {
+    "id": "eeoc-yarmulke-remarks",
+    "setting": "work",
+    "expect": [
+      "religion"
+    ],
+    "match": "none",
+    "types": [],
+    "right": false,
+    "all_named": false,
+    "seconds": 3.5,
+    "error": null,
+    "summary": "You shared questions coworkers asked about your yarmulke and headset. As written they look like curious or practical questions, not the mockery or pressure described above.",
+    "official": "EEOC: the coworker's remarks about the yarmulke were insensitive but, on their own, not severe or pervasive enough to create a hostile work environment.",
+    "source": "EEOC Compliance Manual Section 12, Religious Discrimination, Example 20"
+  },
+  {
+    "id": "eeoc-supervisor-meeting-prayers",
+    "setting": "work",
+    "expect": [
+      "religion"
+    ],
+    "match": "none",
+    "types": [],
+    "right": false,
+    "all_named": false,
+    "seconds": 4.8,
+    "error": null,
+    "summary": "You shared that voluntary prayers and Bible readings in meetings bother you. The words you quoted do not show mockery, slurs, or pressure about beliefs in this description.",
+    "official": "EEOC: the supervisor's occasional voluntary prayers and Bible references in meetings were neither severe nor frequent enough to make an actionable harassment claim.",
+    "source": "EEOC Compliance Manual Section 12, Religious Discrimination, Example 21"
+  },
+  {
+    "id": "eeoc-ghetto-corner-remark",
+    "setting": "work",
+    "expect": [
+      "race_origin"
+    ],
+    "match": "clear",
+    "types": [
+      "race_origin"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 4.0,
+    "error": null,
+    "summary": "You shared an idea for readers and heard it described in words tied to race. It makes sense that language would stand out to you at work.",
+    "official": "EEOC: the supervisor's remark was racially offensive, but this one statement was not severe or pervasive racial harassment without more frequent or egregious incidents.",
+    "source": "EEOC Compliance Manual Section 15, Race and Color Discrimination, Example 17"
+  },
+  {
+    "id": "eeoc-accent-mocked-twice",
+    "setting": "work",
+    "expect": [
+      "race_origin"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "race_origin"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.5,
+    "error": null,
+    "summary": "You described a comment about foreigners taking jobs and mockery of your accent that match common descriptions of origin-related remarks. You also described being called lazy, which matches a common description of belittling language.",
+    "official": "EEOC: the coworker's conduct was based on national origin, but these few incidents alone were not severe or pervasive enough to violate Title VII.",
+    "source": "EEOC Enforcement Guidance on National Origin Discrimination (2016), Example 17"
+  },
+  {
+    "id": "eeoc-youth-family-trade-joke",
+    "setting": "work",
+    "expect": [
+      "race_origin"
+    ],
+    "match": "clear",
+    "types": [
+      "race_origin"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.0,
+    "error": null,
+    "summary": "You described remarks that linked work and food to race or background. You can keep a note of what was said and how it felt to hear at work.",
+    "official": "EEOC Youth@Work: the comments were harassing and joking is no excuse, but if this was the first time, they are unlikely to be illegal harassment; they would be illegal if they happen often.",
+    "source": "EEOC Youth@Work video teacher manual, Fast Food Restaurant scenario, Question 5"
+  },
+  {
+    "id": "ny-manager-keeps-talking-dating",
+    "setting": "work",
+    "expect": [
+      "sexual_comments",
+      "after_no"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "sexual_comments"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.8,
+    "error": null,
+    "summary": "You asked for work-only talk and the dating talk kept coming anyway. You are now keeping your distance to avoid those conversations.",
+    "official": "NY State: harassment; he kept talking about his romantic and sexual life after she repeatedly set a boundary, she changed how she works to avoid him, and it became a hostile work environment.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 1 'Accidentally on Purpose', slides 11-12"
+  },
+  {
+    "id": "ny-remote-explicit-text-bedroom",
+    "setting": "work",
+    "expect": [
+      "sexual_comments",
+      "online"
+    ],
+    "match": "clear",
+    "types": [
+      "online",
+      "sexual_comments"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.1,
+    "error": null,
+    "summary": "You described a sexual image sent to your phone and sexual remarks about your bedroom. These are the kinds of words this checklist is meant to notice.",
+    "official": "NY State: covered by the harassment policy even though the image went between personal phones after hours, and the video-call and chat comments made a hostile work environment, since the remote workspace is part of the office.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 2 'One Moment In Time', slides 15-18"
+  },
+  {
+    "id": "ny-diversity-hire-hair",
+    "setting": "work",
+    "expect": [
+      "race_origin",
+      "sex_based",
+      "appearance"
+    ],
+    "match": "clear",
+    "types": [
+      "appearance",
+      "bullying",
+      "race_origin"
+    ],
+    "right": true,
+    "all_named": false,
+    "seconds": 6.4,
+    "error": null,
+    "summary": "You described being singled out on rounds and judged on your looks and background. These are the kinds of words the list describes as tied to race, appearance, and belittling.",
+    "official": "NY State: likely racial discrimination (the \"diversity hire\" remark, the pressure to straighten her natural hair) and likely sex-based harassment (belittling her and remarking on her appearance); the two identities intersected.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 3 'Working Twice as Hard', slides 20-23"
+  },
+  {
+    "id": "ny-weekend-shifts-worth-his-while",
+    "setting": "work",
+    "expect": [
+      "touching",
+      "advances",
+      "conditions"
+    ],
+    "match": "clear",
+    "types": [
+      "advances",
+      "conditions",
+      "isolation",
+      "touching"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 8.1,
+    "error": null,
+    "summary": "You described shift decisions tied to going out with your manager and physical contact you don't want. You said you need the tips and don't want any of it, which sounds like a hard spot to be in.",
+    "official": "NY State: harassment; a boss discussing shifts while touching her and making advances is inappropriate and potentially coercive, and offering better shifts in exchange for sex is quid pro quo harassment whether she gives in or refuses.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 4 'Shaken, Not Stirred', slides 26-30"
+  },
+  {
+    "id": "ny-boss-close-touching-trapped",
+    "setting": "work",
+    "expect": [
+      "touching"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "touching"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.2,
+    "error": null,
+    "summary": "You described unwanted touching at work that continued after you tried to move away. It may help to write down dates and details and keep any messages about this.",
+    "official": "NY State: the escalating closeness and touching was not inadvertent and should be reported, and touching her breast is sexual touching serious enough to be harassment even once.",
+    "source": "NYS Sexual Harassment Prevention Training Case Studies (Oct 2018), Ex. 4 'Too Close for Comfort', Questions 1-3"
+  },
+  {
+    "id": "ny-nanny-touched-then-trashed-online",
+    "setting": "work",
+    "expect": [
+      "touching",
+      "retaliation",
+      "online"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "online",
+      "retaliation",
+      "touching"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.6,
+    "error": null,
+    "summary": "You described unwanted close physical contact and a touch you did not want. After you spoke up about not feeling safe, you described a hurtful online post about you.",
+    "official": "NY State: a household domestic worker is protected from sexual harassment, and the employer's online post after her report is retaliation even though she was not fired.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 5 'Domestic Disturbance', slides 49-52"
+  },
+  {
+    "id": "ny-deadnaming-coworker",
+    "setting": "work",
+    "expect": [
+      "lgbtq"
+    ],
+    "match": "clear",
+    "types": [
+      "lgbtq"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 4.4,
+    "error": null,
+    "summary": "You described being called by your old name and pronouns after asking for it to stop. You also described telling your supervisor and being asked to let it go.",
+    "official": "NY State: gender discrimination; the coworker may not deliberately ignore her name and pronouns (religious belief is no defense), and the supervisor failed in her duty by telling her to let it go.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 6 'Call Me By My Name', slides 57-58"
+  },
+  {
+    "id": "ny-ex-manager-wont-accept-breakup",
+    "setting": "work",
+    "expect": [
+      "after_no",
+      "advances"
+    ],
+    "match": "clear",
+    "types": [
+      "advances",
+      "after_no",
+      "isolation"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.5,
+    "error": null,
+    "summary": "You described repeated requests to get back together after you said it was over. You also described work scheduling that keeps you alone together.",
+    "official": "NY State: harassment; a past relationship does not give the manager a right to keep asking after a no, and the repeated requests plus being kept alone with her can make her feel unsafe at work.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Case Study 7 'Banking On You', slides 65-66"
+  },
+  {
+    "id": "ny-mr-mom-left-out",
+    "setting": "work",
+    "expect": [
+      "pregnancy",
+      "isolation",
+      "sex_based"
+    ],
+    "match": "clear",
+    "types": [
+      "pregnancy",
+      "sex_based"
+    ],
+    "right": true,
+    "all_named": false,
+    "seconds": 7.6,
+    "error": null,
+    "summary": "You described being called Mr. Mom and being left out of meetings as a caregiver. Those words match common descriptions of caregiving-related and sex-based remarks.",
+    "official": "NY State: sex stereotyping and potential grounds for a gender discrimination claim.",
+    "source": "NYS Sexual Harassment Prevention Model Training (2023), Slide 34 Sex Stereotyping Exercise (answer: all of the above)"
+  },
+  {
+    "id": "ny-woman-equipment-operator-toolbox",
+    "setting": "work",
+    "expect": [
+      "sex_based",
+      "threats"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "pregnancy",
+      "retaliation",
+      "sex_based"
+    ],
+    "right": true,
+    "all_named": false,
+    "seconds": 5.7,
+    "error": null,
+    "summary": "You described remarks about being a woman and a mother at work, and worse treatment after you spoke up. You could keep notes of what was said and when if you want to talk to someone you trust about options.",
+    "official": "NY State: this is harassment because of her sex even though it is not sexual; it appears meant to intimidate her into quitting, and she can complain whenever she decides enough is enough.",
+    "source": "NYS Sexual Harassment Prevention Training Case Studies (Oct 2018), Ex. 3 'No Job for a Woman?', Questions 1-4"
+  },
+  {
+    "id": "ny-jewelry-office-boy-orientation",
+    "setting": "work",
+    "expect": [
+      "sex_based",
+      "appearance",
+      "lgbtq",
+      "retaliation"
+    ],
+    "match": "clear",
+    "types": [
+      "appearance",
+      "bullying",
+      "conditions",
+      "lgbtq",
+      "retaliation",
+      "sex_based"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.8,
+    "error": null,
+    "summary": "You described repeated comments about your looks, a gendered label, and questions and gossip about your private life. You also described a promotion tied to your appearance and a worse outcome after you spoke up to HR.",
+    "official": "NY State: harassment based on sex (sex stereotyping) and perceived sexual orientation; passing him over after his complaint is likely discrimination and/or retaliation.",
+    "source": "NYS Sexual Harassment Prevention Training Case Studies (Oct 2018), Ex. 6 'An Issue about Appearances', Questions 1-3"
+  },
+  {
+    "id": "eeoc-wetback-accent-mocked",
+    "setting": "work",
+    "expect": [
+      "race_origin"
+    ],
+    "match": "clear",
+    "types": [
+      "race_origin"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 4.9,
+    "error": null,
+    "summary": "You described being called slurs about being Mexican and mocked for your accent at work. Those words match common descriptions of remarks about national origin.",
+    "official": "EEOC (2024, rescinded): the managers' slurs and mockery of his accent and limited English are harassment based on national origin.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 4"
+  },
+  {
+    "id": "eeoc-pregnant-heifer",
+    "setting": "work",
+    "expect": [
+      "pregnancy"
+    ],
+    "match": "clear",
+    "types": [
+      "appearance",
+      "bullying",
+      "pregnancy"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 8.3,
+    "error": null,
+    "summary": "You described comments at work tied to your pregnancy and name-calling about your body. You also described repeated criticism and monitoring since you shared your news.",
+    "official": "EEOC (2024, rescinded): the supervisor's conduct after the announcement is harassment based on sex (pregnancy).",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 11"
+  },
+  {
+    "id": "eeoc-wife-scissors-emoji",
+    "setting": "work",
+    "expect": [
+      "lgbtq",
+      "sexual_comments",
+      "online"
+    ],
+    "match": "clear",
+    "types": [
+      "lgbtq",
+      "online",
+      "sex_based",
+      "sexual_comments"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.0,
+    "error": null,
+    "summary": "You described sexualized comments about your marriage and repeated joke messages at work. You can save the exact words and dates if you want to share them with someone you trust.",
+    "official": "EEOC (2024, rescinded): the coworker's comments and repeated scissors emojis and images are harassment based on her sexual orientation.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 14"
+  },
+  {
+    "id": "eeoc-senior-moments-granny",
+    "setting": "work",
+    "expect": [
+      "age"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "age"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.6,
+    "error": null,
+    "summary": "You described repeated comments about age and retirement at work. These are the kinds of words listed under age-related remarks.",
+    "official": "EEOC (2024, rescinded): the manager's conduct is harassment based on her age.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 16"
+  },
+  {
+    "id": "eeoc-stutter-mocked",
+    "setting": "work",
+    "expect": [
+      "disability"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "disability"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 4.9,
+    "error": null,
+    "summary": "You described coworkers mocking your stutter and making you repeat yourself. These sound like difficult and frustrating moments to deal with at work.",
+    "official": "EEOC (2024, rescinded): the coworkers' mocking is harassment based on disability.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 17"
+  },
+  {
+    "id": "eeoc-wrong-spiritual-path",
+    "setting": "work",
+    "expect": [
+      "religion"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "religion"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.4,
+    "error": null,
+    "summary": "You described being spoken to about religion after you asked for it to stop. The first invitation to the study group sounds like it was left alone after you declined.",
+    "official": "EEOC (2024, rescinded): unlike coworkers' ordinary religious expression, a colleague who keeps admonishing her about her beliefs after she asked her to stop creates an objectively hostile work environment.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 48"
+  },
+  {
+    "id": "eeoc-ex-posted-explicit-images",
+    "setting": "work",
+    "expect": [
+      "online",
+      "threats"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "bullying",
+      "online",
+      "retaliation",
+      "threats"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.8,
+    "error": null,
+    "summary": "You described threats to share private pictures and then sharing them with coworkers. It makes sense going to work feels very hard right now.",
+    "official": "EEOC (2024, rescinded): together with the conduct at work, the ex-boyfriend's threat and his posting of her explicit images on social media were enough to create a hostile work environment.",
+    "source": "EEOC Enforcement Guidance on Harassment in the Workplace (2024), Example 58"
+  },
+  {
+    "id": "eeoc-black-company-coffee",
+    "setting": "work",
+    "expect": [
+      "race_origin",
+      "isolation"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "race_origin"
+    ],
+    "right": true,
+    "all_named": false,
+    "seconds": 8.2,
+    "error": null,
+    "summary": "You shared a first-day remark about your race and a pattern of difficult treatment since then. Some of the words you quoted match common descriptions of race-based remarks and belittling behavior.",
+    "official": "EEOC: the evidence as a whole supports race-based harassment of the white employee, serious enough to change his working conditions.",
+    "source": "EEOC Compliance Manual Section 15, Race and Color Discrimination, Example 18"
+  },
+  {
+    "id": "eeoc-youth-ride-home-schedule",
+    "setting": "work",
+    "expect": [
+      "appearance",
+      "advances",
+      "conditions"
+    ],
+    "match": "clear",
+    "types": [
+      "advances",
+      "appearance",
+      "conditions",
+      "retaliation"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.4,
+    "error": null,
+    "summary": "You described being asked for sex and then losing your shifts after you said no. Those words line up with common descriptions of unwanted advances and work consequences.",
+    "official": "EEOC Youth@Work: this is illegal sexual harassment by the supervisor, and she should report it to another manager immediately.",
+    "source": "EEOC Youth@Work, 'Harassment - Example'"
+  },
+  {
+    "id": "sb-false-accusation-pileon",
+    "setting": "school",
+    "expect": [
+      "online",
+      "bullying"
+    ],
+    "match": "clear",
+    "types": [
+      "after_no",
+      "bullying",
+      "online"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 6.0,
+    "error": null,
+    "summary": "You described repeated messages and posts that kept coming even after you tried to disconnect. You can keep notes of what you remember and consider talking with a trusted adult about next steps.",
+    "official": "StopBullying.gov: given as an example of the 'lies and false accusations' cyberbullying tactic.",
+    "source": "StopBullying.gov, Cyberbullying Tactics, 'Viral Tactics: Examples': Lies and false accusations"
+  },
+  {
+    "id": "sb-disability-told-to-die",
+    "setting": "school",
+    "expect": [
+      "online",
+      "disability",
+      "threats"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "online"
+    ],
+    "right": true,
+    "all_named": false,
+    "seconds": 7.2,
+    "error": null,
+    "summary": "You described repeated name-calling online and at school, including messages telling you to die. You deserve support, and you can share what you wrote here with someone you trust.",
+    "official": "StopBullying.gov: given as an example of the 'encouraging self-harm or suicide' cyberbullying tactic.",
+    "source": "StopBullying.gov, Cyberbullying Tactics, 'Viral Tactics: Examples': Encouraging self-harm or suicide"
+  },
+  {
+    "id": "sb-fake-profile-shared-secrets",
+    "setting": "school",
+    "expect": [
+      "online",
+      "bullying"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "online"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 4.6,
+    "error": null,
+    "summary": "You described someone pretending to be someone else online and sharing what you told them. You also described other kids now using those private words to shame you.",
+    "official": "StopBullying.gov: given as an example of the 'false identity profile' (sockpuppet) cyberbullying tactic.",
+    "source": "StopBullying.gov, Cyberbullying Tactics, 'Viral Tactics: Examples': False identity profile"
+  },
+  {
+    "id": "sb-gay-death-threats",
+    "setting": "online",
+    "expect": [
+      "lgbtq",
+      "threats",
+      "online"
+    ],
+    "match": "clear",
+    "types": [
+      "bullying",
+      "lgbtq",
+      "online",
+      "threats"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 5.3,
+    "error": null,
+    "summary": "You described death threats and hateful online posts connected to being gay. You deserve support, and you can save what happened and tell someone you trust.",
+    "official": "StopBullying.gov: given as an example of cyberbullying a student for being gay.",
+    "source": "StopBullying.gov, Cyberbullying Tactics, 'Viral Tactics: Examples': Bullied for being gay"
+  },
+  {
+    "id": "sb-gaming-forum-doxing",
+    "setting": "online",
+    "expect": [
+      "online",
+      "threats"
+    ],
+    "match": "clear",
+    "types": [
+      "online",
+      "threats"
+    ],
+    "right": true,
+    "all_named": true,
+    "seconds": 4.4,
+    "error": null,
+    "summary": "You shared that your address and contact details were posted and strangers started contacting you. Those kinds of messages are often described as online abuse that includes threats of harm.",
+    "official": "StopBullying.gov: given as an example of doxing, which it describes as online harassment that exposes private information.",
+    "source": "StopBullying.gov, Cyberbullying Tactics, 'Viral Tactics: Examples': Doxing over online gaming"
+  }
+]

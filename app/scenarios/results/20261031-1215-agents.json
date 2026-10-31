@@ -1,0 +1,137 @@
+[
+  {
+    "id": "office-hours",
+    "label": "notice",
+    "background": "quiet",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 10.67,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come in, Cl...",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "the door.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "So about your assay.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "to ask how I could get it up to an A.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "It's close.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "We could talk about it over drinks at my place this weekend.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I'd rather go over it here if that's okay.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Suit yourself, but be students don't usually get recommended.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "and recommendation letters.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": {
+      "match": "clear",
+      "types": [
+        "advances",
+        "conditions",
+        "isolation",
+        "retaliation"
+      ]
+    }
+  },
+  {
+    "id": "meeting-joke",
+    "label": "notice",
+    "background": "quiet",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 3.09,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Okay, let's start.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "start, while look how dressed up she is today.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Someone's trying to get promoted.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "walk us through the numbers, try not to get emotional about them this time.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Sure, revenue is up 8% this-",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "order.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": {
+      "match": "some",
+      "types": [
+        "appearance",
+        "sex_based"
+      ]
+    }
+  }
+]

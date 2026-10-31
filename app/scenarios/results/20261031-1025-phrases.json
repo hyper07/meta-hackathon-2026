@@ -1,0 +1,99 @@
+[
+  {
+    "id": "party-drink",
+    "label": "harm",
+    "background": "party",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 9.8,
+    "delay": null,
+    "max_score": 0.4,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "other",
+        "text": "Wait, wait.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Hey, you made it.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I got you a drink.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Thanks, I already have...",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "one.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come on, finish your drink.",
+        "score": 0.4
+      },
+      {
+        "who": "other",
+        "text": "You made this one special.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I feel really dizzy.",
+        "score": 0.4
+      },
+      {
+        "who": "owner",
+        "text": "I think I need to sit down.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come upstairs with me alone.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "It's wider up there.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "No, I want to find my friend.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "forever.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "My son is around here somewhere.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I love her, but where do you see the game?",
+        "score": 0.0
+      }
+    ],
+    "analyst": []
+  }
+]

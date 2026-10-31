@@ -1,0 +1,195 @@
+[
+  {
+    "id": "party-banter",
+    "label": "ok",
+    "background": "party",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.4,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Did you see what he wore to die?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Stop it, that's hilarious.",
+        "score": 0.25
+      },
+      {
+        "who": "other",
+        "text": "No, you stop you started it",
+        "score": 0.25
+      },
+      {
+        "who": "owner",
+        "text": "Help, I can't breathe, I'm laughing so hard.",
+        "score": 0.4
+      },
+      {
+        "who": "other",
+        "text": "Oh, you're coming to my hand?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I'm going to have a little ride on the road.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Did you see the eye on the ocean?",
+        "score": 0.0
+      }
+    ],
+    "analyst": [
+      {
+        "seg": "s3",
+        "score": 0.0,
+        "reason": "Owner welcomes banter as hilarious, no harassment, threat, or coercion present."
+      },
+      {
+        "seg": "s4",
+        "score": 0.0,
+        "reason": "Mutual playful banter with no harassment, threat, or coercion."
+      },
+      {
+        "seg": "s5",
+        "score": 0.0,
+        "reason": "Playful banter and laughter with no harassment or threat."
+      }
+    ]
+  },
+  {
+    "id": "movie-talk",
+    "label": "ok",
+    "background": "quiet",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 8.0,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.9,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "jev",
+        "probabilities": {
+          "discard": 0.117,
+          "ask": 0.145,
+          "alert": 0.738
+        },
+        "why": "alert at p=0.74 -> urgent ask; alerts need a missed answer or an SOS"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "The best scene is when the...",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "will and says I'll kill you and lights go out.",
+        "score": 0.9
+      },
+      {
+        "who": "owner",
+        "text": "She screams hell, and nobody comes, so creepy.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I couldn't sleep after that movie.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [
+      {
+        "seg": "s3",
+        "score": 0.0,
+        "reason": "Other is describing a movie/TV scene, not threatening the owner."
+      }
+    ]
+  },
+  {
+    "id": "retelling",
+    "label": "ok",
+    "background": "quiet",
+    "started": true,
+    "asked": true,
+    "urgent": false,
+    "ask_at": 8.0,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.8,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "jev",
+        "probabilities": {
+          "discard": 0.481,
+          "ask": 0.32,
+          "alert": 0.199
+        },
+        "why": "unsure: discard only p=0.48, needs 0.83"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "My cousin said...",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "The bus told her nobody will believe you if you report it.",
+        "score": 0.8
+      },
+      {
+        "who": "owner",
+        "text": "That's awful, she should talk to the title 9 office.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I'll send her the number tomorrow",
+        "score": 0.0
+      }
+    ],
+    "analyst": [
+      {
+        "seg": "s3",
+        "score": 0.0,
+        "reason": "Owner recounts someone else being told reporting won't be believed, not a current incident toward owner."
+      }
+    ]
+  }
+]

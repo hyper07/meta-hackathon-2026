@@ -1,0 +1,11 @@
+.env
+app/.env
+app/.venv/
+app/data/
+app/certs/
+__pycache__/
+.pytest_cache/
+.DS_Store
+app/scenarios/out/
+app/scenarios/.cache/
+app/.models/

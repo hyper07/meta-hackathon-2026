@@ -1,0 +1,186 @@
+[
+  {
+    "id": "office-hours",
+    "expect": "conditions",
+    "match": "clear",
+    "types": [
+      "conditions",
+      "isolation",
+      "retaliation"
+    ],
+    "right": true,
+    "seconds": 5.7,
+    "error": null,
+    "summary": "You described talk of meeting at his place tied to your grade and a letter. You said you preferred to meet in the office and he answered about B students not getting letters."
+  },
+  {
+    "id": "meeting-joke",
+    "expect": "appearance",
+    "match": "some",
+    "types": [
+      "appearance"
+    ],
+    "right": true,
+    "seconds": 4.8,
+    "error": null,
+    "summary": "You described a comment about how you were dressed at work. It makes sense to notice how it landed for you when others laughed."
+  },
+  {
+    "id": "women-numbers",
+    "expect": "sex_based",
+    "match": "clear",
+    "types": [
+      "sex_based"
+    ],
+    "right": true,
+    "seconds": 2.7,
+    "error": null,
+    "summary": "You shared what was said when you asked about the budget. You may want to keep a note of the date and words for your records."
+  },
+  {
+    "id": "after-no",
+    "expect": "after_no",
+    "match": "clear",
+    "types": [
+      "advances",
+      "after_no"
+    ],
+    "right": true,
+    "seconds": 6.6,
+    "error": null,
+    "summary": "You told him you were not interested and he kept asking. You deserve to have that no respected in your lab."
+  },
+  {
+    "id": "shift-swap",
+    "expect": "conditions",
+    "match": "clear",
+    "types": [
+      "conditions",
+      "isolation",
+      "sex_based"
+    ],
+    "right": true,
+    "seconds": 6.7,
+    "error": null,
+    "summary": "You described time off tied to meeting alone and a remark about girls and shifts. You can keep a note of the exact words and dates if that feels helpful to you."
+  },
+  {
+    "id": "after-complaint",
+    "expect": "retaliation",
+    "match": "clear",
+    "types": [
+      "retaliation"
+    ],
+    "right": true,
+    "seconds": 7.9,
+    "error": null,
+    "summary": "You said you were taken off a project two days after speaking to HR. You also shared what was said about you to the team."
+  },
+  {
+    "id": "ta-touching",
+    "expect": "touching",
+    "match": "clear",
+    "types": [
+      "after_no",
+      "touching"
+    ],
+    "right": true,
+    "seconds": 4.9,
+    "error": null,
+    "summary": "You described touch on your back that kept happening after you moved away. You can trust what you noticed and write down details if that helps you."
+  },
+  {
+    "id": "transcript-coworker",
+    "expect": "sexual_comments",
+    "match": "clear",
+    "types": [
+      "after_no",
+      "appearance",
+      "sexual_comments"
+    ],
+    "right": true,
+    "seconds": 6.5,
+    "error": null,
+    "summary": "You tried to keep things on work and the personal comments kept coming. You can compare these moments to the descriptions above at your own pace."
+  },
+  {
+    "id": "blunt-feedback",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.1,
+    "error": null,
+    "summary": "You described getting blunt feedback on errors in your report. Nothing in your words matches the types above."
+  },
+  {
+    "id": "fair-grade",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.7,
+    "error": null,
+    "summary": "You described a grade decision explained with the rubric. You did not share words that match the types listed here."
+  },
+  {
+    "id": "mutual-joke",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.1,
+    "error": null,
+    "summary": "You shared a funny moment that you both seemed to enjoy. Nothing in what you wrote sounds unwelcome or one-sided."
+  },
+  {
+    "id": "retelling",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.8,
+    "error": null,
+    "summary": "You described a story your coworker shared about her old job. Nothing in your account describes an experience of your own at work."
+  },
+  {
+    "id": "no-extension",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.1,
+    "error": null,
+    "summary": "You described asking for an extension and getting a no with an explanation. Nothing in those words lines up with the types listed here."
+  },
+  {
+    "id": "work-compliment",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.3,
+    "error": null,
+    "summary": "You shared good news about your presentation and next month's chance. Nothing in those words lines up with the types listed here."
+  },
+  {
+    "id": "one-on-one",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.4,
+    "error": null,
+    "summary": "You described a routine one-on-one about your goals and training budget. Nothing in that account lines up with the descriptions listed."
+  },
+  {
+    "id": "transcript-study",
+    "expect": null,
+    "match": "none",
+    "types": [],
+    "right": true,
+    "seconds": 2.6,
+    "error": null,
+    "summary": "You shared a short plan to meet at the library to study. None of those words line up with the types described above."
+  }
+]

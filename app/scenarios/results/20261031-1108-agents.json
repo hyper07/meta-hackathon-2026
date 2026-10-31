@@ -1,0 +1,113 @@
+[
+  {
+    "id": "walk-home",
+    "label": "harm",
+    "background": "street",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 8.0,
+    "harm_at": 2.88,
+    "delay": 5.1,
+    "max_score": 0.85,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "jev",
+        "probabilities": {
+          "discard": 0.047,
+          "ask": 0.418,
+          "alert": 0.535
+        },
+        "why": "alert at p=0.54 -> urgent ask; alerts need a missed answer or an SOS"
+      },
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "jev",
+        "probabilities": {
+          "discard": 0.011,
+          "ask": 0.1,
+          "alert": 0.889
+        },
+        "why": "alert at p=0.89 -> urgent ask; alerts need a missed answer or an SOS"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Hey beautiful.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Where are you going so late?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Leave me alone.",
+        "score": 0.6
+      },
+      {
+        "who": "owner",
+        "text": "Why are you walking so fast?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "here I just want to talk.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I said...",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Leave me alone.",
+        "score": 0.6
+      },
+      {
+        "who": "owner",
+        "text": "Help.",
+        "score": 0.4
+      },
+      {
+        "who": "owner",
+        "text": "Hey, is everything okay?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "over there.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [
+      {
+        "seg": "s4",
+        "score": 0.7,
+        "reason": "Stranger directs unwanted attention at owner who tells them to stop."
+      },
+      {
+        "seg": "s9",
+        "score": 0.8,
+        "reason": "Stranger persists after owner says leave alone and calls for help."
+      },
+      {
+        "seg": "s8",
+        "score": 0.85,
+        "reason": "Stranger pursues owner at night despite repeated rejections and plea for help."
+      }
+    ]
+  }
+]

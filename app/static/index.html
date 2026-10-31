@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+  <title>Watch Me</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="dot" id="stateDot"></span>Watch Me</div>
+  </header>
+
+  <main>
+    <!-- WATCH -->
+    <section id="tab-watch" class="panel active">
+      <div class="hero" id="statusCard">
+        <div class="orb" id="orb">
+          <div class="orb-core">
+            <div class="status-label" id="statusLabel">Off</div>
+            <div class="status-hint" id="statusHint">Start listening, then say <b>“Watch me”</b></div>
+          </div>
+        </div>
+        <div class="pills">
+          <span class="pill rec" id="recBadge" hidden>● Recording this moment</span>
+          <span class="pill lock" id="lockedChip" hidden>Locked to your voice</span>
+        </div>
+        <div class="segmented" id="modeSwitch" role="radiogroup" aria-label="Mode">
+          <button type="button" data-mode="watch" role="radio">Emergency</button>
+          <button type="button" data-mode="notice" role="radio">Notice</button>
+        </div>
+        <div class="hint" id="modeHint"></div>
+        <button class="primary big" id="micButton">Start listening</button>
+        <div class="links">
+          <button class="link" id="pinStart">Use PIN instead</button>
+          <button class="link" id="pinStop" hidden>Stop with PIN</button>
+        </div>
+      </div>
+
+      <div class="card voicelock" id="voiceLock" hidden>
+        <div class="card-title"><svg viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><rect x="5" y="11" width="14" height="10" rx="3"/></svg>Voice lock<span class="muted">only your voice can stop it</span></div>
+        <div class="vl-body">
+          <figure class="vl-print">
+            <canvas id="vlOwner" width="320" height="320"></canvas>
+            <figcaption>You <code id="vlOwnerId"></code></figcaption>
+          </figure>
+          <div class="vl-gauge">
+            <svg viewBox="0 0 200 118" aria-label="voice match">
+              <path class="g-track" d="M20 100 A80 80 0 0 1 180 100"/>
+              <path class="g-value" id="gValue" d="M20 100 A80 80 0 0 1 180 100"/>
+              <line class="g-tick" id="gTickStart"/><line class="g-tick strict" id="gTickStrict"/>
+              <text x="100" y="86" class="g-pct" id="gPct">–</text>
+              <text x="100" y="108" class="g-sub">match</text>
+            </svg>
+            <div class="vl-who" id="vlWho">Waiting for a voice</div>
+          </div>
+          <figure class="vl-print">
+            <canvas id="vlLive" width="320" height="320"></canvas>
+            <figcaption>Just heard</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="banner offline" id="offlineBar" hidden><b>Offline.</b> Still listening and checking in; everything is saved here.
+        <span id="offlineCount"></span> <button class="link" id="retryPending">Retry now</button></div>
+      <div class="banner" id="notice" hidden></div>
+      <div class="alert-card" id="alertCard" hidden></div>
+      <div class="label" id="liveTitle" hidden>What it heard</div>
+      <ol class="timeline" id="live"></ol>
+    </section>
+
+    <!-- REVIEW -->
+    <section id="tab-review" class="panel">
+      <h1 class="page-title">Review</h1>
+      <div id="sessionList"></div>
+      <div id="sessionDetail" hidden>
+        <button class="link back" id="backToList">‹ Sessions</button>
+        <div class="detail-head">
+          <h2 id="detailTitle"></h2>
+          <span class="chain" id="chainBadge"></span>
+        </div>
+        <div class="summary" id="summary"></div>
+        <div id="sessionNotice"></div>
+        <div class="filters">
+          <label class="switch-row"><input type="checkbox" class="switch" id="onlyMarked"> Marked moments only</label>
+          <span class="legend"><i class="lv-watch"></i>note <i class="lv-concern"></i>concern <i class="lv-urgent"></i>urgent</span>
+        </div>
+        <ol class="timeline" id="detail"></ol>
+      </div>
+    </section>
+
+    <!-- NOTICE -->
+    <section id="tab-notice" class="panel">
+      <h1 class="page-title">Notice</h1>
+      <p class="lead">Something at school, work or online felt off? Tell it in your own words, or paste the messages. Only you see this.</p>
+      <div class="card">
+        <textarea id="ntText" rows="4" placeholder="What did they say or do, and what did you say? Their exact words help most."></textarea>
+        <div class="nt-grid">
+          <label>Setting<select id="ntSetting"><option value="school">School</option><option value="work">Work</option><option value="online">Online</option><option value="other">Somewhere else</option></select></label>
+          <label>When<input id="ntWhen" type="datetime-local"></label>
+          <label>Who <span class="muted">(a name only you'll know)</span><input id="ntWho" placeholder="e.g. Prof. R"></label>
+          <label>Where<input id="ntWhere" placeholder="e.g. office hours"></label>
+        </div>
+        <div class="actions">
+          <button class="secondary" id="ntSay"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Say it</button>
+          <button class="ai" id="ntCheck">Check it</button>
+        </div>
+        <div class="hint" id="ntMsg"></div>
+      </div>
+      <div id="ntResult"></div>
+      <div class="card" id="ntPatterns" hidden></div>
+      <div class="label">Your record</div>
+      <div id="ntHistory"></div>
+      <div class="row-between">
+        <a class="link" href="/api/notice/export" download>Export the record</a>
+        <span class="hint" id="ntChain"></span>
+      </div>
+    </section>
+
+    <!-- SETUP -->
+    <section id="tab-setup" class="panel">
+      <h1 class="page-title">Setup</h1>
+      <form id="profileForm">
+        <div class="label">You</div>
+        <div class="card">
+          <label>Name <span class="muted">(used in alerts)</span><input name="name" autocomplete="name"></label>
+          <label>PIN <span class="muted">(4–8 digits: a fallback to stop, and to tap “I'm OK”)</span><input name="pin" inputmode="numeric" pattern="\d{4,8}" placeholder="unchanged if blank"></label>
+          <label>SOS phrase <span class="muted">(alerts your people at once)</span><input name="sos_phrase" placeholder="e.g. purple elephant"></label>
+          <label>Duress phrase <span class="muted">(looks like it stops, keeps listening and alerts)</span><input name="duress_phrase" placeholder="e.g. it's all good now"></label>
+        </div>
+
+        <div class="label">People to alert</div>
+        <p class="hint">Mark someone as <b>Default</b> and alerts go to them. With no default, alerts go to your family. Tell them first.</p>
+        <div id="contacts"></div>
+        <div class="actions start">
+          <button type="button" class="link" id="addContact">+ Add a contact</button>
+          <button type="button" class="link" id="pickContacts" hidden>+ From phone contacts</button>
+        </div>
+        <div class="route" id="alertRoute"></div>
+        <button class="primary big" type="submit">Save</button>
+        <div class="hint center" id="profileMsg"></div>
+      </form>
+
+      <div class="label">Your voice</div>
+      <div class="card enroll-card">
+        <p class="hint top">Only your voice can start Watch Me, stop it, or answer “I'm OK”. Read each line once, in your normal voice.</p>
+        <div class="enroll">
+          <div class="enroll-stage">
+            <canvas id="enrollPrint" width="480" height="480"></canvas>
+            <div class="stamp" id="stamp" hidden>SAVED</div>
+          </div>
+          <ol class="enroll-steps" id="enrollSteps">
+            <li><span class="dot"></span>“Watch me. This is my voice, and only I can turn this on or off.”</li>
+            <li><span class="dot"></span>“I'm heading out tonight, so keep an eye on things for me.”</li>
+            <li><span class="dot"></span>“My name is on this phone, and this is how I normally talk.”</li>
+          </ol>
+        </div>
+        <div class="actions">
+          <button class="primary" id="recSample">Record line 1 of 3</button>
+          <button class="secondary" id="testVoice">Test my voice</button>
+        </div>
+        <div class="hint" id="voiceMsg"></div>
+        <div class="saved" id="voiceSaved" hidden>
+          <b>Voiceprint saved</b> · <code id="voiceId"></code> · <span id="voiceWhen"></span>
+          <div class="hint">70% match starts Watch Me. Stopping it, or answering “I'm OK”, needs 90%. Anyone else is refused and the recording keeps going.</div>
+        </div>
+      </div>
+
+      <div class="label">Models and services</div>
+      <div class="card"><dl id="services" class="services"></dl></div>
+      <p class="hint center">On your phone today. Built for the Muse Charm pendant when Meta opens it to developers.</p>
+    </section>
+  </main>
+
+  <nav class="tabbar" role="tablist">
+    <button class="tab active" data-tab="watch" role="tab"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Watch</span></button>
+    <button class="tab" data-tab="review" role="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Review</span></button>
+    <button class="tab" data-tab="notice" role="tab"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 12h8M8 16h5"/></svg><span>Notice</span></button>
+    <button class="tab" data-tab="setup" role="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.5 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2z"/></svg><span>Setup</span></button>
+  </nav>
+
+  <!-- Check-in -->
+  <div class="overlay" id="checkin" hidden>
+    <div class="sheet checkin-box">
+      <div class="checkin-q">Are you OK?</div>
+      <div class="checkin-why" id="checkinWhy"></div>
+      <div class="count">
+        <svg viewBox="0 0 120 120"><circle class="ring-track" cx="60" cy="60" r="54"/><circle class="ring-value" id="countRing" cx="60" cy="60" r="54"/></svg>
+        <div class="countdown" id="countdown">30</div>
+      </div>
+      <p class="hint">Say <b>“I'm OK”</b>, or tap. No answer alerts your people.</p>
+      <button class="ok big" id="imOk">I'm OK</button>
+      <button class="danger big" id="getHelp">Get help now</button>
+    </div>
+  </div>
+
+  <!-- PIN pad -->
+  <div class="overlay" id="pinPad" hidden>
+    <div class="sheet">
+      <div class="checkin-q small" id="pinTitle">PIN</div>
+      <input id="pinInput" class="pin" inputmode="numeric" type="password" maxlength="8" autocomplete="off">
+      <div class="actions">
+        <button class="secondary" id="pinCancel">Cancel</button>
+        <button class="primary" id="pinOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
