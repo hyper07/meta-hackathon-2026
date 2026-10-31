@@ -18,7 +18,8 @@
     <!-- WATCH -->
     <section id="tab-watch" class="panel active">
       <div class="hero" id="statusCard">
-        <div class="orb" id="orb">
+        <div class="orb" id="orb" role="button" tabindex="0" aria-label="Press and hold to start listening">
+          <svg class="hold-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46"/></svg>
           <div class="orb-core">
             <div class="status-label" id="statusLabel">Off</div>
             <div class="status-hint" id="statusHint">Start listening, then say <b>“Watch me”</b></div>
@@ -190,8 +191,10 @@
         <svg viewBox="0 0 120 120"><circle class="ring-track" cx="60" cy="60" r="54"/><circle class="ring-value" id="countRing" cx="60" cy="60" r="54"/></svg>
         <div class="countdown" id="countdown">30</div>
       </div>
-      <p class="hint">Say <b>“I'm OK”</b>, or tap. No answer alerts your people.</p>
-      <button class="ok big" id="imOk">I'm OK</button>
+      <p class="hint">Say <b>“I'm OK”</b>, or slide. No answer alerts your people.</p>
+      <div class="slide" id="imOk" role="slider" tabindex="0" aria-label="Slide to say I'm OK" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span class="slide-label">Slide: I'm OK ›</span><span class="slide-knob">→</span>
+      </div>
       <button class="danger big" id="getHelp">Get help now</button>
     </div>
   </div>

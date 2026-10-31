@@ -1,6 +1,28 @@
 # Watch Me
 
-A harassment and assault safety assistant, built for the Meta Global AI Developer Hackathon (2026). You say "Watch me"; only your voice can turn it off; and only you decide what happened. The app is in [app/](app/README.md), the demo video in [demo/](demo/).
+A harassment and assault safety assistant, built for the Meta Global AI Developer Hackathon (2026). You say "Watch me"; only your voice can turn it off; and only you decide what happened. The server and web page are in [app/](app/README.md), the iPhone and Android app in [mobile/](mobile/README.md), and the demo video in [demo/](demo/).
+
+<p>
+<img src="demo/screens/ios-watch.png" width="190" alt="Watch: the orb, Emergency or Notice, Start listening">
+<img src="demo/screens/ios-watch-dark.png" width="190" alt="Watch in dark mode">
+<img src="demo/screens/ios-notice.png" width="190" alt="Notice: tell it what happened; patterns per person">
+<img src="demo/screens/ios-review.png" width="190" alt="Review: past sessions, colour-coded">
+<img src="demo/screens/ios-setup.png" width="190" alt="Setup: server, you, people to alert, your voice">
+</p>
+
+*The iPhone app on the iOS simulator, connected to the Watch Me server: Watch (light and dark), Notice, Review and Setup.*
+
+### Next: Meta's Muse Charm
+
+The Charm has its own small screen, so Watch Me's states can live on the pendant itself: "Ready", red "Watching", and "Are you OK?" with its countdown.
+
+<p>
+<img src="demo/charm/charm-watching.jpg" width="320" alt="Concept: the Muse Charm in hand, its screen showing Watch Me's red Watching ring">
+<img src="demo/charm/charm-checkin.jpg" width="320" alt="Concept: the Charm worn on its cord at night, asking Are you OK? with a countdown">
+<img src="demo/charm/charm-party.jpg" width="320" alt="Concept: at a party, wearing the Charm, its screen showing Ready">
+</p>
+
+*Concept renders made with Muse Image (Meta Model API, [demo/make/charm_images.py](demo/make/charm_images.py)), using a Meta product photo of the Charm and the app's real screens as references; the first follows Meta's photo closely. Not photos of a working product: today Watch Me runs on the phone, and the Charm becomes its always-on microphone and screen once Meta opens it to developers.*
 
 ## The idea
 
@@ -55,6 +77,7 @@ The official rules are published before Oct 26 and must be read before building:
 ## Documents
 
 - [app/README.md](app/README.md): the Watch Me app: how to run it, its agents, and measured timings
+- [mobile/README.md](mobile/README.md): the iPhone and Android app (React Native, Expo): listens with the screen locked
 - [DESIGN.md](DESIGN.md): the system, its components and how data flows
 - [MODELS.md](MODELS.md): which models, how to train them, and the JEPA question
 - [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md): consent, privacy, recording laws, legal information versus legal advice

@@ -215,14 +215,19 @@ function commandToast(v, pct) {
   if (v.outcome === "accepted") {
     const after = { start: "Recording is locked to your voice.", stop: "Stopped.", ok: "Glad you're OK.", not_ok: "Alerting your contacts.", sos: "Alerting your contacts now." }[v.command] || "";
     toast("ok", `<span class="big-icon">✓</span><b>${what}</b>: verified as you (${pct}%). ${after}`);
+    buzz([20, 40, 20]);
     lock.classList.remove("pulse-ok"); void lock.offsetWidth; lock.classList.add("pulse-ok");
   } else if (v.outcome === "refused") {
     const need = Math.round((v.command === "start" ? thresholds.start : thresholds.strict) * 100);
     const after = v.command === "start" ? "Not started." : v.command === "ok" ? "Still waiting for your answer." : "Still recording.";
     toast("bad", `<span class="big-icon">🔒</span><b>${what} refused</b>: not your voice (${pct}%, needs ${need}%). ${after}`);
+    buzz([60, 50, 60]);
     lock.classList.remove("shake"); void lock.offsetWidth; lock.classList.add("shake");
   }
 }
+
+// Haptics on the web: a short vibration where the browser supports it (Android Chrome); iOS browsers ignore it.
+const buzz = (pattern) => { try { navigator.vibrate?.(pattern); } catch {} };
 
 function toast(kind, html) {
   const t = $("toast");
@@ -300,7 +305,7 @@ function setState(s) {
   $("statusHint").innerHTML = noticing
     ? 'Keeping notes quietly. Say <b>“stop watching”</b> for your review.'
     : watching ? 'Only your voice can say <b>“stop watching”</b>.'
-    : mic ? 'Say <b>“Watch me”</b>' : 'Start listening, then say <b>“Watch me”</b>';
+    : mic ? 'Say <b>“Watch me”</b>' : 'Hold to start listening, then say <b>“Watch me”</b>';
   $("micButton").textContent = mic ? "Stop listening" : "Start listening";
   if (!mic) $("voiceLock").hidden = true; else if (profile.voice_signature) $("voiceLock").hidden = false;
   $("modeSwitch").hidden = $("modeHint").hidden = watching;
@@ -437,6 +442,7 @@ function hideCheckin() { $("checkin").hidden = true; clearInterval(countdownTime
 
 function showAlert(m) {
   hideCheckin();
+  buzz([200, 100, 200]);
   say("alerting", "Alerting your people now.");
   const sent = (m.results || []).map((r) => `${esc(r.to)} · ${esc(r.channel)}: ${esc(r.result)}`).join("<br>") || "No contacts set up. Add them in Setup.";
   $("alertCard").innerHTML = `<h4>Alert sent to ${m.contacts} contact${m.contacts === 1 ? "" : "s"}${m.sent_to ? ` · ${esc(m.sent_to)}` : ""}</h4>
@@ -813,8 +819,51 @@ $("retryPending").onclick = retryPending;
 $("ntResult").onclick = saveLabel;
 $("sessionNotice").onclick = saveLabel;
 $("micButton").onclick = toggleMic;
-$("imOk").onclick = () => profile.has_pin ? askPin("PIN to confirm you're OK", (pin) => sendJson({ type: "checkin_answer", ok: true, pin }))
-                                         : sendJson({ type: "checkin_answer", ok: true });
+// "I'm OK" is a slide, so a stray tap can't dismiss the check-in; it still asks for the PIN when there is one.
+const confirmOk = () => profile.has_pin ? askPin("PIN to confirm you're OK", (pin) => sendJson({ type: "checkin_answer", ok: true, pin }))
+                                        : sendJson({ type: "checkin_answer", ok: true });
+
+function slideToConfirm(track, onDone) {
+  const knob = track.querySelector(".slide-knob"), label = track.querySelector(".slide-label");
+  let startX = 0, x = 0, max = 0, dragging = false;
+  const set = (v) => {
+    x = Math.max(0, Math.min(v, max)); knob.style.transform = `translateX(${x}px)`;
+    label.style.opacity = String(Math.max(0, 1 - x / ((max || 1) * 0.6))); track.setAttribute("aria-valuenow", Math.round(100 * x / (max || 1))); };
+  knob.addEventListener("pointerdown", (e) => {
+    dragging = true; startX = e.clientX - x; max = track.clientWidth - knob.offsetWidth - 8;
+    track.classList.add("dragging"); try { knob.setPointerCapture(e.pointerId); } catch {} buzz(10);
+  });
+  knob.addEventListener("pointermove", (e) => { if (dragging) set(e.clientX - startX); });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false; track.classList.remove("dragging");
+    if (x >= max * 0.85) { set(max); buzz(30); setTimeout(() => { set(0); onDone(); }, 150); } else set(0);
+  };
+  knob.addEventListener("pointerup", end);
+  knob.addEventListener("pointercancel", end);
+  track.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onDone(); } });
+}
+slideToConfirm($("imOk"), confirmOk);
+
+// Press and hold the orb to start listening: a ring fills for 0.7 s; letting go early cancels.
+function holdOrb() {
+  const orb = $("orb");
+  let timer = null;
+  const can = () => !mic && state !== "watching";
+  const start = (e) => {
+    if (!can()) return;
+    e.preventDefault();
+    orb.classList.remove("held"); orb.classList.add("holding"); buzz(8);
+    timer = setTimeout(() => { timer = null; orb.classList.replace("holding", "held"); buzz(30); toggleMic(); }, 700);
+  };
+  const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } orb.classList.remove("holding"); };
+  orb.addEventListener("pointerdown", start);
+  orb.addEventListener("pointerup", cancel);
+  orb.addEventListener("pointerleave", cancel);
+  orb.addEventListener("pointercancel", cancel);
+  orb.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && can()) { e.preventDefault(); toggleMic(); } });
+}
+holdOrb();
 $("getHelp").onclick = () => sendJson({ type: "checkin_answer", ok: false });
 $("pinStop").onclick = () => askPin("PIN to stop", (pin) => sendJson({ type: "stop_pin", pin }));
 $("pinStart").onclick = () => askPin("PIN to start", (pin) => sendJson({ type: "start_pin", pin }));

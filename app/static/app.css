@@ -275,3 +275,20 @@ blockquote { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(--blu
   .enroll-stage { max-width: 200px; margin: 0 auto; }
   .vl-body { grid-template-columns: 1fr 1.3fr 1fr; }
 }
+
+/* ── feel: press, hold, slide, enter ────────────────────────────────────── */
+button { transition: transform .12s ease, opacity .12s ease; }
+button:active:not(:disabled) { transform: scale(.97); opacity: .85; }
+.orb { transition: transform .25s cubic-bezier(.2,.9,.3,1.3); transform: scale(calc(1 + var(--level) * .05)); cursor: pointer; touch-action: none; }
+.orb.watching, .orb.noticing { cursor: default; }
+.hold-ring { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); transform: rotate(-90deg); z-index: 2; pointer-events: none; }
+.hold-ring circle { fill: none; stroke: var(--blue); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 289; stroke-dashoffset: 289; }
+.orb.holding .hold-ring circle { stroke-dashoffset: 0; transition: stroke-dashoffset .7s cubic-bezier(.3,0,.4,1); }
+.orb.held .hold-ring circle { stroke-dashoffset: 0; opacity: 0; transition: opacity .3s; }
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } }
+.seg, .event, .alert-card, .nt-result, .banner { animation: enter .28s ease-out both; }
+.slide { position: relative; height: 64px; border-radius: 999px; background: var(--fill); padding: 4px; margin-top: 10px; touch-action: none; user-select: none; }
+.slide-label { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 700; font-size: 17px; pointer-events: none; }
+.slide-knob { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--ok); color: #fff;
+  font-size: 24px; font-weight: 800; cursor: grab; transition: transform .25s cubic-bezier(.2,.9,.3,1.2); }
+.slide.dragging .slide-knob { transition: none; cursor: grabbing; }
