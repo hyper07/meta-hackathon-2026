@@ -15,15 +15,19 @@ unsure"; here it is "ask when unsure":
              phrase, and otherwise only when an ask goes unanswered.
 
 A needless "Are you OK?" costs the owner a tap; a missed emergency costs far more.
-Without a Jev endpoint the same rules run on the Analyst's score alone.
+With a Meta key and no System One endpoint, Muse Spark on the Meta Model API gives the same
+distribution (a probability for each option, as JSON) and the same rules decide. Without either,
+the rules run on the Analyst's score alone.
 """
 
 from __future__ import annotations
 
+import json
 import time
 
 import httpx
 
+from . import muse
 from .config import settings
 
 OPTIONS = ("discard", "ask", "alert")
@@ -78,8 +82,42 @@ def rules_only(score: float) -> tuple[str, bool, str]:
     return "discard", False, f"score {score:.2f} below trigger (rules only)"
 
 
+MUSE_PROMPT = INSTRUCTIONS + """
+
+You get the context, the Analyst's reading and the transcript. Give a probability for each option,
+honest about uncertainty, summing to 1. Answer with JSON only:
+{"discard": 0.0-1.0, "ask": 0.0-1.0, "alert": 0.0-1.0, "in_danger": "yes|no|unclear", "why": "one short sentence"}"""
+
+
+async def decide_with_muse(transcript: str, analysis: dict, context: dict, started: float) -> dict:
+    """The same menu and rules, with Muse Spark giving the distribution."""
+    state = build_request(transcript, analysis, context)["state"]
+    answer = muse._first_json(await muse._chat(
+        MUSE_PROMPT, "\n\n".join(f"{k}:\n{v}" for k, v in state.items()),
+        max_tokens=1200, timeout=settings.jev_timeout + 4, model=settings.decider_model))
+    raw = {o: max(0.0, float(answer.get(o, 0) or 0)) for o in OPTIONS}
+    total = sum(raw.values())
+    if total <= 0:
+        raise ValueError(f"no probabilities in answer: {json.dumps(answer)[:120]}")
+    probabilities = {o: raw[o] / total for o in OPTIONS}
+    action, urgent, why = apply_rules(probabilities)
+    return {
+        "action": action, "urgent": urgent, "why": f"{why}; {str(answer.get('why', ''))[:120]}".rstrip("; "),
+        "engine": "muse-spark", "probabilities": {o: round(p, 3) for o, p in probabilities.items()},
+        "in_danger": answer.get("in_danger"), "ms": round((time.perf_counter() - started) * 1000),
+    }
+
+
 async def decide(transcript: str, analysis: dict, context: dict) -> dict:
     started = time.perf_counter()
+    if not settings.jev_ready and settings.muse_ready:
+        try:
+            return await decide_with_muse(transcript, analysis, context, started)
+        except Exception as error:
+            # A failed call must never mean "discard": fall back to the rules, which ask on any trigger.
+            action, urgent, why = rules_only(max(float(analysis.get("score", 0)), settings.trigger_score))
+            return {"action": action, "urgent": urgent, "why": f"Muse Spark failed ({type(error).__name__}); {why}",
+                    "engine": "rules", "ms": round((time.perf_counter() - started) * 1000)}
     if not settings.jev_ready:
         action, urgent, why = rules_only(float(analysis.get("score", 0)))
         return {"action": action, "urgent": urgent, "why": why, "engine": "rules", "ms": 0}

@@ -62,10 +62,14 @@ class Settings:
         "REVIEWER_MODEL", default="muse-wonder-1.0" if _env("MODEL_API_KEY", "META_API_KEY") else "") or "")
     writer_model: str = field(default_factory=lambda: _env("WRITER_MODEL", default="") or "")
 
-    # The fast decision model, POST /v1/systemone: Jev, Kev (local or on Modal), or
-    # Baseten's decision models, which answer the same API.
+    # The Decider. With a Meta key it is Muse Spark on the Meta Model API (decider_model). A System One
+    # endpoint (POST /v1/systemone: Jev, Kev, or Baseten's decision models) is used only when set with
+    # JEV_BASE_URL, or when Baseten is the only key there is.
+    # Spark 1.1 decides as well as 1.3 on the test moments and answers in ~2 s against 4-10 s.
+    decider_model: str = field(default_factory=lambda: _env("DECIDER_MODEL", default="muse-spark-1.1"))
     jev_base_url: str | None = field(default_factory=lambda: _env(
-        "JEV_BASE_URL", "KEV_BASE_URL", default=BASETEN if _env("BASETEN_API_KEY") else None))
+        "JEV_BASE_URL", "KEV_BASE_URL",
+        default=BASETEN if _env("BASETEN_API_KEY") and not _env("MODEL_API_KEY", "META_API_KEY") else None))
     jev_api_key: str = field(default_factory=lambda: _env("JEV_API_KEY", "KEV_API_KEY", "BASETEN_API_KEY", default="local"))
     jev_model: str = field(default_factory=lambda: _env(
         "JEV_MODEL", default="decision-models/baseten-mammoth-27b-latest" if _env("BASETEN_API_KEY") and not _env("JEV_BASE_URL") else "kev-latest"))
@@ -149,7 +153,8 @@ class Settings:
             "reviewer": (self.reviewer_model or self.meta_model) if self.muse_ready else "not configured",
             "writer": (self.writer_model or self.meta_model) if self.muse_ready else "templates",
             "debrief_speech": "Muse Voice Transcribe" if self.voice_api_key else f"Whisper {self.whisper_model}",
-            "jev": self.jev_base_url if self.jev_ready else "not configured (fixed rules)",
+            "jev": (self.jev_base_url if self.jev_ready else f"{self.decider_model} (Meta Model API)" if self.muse_ready
+                    else "not configured (fixed rules)"),
             "sms_and_calls": "Twilio" if self.sms_ready else "dry run",
             "email": self.smtp_host if self.email_ready else "dry run",
             "whisper": "Muse Voice Transcribe" if self.stt_engine == "muse" else f"Whisper {self.whisper_model}",

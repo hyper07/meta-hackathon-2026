@@ -57,3 +57,26 @@ def test_alerts_go_to_defaults_else_family_else_everyone():
     assert recipients([sam, mom, ana]) == ([mom], "your family (no default set)")
     assert recipients([sam, ana]) == ([sam, ana], "everyone you listed (no default or family set)")
     assert recipients([]) == ([], "everyone you listed (no default or family set)")
+
+
+async def test_muse_decider_uses_the_same_rules(monkeypatch):
+    from watchme import decider, muse
+    from watchme.config import settings
+    monkeypatch.setattr(settings, "meta_api_key", "test")
+    monkeypatch.setattr(settings, "jev_base_url", None)
+
+    async def chat(system, user, **_):
+        return answers.pop(0)
+
+    monkeypatch.setattr(muse, "_chat", chat)
+    answers = ['{"discard": 0.1, "ask": 0.2, "alert": 0.7, "why": "x"}',
+               '{"discard": 0.6, "ask": 0.4, "alert": 0.0, "why": "x"}',      # unsure: never discards
+               '{"discard": 0.9, "ask": 0.1, "alert": 0.0, "why": "x"}',
+               'no json at all']
+    analysis = {"score": 0.8, "categories": [], "reason": ""}
+    first = await decider.decide("t", analysis, {})
+    assert (first["engine"], first["action"], first["urgent"]) == ("muse-spark", "ask", True)
+    assert (await decider.decide("t", analysis, {}))["action"] == "ask"
+    assert (await decider.decide("t", analysis, {}))["action"] == "discard"
+    failed = await decider.decide("t", analysis, {})          # a bad answer falls back to the rules, which ask
+    assert (failed["engine"], failed["action"]) == ("rules", "ask")

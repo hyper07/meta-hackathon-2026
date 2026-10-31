@@ -43,17 +43,18 @@ The building period was Oct 27 – Nov 4, 2026. Everything that runs was written
   - [mobile/](mobile/README.md): the iPhone and Android app;
   - [demo/](demo/): the video, screenshots, Charm concept images and the scripts that make them;
   - the tests, and the measurements in the docs.
-- **Open-source parts used, not written by us:** Whisper (faster-whisper) and SpeechBrain's ECAPA voiceprint model; FastAPI; Expo and React Native; the Kokoro and Chatterbox voices, used only for the demo and test scenes. The decision model (mammoth-27b) runs on Baseten.
+- **Open-source parts used, not written by us:** Whisper (faster-whisper) and SpeechBrain's ECAPA voiceprint model; FastAPI; Expo and React Native; the Kokoro and Chatterbox voices, used only for the demo and test scenes.
 
 **Meta models in the project** (problem statement: *Build for Your World*):
 
 | Meta model | Where it's used |
 |---|---|
 | Muse Spark 1.3 (Meta Model API) | the live Analyst, the alert text, session summaries |
+| Muse Spark 1.1 (Meta Model API) | the Decider: a probability for discard, ask and alert, in about 2 s |
 | Muse Wonder 1.0 (Meta Model API) | the Notice reviewer: which exact words match how the EEOC describes harassment |
 | Muse Voice Transcribe 1.0 (Meta Model API) | spoken Notice accounts; checking the demo's synthetic voices |
 | Muse Image 1.0 (Meta Model API) | the Muse Charm concept images |
-| Muse Spark Open (open weights, on Baseten) | the Analyst when only a Baseten key is set |
+| Muse Spark Open (open weights) | optional: the Analyst through a hosted provider when there is no Meta key |
 
 ## The idea
 

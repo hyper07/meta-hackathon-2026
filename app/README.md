@@ -36,9 +36,9 @@ Keys go in the repo-root `.env`; see [.env.example](.env.example). Everything is
 
 | Set | You get | Without it |
 |---|---|---|
-| `BASETEN_API_KEY` | Muse Spark Open (`meta-models/muse-spark-open`; the hackathon's `meta-models/muse-spark-open-1026` with `META_MODEL=meta-models/muse-spark-open-1026` once Baseten enables it on your key) as Analyst and Messenger; `decision-models/baseten-mammoth-27b-latest` as the Decider | phrase list and fixed rules |
-| `MODEL_API_KEY` (or `META_API_KEY`) | Muse Spark 1.3 on the Meta Model API (`api.meta.ai`) for the Analyst and Messenger, instead of Baseten | Baseten, if set |
-| `JEV_BASE_URL` | your own Jev or Kev for the Decider (e.g. Kev-4B on `:8009`) | Baseten, if set |
+| `MODEL_API_KEY` (or `META_API_KEY`) | every model agent on the Meta Model API (`api.meta.ai`): Muse Spark as Analyst, Decider and writer, Muse Wonder for Notice, Muse Voice Transcribe for spoken accounts. This is all the app needs. | phrase list and fixed rules |
+| `JEV_BASE_URL` | optional: a System One decision model for the Decider instead of Muse Spark (Jev, Kev, or Baseten's) | Muse Spark |
+| `BASETEN_API_KEY` | optional, used only when there is no Meta key: Muse Spark Open (`meta-models/muse-spark-open`) and Baseten's decision model | — |
 | `TWILIO_*` | real SMS and voice calls | dry run: shown on screen and in the log |
 | `SMTP_*` | real email | dry run |
 
@@ -103,7 +103,7 @@ Each agent can use its own model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITER_MOD
 | Listener (live speech-to-text) | Whisper base, on this machine: its word timings keep the voice lock tight |
 | Spoken Notice accounts | Muse Voice Transcribe |
 | Analyst (live) | Muse Spark 1.3, reasoning low |
-| Decider | mammoth-27b on Baseten |
+| Decider | Muse Spark 1.1: a probability for discard, ask and alert, then the "ask when unsure" rules |
 | Notice reviewer | Muse Wonder 1.0: 40 of 40 public training cases |
 | Alerts and summaries | Muse Spark 1.3 |
 

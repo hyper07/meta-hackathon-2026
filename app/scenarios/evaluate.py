@@ -46,7 +46,10 @@ class SimTime:
         return self.now
 
     def strftime(self, fmt: str, *args) -> str:
-        return real_time.strftime(fmt, real_time.localtime(self.now))
+        return real_time.strftime(fmt, args[0] if args else real_time.localtime(self.now))
+
+    def localtime(self, seconds: float | None = None):
+        return real_time.localtime(self.now if seconds is None else seconds)
 
 
 async def _dry_run(contacts, owner, body):
@@ -177,7 +180,7 @@ async def main(args: list[str]) -> None:
         rows.append(row)
         print(f"{row['id']:20s} {row['label']:4s} asked={str(row['asked']):5s} delay={row['delay']} top={row['max_score']:.2f}")
 
-    mode = "phrase list and fixed rules" if phrases_only else f"agents: {settings.analyst_model or settings.describe()['muse_spark']} + {settings.jev_model if settings.jev_ready else 'rules'}"
+    mode = "phrase list and fixed rules" if phrases_only else f"agents: {settings.analyst_model or settings.describe()['muse_spark']} + {settings.jev_model if settings.jev_ready else settings.decider_model if settings.muse_ready else 'rules'}"
     report = summarise(rows, mode)
     RESULTS.mkdir(exist_ok=True)
     stamp = real_time.strftime("%Y%m%d-%H%M")
