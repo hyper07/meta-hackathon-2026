@@ -23,7 +23,7 @@
 | Is this conversation unsafe? (first pass) | Llama Guard (Meta, open weights) with our own category list | built for safety classification; you can define custom categories |
 | Why, which lines, which category | Llama (open weights) or Muse Spark (Meta Model API) with a structured-output prompt | quotes the exact lines, so the flag can be checked |
 | Assessment agent | the same large model, with tools: timeline, report draft, retrieval | conversational, trauma-informed prompt |
-| Safety mode: discard, ask or alert | Jev (TypeSafe, hosted) or Kev (open weights, local); later fine-tuned on labels from Muse Spark | a probability for each option in under a second, can't choose off the menu; see [DESIGN.md](DESIGN.md) §6 |
+| Safety mode: discard, ask or alert | Muse Spark 1.1 (Meta Model API); later a small Llama fine-tuned on its labels | a probability for each option in about 2 s; rules, not the model, pick the action; see [DESIGN.md](DESIGN.md) §6 |
 | Legal information | retrieval over public statutes and Title IX documents, plus the large model, answers with citations | grounded answers, not invented law |
 | On device (stretch) | a small Llama fine-tuned with LoRA on labelled data, quantized | raw messages never leave the phone |
 | Voice notes and calls (stretch) | speech-to-text, then the same detector | the user's own recordings only |

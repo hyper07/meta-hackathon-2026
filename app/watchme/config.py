@@ -14,8 +14,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-BASETEN = "https://inference.baseten.co"
-
 APP_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = APP_DIR.parent
 
@@ -39,18 +37,13 @@ def _float(name: str, default: float) -> float:
 class Settings:
     data_dir: Path = field(default_factory=lambda: Path(_env("DATA_DIR", default=str(APP_DIR / "data"))))
 
-    # Muse Spark. The Meta Model API when MODEL_API_KEY is set (variable names as in
-    # Meta's legal-agent-workshop); otherwise Muse Spark Open on Baseten. Both are
-    # OpenAI-compatible Chat Completions.
-    meta_api_key: str | None = field(default_factory=lambda: _env("MODEL_API_KEY", "META_API_KEY", "BASETEN_API_KEY"))
-    meta_api_base: str = field(default_factory=lambda: _env(
-        "MODEL_API_BASE_URL", "META_API_BASE",
-        default="https://api.meta.ai/v1" if _env("MODEL_API_KEY", "META_API_KEY") else BASETEN + "/v1"))
-    meta_model: str = field(default_factory=lambda: _env(
-        "MODEL_API_MODEL", "META_MODEL",
-        default="muse-spark-1.3" if _env("MODEL_API_KEY", "META_API_KEY") else "meta-models/muse-spark-open"))
-    # Both reason before they answer. "low" keeps an analysis near 1.5 s on Baseten and 3 s
-    # on the Meta API, where the default effort can spend 1,500 tokens and cut the answer off.
+    # Every model agent runs on the Meta Model API (variable names as in Meta's legal-agent-workshop;
+    # OpenAI-compatible Chat Completions).
+    meta_api_key: str | None = field(default_factory=lambda: _env("MODEL_API_KEY", "META_API_KEY"))
+    meta_api_base: str = field(default_factory=lambda: _env("MODEL_API_BASE_URL", "META_API_BASE", default="https://api.meta.ai/v1"))
+    meta_model: str = field(default_factory=lambda: _env("MODEL_API_MODEL", "META_MODEL", default="muse-spark-1.3"))
+    # Muse Spark reasons before it answers. "low" keeps an analysis near 3 s; the default effort
+    # can spend 1,500 tokens and cut the answer off.
     reasoning_effort: str | None = field(default_factory=lambda: _env("LLM_REASONING_EFFORT", default="low") or None)
 
     # One model per agent role, all on the same API. The live Analyst needs speed; the Notice
@@ -59,22 +52,14 @@ class Settings:
     # Muse Wonder was the best Notice reviewer: 40 of 40 public training cases and 16 of 16 of ours,
     # median 4.5 s, against 38 and 36 of 40 for Spark 1.3 and 1.1 (scenarios/README.md).
     reviewer_model: str = field(default_factory=lambda: _env(
-        "REVIEWER_MODEL", default="muse-wonder-1.0" if _env("MODEL_API_KEY", "META_API_KEY") else "") or "")
+        "REVIEWER_MODEL", default="muse-wonder-1.0"))
     writer_model: str = field(default_factory=lambda: _env("WRITER_MODEL", default="") or "")
 
-    # The Decider. With a Meta key it is Muse Spark on the Meta Model API (decider_model). A System One
-    # endpoint (POST /v1/systemone: Jev, Kev, or Baseten's decision models) is used only when set with
-    # JEV_BASE_URL, or when Baseten is the only key there is.
-    # Spark 1.1 decides as well as 1.3 on the test moments and answers in ~2 s against 4-10 s.
+    # The Decider: Muse Spark gives a probability for discard, ask and alert; the rules in decider.py
+    # pick the action. Spark 1.1 decides as well as 1.3 on the test moments and answers in ~2 s against 4-10 s.
     decider_model: str = field(default_factory=lambda: _env("DECIDER_MODEL", default="muse-spark-1.1"))
-    jev_base_url: str | None = field(default_factory=lambda: _env(
-        "JEV_BASE_URL", "KEV_BASE_URL",
-        default=BASETEN if _env("BASETEN_API_KEY") and not _env("MODEL_API_KEY", "META_API_KEY") else None))
-    jev_api_key: str = field(default_factory=lambda: _env("JEV_API_KEY", "KEV_API_KEY", "BASETEN_API_KEY", default="local"))
-    jev_model: str = field(default_factory=lambda: _env(
-        "JEV_MODEL", default="decision-models/baseten-mammoth-27b-latest" if _env("BASETEN_API_KEY") and not _env("JEV_BASE_URL") else "kev-latest"))
-    jev_min_lift: float = field(default_factory=lambda: _float("JEV_MIN_LIFT", 2.5))
-    jev_timeout: float = field(default_factory=lambda: _float("JEV_TIMEOUT", 8))
+    decider_min_lift: float = field(default_factory=lambda: _float("DECIDER_MIN_LIFT", 2.5))
+    decider_timeout: float = field(default_factory=lambda: _float("DECIDER_TIMEOUT", 12))
 
     # Alerts.
     twilio_sid: str | None = field(default_factory=lambda: _env("TWILIO_ACCOUNT_SID"))
@@ -88,7 +73,7 @@ class Settings:
 
     # Listening.
     # Live speech-to-text: "whisper" (on this machine) or "muse" (Muse Voice Transcribe on the Meta
-    # Model API; needs MODEL_API_KEY or META_API_KEY, not a Baseten key). Whisper stays the default
+    # Model API; needs MODEL_API_KEY or META_API_KEY). Whisper stays the default
     # live: on the 22 scenes it started 20 against 18, because its word timings give the voice lock
     # tighter clips than Muse's speaker turns. Spoken Notice accounts use Muse whenever a key is set.
     stt_engine: str = field(default_factory=lambda: _env("STT_ENGINE", default="whisper"))
@@ -132,10 +117,6 @@ class Settings:
         return bool(self.meta_api_key)
 
     @property
-    def jev_ready(self) -> bool:
-        return bool(self.jev_base_url)
-
-    @property
     def sms_ready(self) -> bool:
         return bool(self.twilio_sid and self.twilio_token and self.twilio_from)
 
@@ -153,8 +134,7 @@ class Settings:
             "reviewer": (self.reviewer_model or self.meta_model) if self.muse_ready else "not configured",
             "writer": (self.writer_model or self.meta_model) if self.muse_ready else "templates",
             "debrief_speech": "Muse Voice Transcribe" if self.voice_api_key else f"Whisper {self.whisper_model}",
-            "jev": (self.jev_base_url if self.jev_ready else f"{self.decider_model} (Meta Model API)" if self.muse_ready
-                    else "not configured (fixed rules)"),
+            "decider": self.decider_model if self.muse_ready else "not configured (fixed rules)",
             "sms_and_calls": "Twilio" if self.sms_ready else "dry run",
             "email": self.smtp_host if self.email_ready else "dry run",
             "whisper": "Muse Voice Transcribe" if self.stt_engine == "muse" else f"Whisper {self.whisper_model}",

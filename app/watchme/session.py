@@ -10,7 +10,7 @@ One owner, one Watch Me session, and the agents that share it.
                                    ▼ marked, loud, or every 30 s
                                Analyst (Muse Spark) ── categories, exact quotes, reason
                                    ▼ score ≥ trigger
-                               Decider (Jev + rules) ── discard / ask / urgent ask
+                               Decider (Muse Spark + rules) ── discard / ask / urgent ask
                                    ▼ ask
                                Check-in ── "Are you OK?" ── owner's voice, PIN tap, or nothing
                                    ▼ no answer, "not OK", SOS or duress phrase, phone gone

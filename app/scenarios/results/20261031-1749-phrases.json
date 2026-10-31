@@ -1,0 +1,1175 @@
+[
+  {
+    "id": "party-drink",
+    "label": "harm",
+    "background": "party",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 9.8,
+    "delay": null,
+    "max_score": 0.4,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "other",
+        "text": "Wait.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Hey, you made it.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I got you a drink.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Thanks, I already have one.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "How do you know the door is open?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come on, finish your drink.",
+        "score": 0.4
+      },
+      {
+        "who": "other",
+        "text": "I made this one special.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I feel really dizzy.",
+        "score": 0.4
+      },
+      {
+        "who": "owner",
+        "text": "I think I need to sit down.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come upstairs with me alone.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "It's wider up there.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "No, I want to find my friends.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I love her.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "party-grab",
+    "label": "harm",
+    "background": "party",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 20.0,
+    "harm_at": 10.5,
+    "delay": 9.5,
+    "max_score": 0.9,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.90 >= 0.70 -> urgent ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "amazing tonight starts with me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Maybe later, I'm talking to my friend.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Don't be like that come here.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Get off me, don't touch me.",
+        "score": 0.9
+      },
+      {
+        "who": "other",
+        "text": "Relax, I'm just having fun.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Stop, let me go.",
+        "score": 0.8
+      },
+      {
+        "who": "owner",
+        "text": "I love you brought the speaker.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Who brought the speaker?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "mate is around here some.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "silence-threat",
+    "label": "harm",
+    "background": "quiet",
+    "started": true,
+    "asked": true,
+    "urgent": false,
+    "ask_at": 12.0,
+    "harm_at": 10.46,
+    "delay": 1.5,
+    "max_score": 0.9,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.60 >= 0.45 -> ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Sit down we need to talk about last night.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I don't want to talk about it.",
+        "score": 0.6
+      },
+      {
+        "who": "owner",
+        "text": "Don't tell anyone what happened, nobody will believe you anyway.",
+        "score": 0.9
+      },
+      {
+        "who": "owner",
+        "text": "I want to leave now.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "You're not going anywhere until you promise.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "walk-home",
+    "label": "harm",
+    "background": "street",
+    "started": true,
+    "asked": true,
+    "urgent": false,
+    "ask_at": 12.0,
+    "harm_at": 2.88,
+    "delay": 9.1,
+    "max_score": 0.6,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.60 >= 0.45 -> ask (rules only)"
+      },
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.60 >= 0.45 -> ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Hey beautiful, where are you going so late?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Leave me alone.",
+        "score": 0.6
+      },
+      {
+        "who": "other",
+        "text": "Why are you walking so fast?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come here, I just want to talk.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I said leave me alone.",
+        "score": 0.6
+      },
+      {
+        "who": "owner",
+        "text": "Help.",
+        "score": 0.4
+      },
+      {
+        "who": "owner",
+        "text": "Hey, is everything okay over there?",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "they-talk-about-her",
+    "label": "harm",
+    "background": "party",
+    "started": false,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 6.99,
+    "delay": null,
+    "max_score": 0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "date-pressure",
+    "label": "harm",
+    "background": "quiet",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 11.78,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I'm glad you came over, get comfortable.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I should probably head home soon.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I have class early.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "You came all the way here, don't make this weird.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I really want to go home now.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Omi after dinner just stay a little longer.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Please, I said I want to go home.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "catcall",
+    "label": "harm",
+    "background": "street",
+    "started": true,
+    "asked": true,
+    "urgent": false,
+    "ask_at": 8.0,
+    "harm_at": 2.99,
+    "delay": 5.0,
+    "max_score": 0.7,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.50 >= 0.45 -> ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Smile for me, baby nice ass.",
+        "score": 0.5
+      },
+      {
+        "who": "owner",
+        "text": "Come over here and sit on my lap.",
+        "score": 0.5
+      },
+      {
+        "who": "owner",
+        "text": "Don't talk to me like that.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "You know you want it.",
+        "score": 0.7
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "stranger-stop",
+    "label": "harm",
+    "background": "bar",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 12.0,
+    "harm_at": 9.25,
+    "delay": 2.8,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": true,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Where is the bell?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "phone for a second.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Why, Snow.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Stop watching, stop watching.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "There it's off now come with me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Are you carrying too much water to get out of the house?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Where is the bathroom?",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "rideshare",
+    "label": "harm",
+    "background": "street",
+    "started": true,
+    "asked": true,
+    "urgent": false,
+    "ask_at": 16.0,
+    "harm_at": 6.6,
+    "delay": 9.4,
+    "max_score": 0.6,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.60 >= 0.45 -> ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "This isn't the way to my address.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "It's a shortcut just relax.",
+        "score": 0.3
+      },
+      {
+        "who": "owner",
+        "text": "Please stop the car.",
+        "score": 0.6
+      },
+      {
+        "who": "owner",
+        "text": "Let me out here.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Juddupons it back, Rills",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "ex-threat",
+    "label": "harm",
+    "background": "quiet",
+    "started": true,
+    "asked": true,
+    "urgent": false,
+    "ask_at": 16.0,
+    "harm_at": 2.86,
+    "delay": 13.1,
+    "max_score": 0.9,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": false,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.60 >= 0.45 -> ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Why did you block me?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Answer me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I told you were done, please leave.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "If you call anyone, you'll regret it.",
+        "score": 0.6
+      },
+      {
+        "who": "other",
+        "text": "I'll hurt you.",
+        "score": 0.9
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "dizzy-alone",
+    "label": "harm",
+    "background": "bar",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 12.0,
+    "harm_at": 5.63,
+    "delay": 6.4,
+    "max_score": 0.8,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.80 >= 0.70 -> urgent ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Did you see the phone?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Hey, where did everyone go?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I feel weird.",
+        "score": 0.4
+      },
+      {
+        "who": "owner",
+        "text": "What did you put in my drink?",
+        "score": 0.8
+      },
+      {
+        "who": "other",
+        "text": "Nothing you just had too much.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come with me, I'll take you home.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I can't feel my legs.",
+        "score": 0.7
+      },
+      {
+        "who": "other",
+        "text": "That class is so my roommate is around here",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "party-banter",
+    "label": "ok",
+    "background": "party",
+    "started": false,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "flirting",
+    "label": "ok",
+    "background": "bar",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I really like your jacket, where did you get it?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Thanks a thrift store downtown.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Can I get your number?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "No pressure at all.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Sure, I'd like that.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "to get food after the bath song.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "That song is so good.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "movie-talk",
+    "label": "ok",
+    "background": "quiet",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 12.0,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.9,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.90 >= 0.70 -> urgent ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "The best scene is when the villain says, I'll kill you, and then the lights go out.",
+        "score": 0.9
+      },
+      {
+        "who": "owner",
+        "text": "And she screams help and nobody comes.",
+        "score": 0.4
+      },
+      {
+        "who": "owner",
+        "text": "So creepy.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I couldn't sleep after that movie.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "tv-news",
+    "label": "ok",
+    "background": "tv",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Can you pass me the remote?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Here do you want pizza or tacos tonight?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Tacos definitely.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "officers ask anyone with information to call the tip line.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "In sports, the home team won their",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "retelling",
+    "label": "ok",
+    "background": "quiet",
+    "started": true,
+    "asked": true,
+    "urgent": true,
+    "ask_at": 8.0,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.8,
+    "decisions": [
+      {
+        "action": "ask",
+        "urgent": true,
+        "engine": "rules",
+        "probabilities": null,
+        "why": "score 0.80 >= 0.70 -> urgent ask (rules only)"
+      }
+    ],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Cousin Setter Boss told her nobody will believe you if you report it.",
+        "score": 0.8
+      },
+      {
+        "who": "owner",
+        "text": "That's awful.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "She should talk to the title IX office.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I'll send her the number tomorrow.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "game-night",
+    "label": "ok",
+    "background": "party",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.35,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Your turn, I'm going to destroy you this round.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "No way I'm winning this game.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Shut up and roll the dice already.",
+        "score": 0.35
+      },
+      {
+        "who": "owner",
+        "text": "Okay, okay, rolling now.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "How do you know so well?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "I love you so good.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "How do you know the host?",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "gym",
+    "label": "ok",
+    "background": "quiet",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.25,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Push push don't stop three more reps.",
+        "score": 0.25
+      },
+      {
+        "who": "owner",
+        "text": "I can't, my arms are dead.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Yes, you can last one good job.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "ordering-food",
+    "label": "ok",
+    "background": "bar",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Hi, what can I get for you?",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Can I get the chicken sandwich and eliminate?",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Sure thing, it'll be about 10 minutes.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "We should get food out of this.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "That class might be the most proudest.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "walk-with-friend",
+    "label": "ok",
+    "background": "street",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": null,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "text me when you get home okay.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I will.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Thanks for walking with me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Of course, same time next week.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "office-hours",
+    "label": "notice",
+    "background": "quiet",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 10.67,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Come in, close the door.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "So about your assay.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I wanted to ask how I could get it up to an A.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "It's close.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "We could talk about it over drinks at my place this weekend.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "I'd rather go over it here if that's okay.",
+        "score": 0.0
+      },
+      {
+        "who": "other",
+        "text": "Suit yourself, but be students don't usually get recommendation letters.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  },
+  {
+    "id": "meeting-joke",
+    "label": "notice",
+    "background": "quiet",
+    "started": true,
+    "asked": false,
+    "urgent": false,
+    "ask_at": null,
+    "harm_at": 3.09,
+    "delay": null,
+    "max_score": 0.0,
+    "decisions": [],
+    "stop_refused": false,
+    "transcript": [
+      {
+        "who": "owner",
+        "text": "Watch me.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Okay, let's start while look how dressed up she is today.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Someone's trying to get promoted.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "walk us through the numbers, try not to get emotional about them this time.",
+        "score": 0.0
+      },
+      {
+        "who": "owner",
+        "text": "Sure, revenue is up 8% this quarter.",
+        "score": 0.0
+      }
+    ],
+    "analyst": [],
+    "notice": null
+  }
+]

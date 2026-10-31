@@ -63,7 +63,6 @@ async def test_muse_decider_uses_the_same_rules(monkeypatch):
     from watchme import decider, muse
     from watchme.config import settings
     monkeypatch.setattr(settings, "meta_api_key", "test")
-    monkeypatch.setattr(settings, "jev_base_url", None)
 
     async def chat(system, user, **_):
         return answers.pop(0)

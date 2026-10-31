@@ -28,8 +28,8 @@ cd app
 uv sync                 # once
 ./run.sh                # http://127.0.0.1:8000 on this computer
 ./run.sh --https        # https://<Wi-Fi IP>:8443 for a phone on the same Wi-Fi
-uv run pytest           # 10 tests; speech is faked, so no microphone needed
-uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # 20 realistic scenes, see scenarios/
+uv run python -m pytest # 25 tests; speech is faked, so no microphone needed
+uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # 22 realistic scenes, see scenarios/
 ```
 
 Keys go in the repo-root `.env`; see [.env.example](.env.example). Everything is optional:
@@ -37,8 +37,6 @@ Keys go in the repo-root `.env`; see [.env.example](.env.example). Everything is
 | Set | You get | Without it |
 |---|---|---|
 | `MODEL_API_KEY` (or `META_API_KEY`) | every model agent on the Meta Model API (`api.meta.ai`): Muse Spark as Analyst, Decider and writer, Muse Wonder for Notice, Muse Voice Transcribe for spoken accounts. This is all the app needs. | phrase list and fixed rules |
-| `JEV_BASE_URL` | optional: a System One decision model for the Decider instead of Muse Spark (Jev, Kev, or Baseten's) | Muse Spark |
-| `BASETEN_API_KEY` | optional, used only when there is no Meta key: Muse Spark Open (`meta-models/muse-spark-open`) and Baseten's decision model | — |
 | `TWILIO_*` | real SMS and voice calls | dry run: shown on screen and in the log |
 | `SMTP_*` | real email | dry run |
 
@@ -88,7 +86,7 @@ Keep the screen on: the page asks for a wake lock, but a phone browser stops the
 | [watchme/lexicon.py](watchme/lexicon.py) | the instant phrase list (a starting list; refine with advocates) |
 | [watchme/notice.py](watchme/notice.py) | Notice mode: the types with their EEOC and Department of Education sources, the review, the notice book, patterns, export |
 | [watchme/muse.py](watchme/muse.py) | Analyst, alert writer, session summary |
-| [watchme/decider.py](watchme/decider.py) | the System One request and the "ask when unsure" rules |
+| [watchme/decider.py](watchme/decider.py) | the Decider: Muse Spark's probabilities and the "ask when unsure" rules |
 | [watchme/messenger.py](watchme/messenger.py) | Twilio and SMTP |
 | [watchme/store.py](watchme/store.py) | profile, append-only hash-chained log, clips |
 | [static/](static/) | the phone page: Watch (the orb, Emergency or Notice, the voice lock), Review, Notice, Setup; one HTML file, one stylesheet, one script, no framework |
@@ -113,10 +111,9 @@ Each agent can use its own model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITER_MOD
 |---|---|---|
 | Whisper base, a 2–4 s chunk | 240–420 ms | on CPU, int8 |
 | Voiceprint (ECAPA), a sentence | ~50 ms | the closest other voice scored 0.328; the stop bar is 0.36. See [scenarios/README.md](scenarios/README.md) |
-| Analyst (Muse Spark Open, reasoning low) | 0.7–1.1 s | coercion example 0.88; banter ("haha stop it") 0.0 |
 | Analyst (Muse Spark 1.3 on the Meta Model API, reasoning low; 2026-10-31) | 2.6–4.1 s | drink pressure 0.85; "don't tell anyone" 0.75; banter and a gym trainer 0.0. At the default effort it reasoned for 1,500 tokens and cut its answer off |
-| Decider (Muse Spark 1.1 on the Meta Model API; 2026-10-31) | ~2 s | on the 22 scenes: 9 of 11 harmful asked, 0 of 9 needless check-ins, the same as Baseten's mammoth-27b (median 0.26 s; 2026-10-29), which is still an option |
-| Alert text (Muse Spark Open) | 2.9 s | template fallback is instant |
+| Decider (Muse Spark 1.1 on the Meta Model API; 2026-10-31) | ~2 s | on the 22 scenes: 9 of 11 harmful asked, 0 of 9 needless check-ins |
+| Alert text (Muse Spark 1.3) | a few seconds, 10 s timeout | template fallback is instant |
 
 Detection and voice-lock results on the 20 test scenes are in [scenarios/README.md](scenarios/README.md). The scenes are synthetic and n is small: calibrate with real people before relying on them.
 

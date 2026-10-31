@@ -29,13 +29,55 @@ On the Charm, Watch Me runs in **stealth**: while it listens and watches, the pe
 
 *Concept renders made with Muse Image (Meta Model API, [demo/make/charm_images.py](demo/make/charm_images.py)), using a Meta product photo of the Charm and the app's real screens as references. Not photos of a working product: today Watch Me runs on the phone, and the Charm becomes its always-on microphone once Meta opens it to developers.*
 
+## Run it
+
+You need macOS or Linux, [uv](https://docs.astral.sh/uv/) and Python 3.11+. For the phone app, you also need Node 20+, plus Xcode and CocoaPods (iPhone) or Android Studio and JDK 17 (Android).
+
+**1. Add the key.** Every model agent runs on the Meta Model API. Without a key the app still runs, with the phrase list and fixed rules.
+
+```bash
+cp -n app/.env.example .env   # (-n keeps an existing .env) then set MODEL_API_KEY=<your Meta Model API key>
+```
+
+**2. Run the web app.**
+
+```bash
+cd app
+uv sync                       # once: installs the server, Whisper and the voiceprint model
+./run.sh                      # open http://127.0.0.1:8000
+./run.sh --https              # https://<Wi-Fi IP>:8443, for a phone's browser on the same Wi-Fi (needs mkcert; see app/README.md)
+```
+
+Open Setup, enter your name, PIN and contacts, and record your voice. Then go to Watch, turn on listening and say "Watch me".
+
+**3. Build and run the iPhone or Android app.** It uses native modules, so it needs a development build; Expo Go won't work.
+
+```bash
+cd app && ./run.sh --lan      # in one terminal: the server for the app; prints the address, e.g. 192.168.1.20:8000
+
+cd mobile                     # in another terminal
+npm install
+npx expo run:ios              # the iOS simulator or a connected iPhone
+npx expo run:android          # an Android emulator or a connected phone
+```
+
+In the app, open Setup › Server, enter the address `run.sh --lan` printed, and tap Connect. Without a Mac or Android Studio, Expo can build it in the cloud: `npx eas-cli@latest build:configure` once, then `npx eas-cli@latest build --profile development`.
+
+**4. Test it.**
+
+```bash
+cd app
+uv run python -m pytest       # 25 tests; speech is faked, so no microphone needed
+uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
+```
+
 ## What was built during the hackathon
 
 The building period was Oct 27 – Nov 4, 2026. Everything that runs was written during it.
 
 - **Before the event (Oct 18), no code.** The idea and planning notes only: [MODELS.md](MODELS.md), [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md), and early drafts of this README and [DESIGN.md](DESIGN.md), which then described a "harassment and assault safety assistant" concept.
 - **Ideas from Kibaek's earlier projects, re-implemented here; no code copied:**
-  - asking a "System One" decision model to pick from a fixed menu of actions, with a probability for each (from the Deterrence simulator);
+  - asking a model for a probability for each action on a fixed menu, and letting rules pick the action (from the Deterrence simulator);
   - hash-chained logs that show if anything was changed (from Knowledge-Addressed Transport).
 - **Built during the hackathon:**
   - [app/](app/README.md): the server and its agents, the voice lock, Emergency and Notice modes, offline catch-up, and the web page;
@@ -54,7 +96,6 @@ The building period was Oct 27 – Nov 4, 2026. Everything that runs was written
 | Muse Wonder 1.0 (Meta Model API) | the Notice reviewer: which exact words match how the EEOC describes harassment |
 | Muse Voice Transcribe 1.0 (Meta Model API) | spoken Notice accounts; checking the demo's synthetic voices |
 | Muse Image 1.0 (Meta Model API) | the Muse Charm concept images |
-| Muse Spark Open (open weights) | optional: the Analyst through a hosted provider when there is no Meta key |
 
 ## The idea
 
@@ -79,7 +120,7 @@ The motivating case is campus sexual assault. In 2026 a former student's lawsuit
 6. **Watch Me**, the safety mode, built in [app/](app/README.md) (phone now, Meta's **Muse Charm** pendant once it ships):
    - The owner says "Watch me" for a party, a date or a walk home. Only their voice, checked against a voiceprint, can start or stop it.
    - It transcribes what it hears, telling the owner apart from other voices. The lines are scored as they come in, colour-coded for later review, and the audio around flagged moments is kept.
-   - A team of agents works on it. Muse Spark analyses and quotes the exact words. A Jev-style decision model chooses discard, ask or alert in about 0.1 s, and asks when unsure.
+   - A team of agents works on it. Muse Spark analyses and quotes the exact words. Muse Spark, as the Decider, gives a probability for discard, ask or alert in about 2 s, and fixed rules make it ask when unsure.
    - It first asks the owner "Are you OK?". If there is no answer, or they say the SOS phrase, it texts, calls and emails the people they chose. A duress phrase makes it look switched off while it keeps listening and sends the alert.
 7. **Notice**, for school and work, built in [app/](app/README.md). Harassment there is often a "joke" or a comment people only recognise later. She tells the app what happened (or records a class or meeting where one-party consent applies). Muse Spark shows which exact words match how the EEOC and the Department of Education describe harassment, and links each definition. Every entry goes into a dated, hash-chained record, with patterns counted per person ("3 times from Prof. R since Oct 14"). No alerts, no verdicts: only she decides what it was.
 

@@ -35,16 +35,17 @@ Use the numbers to compare versions of the app, not as a claim about real-world 
 
 ## Results (2026-10-31, realistic voices)
 
-Agents: Muse Spark 1.3 on the Meta Model API (reasoning low) as the Analyst, mammoth-27b on Baseten as the Decider.
+Agents, all on the Meta Model API (reasoning low): Muse Spark 1.3 as the Analyst, Muse Spark 1.1 as the Decider. 22 scenes, with a sentence cut off at the end of a chunk held for the next one.
 
 | | Phrase list and fixed rules | Agents |
 |---|---|---|
-| Started by the owner's "Watch me" | 19 of 20 | 19 of 20 |
+| Started by the owner's "Watch me" | 20 of 22 | 20 of 22 |
 | Harmful scenes with an "Are you OK?" | 8 of 11 | **9 of 11** |
-| Harmless scenes with a needless check-in | 2 of 9 | **0 of 9** |
-| First harmful line to check-in | median 5.1 s, worst 13.1 s | median 5.0 s, worst 13.1 s |
+| Harmless scenes with a needless check-in | 2 of 9 ("movie-talk", "retelling") | **0 of 9** |
+| First harmful line to check-in | median 9.1 s, worst 13.1 s | median 5.4 s, worst 13.1 s |
+| School and work scenes without a check-in | 2 of 2 | 2 of 2 |
 
-Full tables: `results/20261030-0003-phrases.md` and `results/20261031-1112-agents.md`.
+Full tables: `results/20261031-1749-phrases.md` and `results/20261031-1614-agents.md`.
 
 **The two misses:**
 - **they-talk-about-her.** Party chatter overlaps her "Watch me", so the start bar refuses it and the session never starts.
@@ -75,7 +76,7 @@ Every agent can use a different model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITE
 | Listener (live) | speech-to-text, every 4 s | **Whisper base** on this machine | Its word timings give the voice lock tight clips. With Muse Voice Transcribe, 18 of 22 scenes started against 20 of 22: its speaker turns include the noise around "Watch me", so the owner's match fell below the start bar. Check-ins also came later (median 9.5 s against 5.0 s). |
 | Spoken Notice account | speech-to-text of a whole recording | **Muse Voice Transcribe** | 33 s of audio in 5.4 s, with clean speaker turns (A and B) in diarization mode. No voice lock is involved. |
 | Analyst (live) | score the last minute | **Muse Spark 1.3**, reasoning low | Spark 1.1 and Muse Wonder caught as many scenes (8 of 11 each, against 9 of 11). The difference was Whisper missing "Watch me" in one scene, not the Analyst. Wonder added a needless check-in ("retelling"). Spark 1.3 is the newest and had none. |
-| Decider | discard, ask or alert | **Muse Spark 1.1** (Meta Model API), reasoning low | All on Meta, the 22 scenes give the same result as Baseten's mammoth-27b did: 9 of 11 harmful scenes asked, 0 of 9 needless check-ins, median 5.4 s (`results/20261031-1614-agents.md`). It answers in about 2 s against 0.26 s, still inside one 4-second chunk; it chose an urgent ask in 3 scenes where mammoth chose 5. Spark 1.3 decided the same on test moments but took 4–10 s. |
+| Decider | discard, ask or alert | **Muse Spark 1.1** (Meta Model API), reasoning low | On the 22 scenes: 9 of 11 harmful scenes asked, 0 of 9 needless check-ins, median 5.4 s (`results/20261031-1614-agents.md`). It answers in about 2 s, inside one 4-second chunk. Spark 1.3 decided the same on test moments but took 4–10 s. |
 | Notice reviewer | name what matched, afterwards | **Muse Wonder 1.0**, reasoning low | Results below: right on 40 of 40 public training cases and 16 of 16 of ours, median 4.5 s. |
 | Writer | alert text, session summaries | Muse Spark 1.3 | Not compared; the alert has a 10 s timeout and a template fallback. |
 

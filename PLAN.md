@@ -20,13 +20,13 @@ Applications close **Oct 25, 11:59 PM ET**. Apply early; spots are capped at 20,
 
 6. Safety mode on the phone (**built as Watch Me, 2026-10-29**: [app/](app/README.md)):
    - a rolling audio buffer and on-device triggers (distress words, screaming, missed check-in);
-   - speech-to-text, then Jev scores discard, ask "are you OK?", or alert, and asks when unsure;
+   - speech-to-text, then Muse Spark scores discard, ask "are you OK?", or alert, and the rules ask when unsure;
    - Muse Spark explains the decision and writes the alert message.
    The Charm ships in December and has no SDK yet, so show it in the pitch as the target device: a fingerprint touch for "I'm OK".
 
 ## Status on Oct 29 (six days left)
 
-Built and tested (10 tests plus a WebSocket run with real speech and Baseten models):
+Built and tested (10 tests plus a WebSocket run with real speech and hosted models; since Oct 31 every model runs on the Meta Model API):
 - voice start and stop;
 - the agents;
 - check-in and alerts (dry run until Twilio and SMTP keys are set);

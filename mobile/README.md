@@ -50,7 +50,7 @@ The web page in `app/static/` has the same hold, slide and enter animations. It 
    npx expo run:android    # emulator or a connected phone (Android Studio, JDK 17)
    ```
 
-   Without a Mac or Android Studio: `npx eas-cli@latest build --profile development`.
+   Without a Mac or Android Studio, Expo can build it in the cloud: `npx eas-cli@latest build:configure` once, then `npx eas-cli@latest build --profile development`.
 
 3. **In the app, open Setup.**
    - **Server:** enter the address from step 1 and tap Connect. For a development build, `EXPO_PUBLIC_SERVER_URL=192.168.1.20:8000 npx expo run:ios` fills it in.

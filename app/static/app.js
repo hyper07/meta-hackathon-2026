@@ -796,10 +796,10 @@ async function testVoice() {
 }
 
 function renderServices(s) {
-  const names = { muse_spark: "Analyst (live)", reviewer: "Notice reviewer", writer: "Alerts and summaries", jev: "Decider",
+  const names = { muse_spark: "Analyst (live)", reviewer: "Notice reviewer", writer: "Alerts and summaries", decider: "Decider",
                   sms_and_calls: "SMS and calls", email: "Email", whisper: "Speech-to-text (live)", debrief_speech: "Speech-to-text (your account)",
                   recording_rule: "Recording rule" };
-  const short = (v) => String(v).replace(/^https?:\/\//, "").replace("decision-models/", "").replace("inference.baseten.co", "Baseten");
+  const short = (v) => String(v).replace(/^https?:\/\//, "");
   $("services").innerHTML = Object.entries(s).map(([k, v]) => `<dt>${names[k] || k}</dt><dd>${esc(short(v))}</dd>`).join("");
 }
 

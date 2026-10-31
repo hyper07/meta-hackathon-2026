@@ -98,14 +98,14 @@ The detector alone never notifies anyone. Inferring that someone is unconscious 
 
 ## 6. Watch Me (safety mode): the phone now, Muse Charm later
 
-The user switches it on for a specific situation: a party, a date, walking home. It listens to the sound around them, a fast decision model (Jev) picks what to do, and the Muse Spark agent explains it and talks with the user.
+The user switches it on for a specific situation: a party, a date, walking home. It listens to the sound around them, a Muse Spark decider picks what to do from a fixed menu, and the Muse Spark agent explains it and talks with the user.
 
 **Built (2026-10-29):** [app/](app/README.md), with the agents described there. Where it goes further than the plan below:
 - **Started and stopped by voice.** "Watch me" and "stop watching" work only in the owner's voice, checked by a WavLM-SV voiceprint. Another voice saying "stop watching" is refused and triggers a check-in. The PIN is a fallback.
 - **A duress phrase.** It makes the screen show "off" while recording continues and the alert goes out.
 - **The phone dropping off counts as a missed check-in.** If it stops sending while watching, the alert goes out unless it comes back within 30 s.
 - **Transcripts.** Every line heard while watching is written to the owner's hash-chained log, tagged owner or other and colour-coded by score. Audio is kept only around flagged moments: the chunk before and 30 s after.
-- **Models.** Muse Spark Open and the `baseten-joey-2b` decision model (same System One API as Jev) on Baseten; Muse Spark 1.3 on the Meta Model API once a key is set.
+- **Models.** All on the Meta Model API: Muse Spark 1.3 as the Analyst and writer, Muse Spark 1.1 as the Decider, Muse Wonder 1.0 for Notice reviews, Muse Voice Transcribe for spoken accounts. Live speech-to-text and the voiceprint run on the device.
 - **What leaves the device.** This replaces the stricter rule under "Rules that keep it safe" below. Audio never leaves the machine running the server: speech-to-text and the voiceprint run locally. The **text** of the last minute goes to Muse Spark when a line is marked or loud, and also every 30 s, so that harassment without keywords is caught. Set `ANALYST_SWEEP_S=0` to send text only on a mark. Say this plainly in the pitch.
 
 **Hardware**
@@ -124,7 +124,7 @@ The user switches it on for a specific situation: a party, a date, walking home.
               ▼ trigger
    speech-to-text of the buffer (on device)
               ▼
-   fast decision: Jev (a probability for each option on a fixed menu; under a second)
+   decision: Muse Spark (a probability for each option on a fixed menu; about 2 s)
      reads the transcript and context (time, place type, the user's own settings) as its state,
      scores the menu, and the rules below turn the scores into one action:
        discard   → discard the buffer
@@ -138,23 +138,19 @@ The user switches it on for a specific situation: a party, a date, walking home.
      alert message for the contacts, and runs the conversation afterwards (see §2)
 ```
 
-**Decision step: Jev**
+**Decision step: Muse Spark on a fixed menu**
 
-The same pattern as the Jev commanders in Kibaek's Deterrence simulator. There, Kev-4B answered a 1,545-token state in 0.24 s on a cached state and 3.6 s cold (M5 Max). An LLM commander took about 30 s per decision.
+The pattern comes from the commanders in Kibaek's Deterrence simulator: the model scores a fixed menu, and rules, not the model, pick the action. Every model runs on the Meta Model API.
 
-- **Why a menu and not free text.** Jev is TypeSafe's "System One" decision model; Kev is its open-weights family, which runs locally through MLX and can be fine-tuned. Instead of writing an answer, it returns a calibrated probability for every option. It cannot pick an action that is not on the menu, needs no JSON repair and never refuses. In an emergency, that matters more than eloquence.
-- **The menu.** `discard`, `ask`, `alert`. The state is the transcript plus context, written as a short text brief.
+- **Why a menu and not free text.** Muse Spark 1.1 (`DECIDER_MODEL`) returns a probability for every option as JSON. Anything off the menu or unreadable falls back to the rules, which ask. In an emergency, that matters more than eloquence.
+- **The menu.** `discard`, `ask`, `alert`. The state is the transcript plus context and the Analyst's reading, written as a short text brief.
 - **Rules between the scores and the action.** In Deterrence, the rule was "hold when unsure". Here, it is **ask when unsure**:
   - `discard` only when its probability is at least `MIN_LIFT` times a blind guess (start at 2.5 of 3 options, so p ≥ 0.83).
   - Anything else becomes `ask`. Uncertainty never discards silently and never alerts silently.
   - `alert` without asking happens only on the user's own SOS phrase, a rule they set. Otherwise alerting needs a missed "ask".
   - The asymmetry is deliberate: a needless "Are you OK?" costs a tap, while a missed emergency costs far more.
-- **Training without hand labels** (stretch). As in Deterrence, a teacher labels and a small model learns:
-  - Muse Spark labels synthetic party, date and walk-home transcripts written with advocates' guidance;
-  - Kev is fine-tuned with LoRA on those labels;
-  - it is evaluated on a held-out, human-checked set: recall on real distress, and how often it asks needlessly.
-- **Where it runs.** For the demo, Kev-4B on a laptop or a hosted Jev endpoint, called after a trigger fires. On a phone, the 0.8B size is the candidate; its speed there is not measured yet.
-- **Open question.** Jev and Kev are not Meta models (Kev is built on Qwen3.5). Check the hackathon rules once they are published. If outside models are not allowed, use the same menu-scoring with a small Llama: score each option's likelihood and apply the same rules.
+- **Measured.** About 2 s per decision, inside one 4-second chunk. On the 22 test scenes: 9 of 11 harmful scenes asked, 0 of 9 needless check-ins ([app/scenarios/README.md](app/scenarios/README.md)).
+- **Later.** A small Llama fine-tuned with LoRA on Muse Spark's labels could make the same decision on the phone; it would be evaluated on a held-out, human-checked set (recall on real distress, and how often it asks needlessly).
 
 **Rules that keep it safe**
 - **Listening.** Only while safety mode is on, with a visible indicator. Sound stays in memory and is overwritten. Nothing leaves the device unless a trigger fires.
@@ -197,7 +193,7 @@ Built 2026-10-31 in [app/watchme/notice.py](app/watchme/notice.py). The emergenc
 
 | Part | Choice |
 |---|---|
-| Models | Meta Model API (Muse Spark series), or Llama via a hosted endpoint; Llama Guard for safety classification; Jev (hosted) or Kev (local, MLX) for safety mode's fast decision |
+| Models | Meta Model API: Muse Spark, Muse Wonder, Muse Voice Transcribe, Muse Image; Llama Guard for safety classification |
 | App | React Native or a web app (Next.js); share-sheet import of chat exports |
 | Backend | FastAPI; Postgres plus object storage for the vault; per-user encryption keys |
 | Alerts | Twilio SMS or push notifications; a check-in timer |

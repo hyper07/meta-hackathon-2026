@@ -1,11 +1,8 @@
 """
-The Decider: one of three actions, in about a second, from a fixed menu.
+The Decider: one of three actions, from a fixed menu.
 
-Jev (TypeSafe's hosted "System One" model) or Kev (its open-weights family,
-local or on Modal) answers `POST /v1/systemone` with a probability for every
-option, the same client shape as the Deterrence commanders. Then the rules
-below, not the model, pick the action. The Deterrence rule was "hold when
-unsure"; here it is "ask when unsure":
+Muse Spark (Meta Model API, DECIDER_MODEL) gives a probability for every option, as JSON.
+Then the rules below, not the model, pick the action: "ask when unsure".
 
   * discard  only when its probability is at least MIN_LIFT x a blind guess
              (2.5 of 3 options = 0.83). Uncertainty never discards.
@@ -15,17 +12,13 @@ unsure"; here it is "ask when unsure":
              phrase, and otherwise only when an ask goes unanswered.
 
 A needless "Are you OK?" costs the owner a tap; a missed emergency costs far more.
-With a Meta key and no System One endpoint, Muse Spark on the Meta Model API gives the same
-distribution (a probability for each option, as JSON) and the same rules decide. Without either,
-the rules run on the Analyst's score alone.
+Without a Meta key, or when the call fails, the rules run on the Analyst's score alone.
 """
 
 from __future__ import annotations
 
 import json
 import time
-
-import httpx
 
 from . import muse
 from .config import settings
@@ -39,9 +32,15 @@ INSTRUCTIONS = (
     "check costs the owner one tap."
 )
 
+PROMPT = INSTRUCTIONS + """
 
-def build_request(transcript: str, analysis: dict, context: dict) -> dict:
-    state = {
+You get the context, the Analyst's reading and the transcript. Give a probability for each option,
+honest about uncertainty, summing to 1. Answer with JSON only:
+{"discard": 0.0-1.0, "ask": 0.0-1.0, "alert": 0.0-1.0, "in_danger": "yes|no|unclear", "why": "one short sentence"}"""
+
+
+def build_state(transcript: str, analysis: dict, context: dict) -> dict:
+    return {
         "context": "\n".join(f"{k}: {v}" for k, v in context.items()),
         "analyst": (
             f"score {analysis.get('score', 0):.2f}; categories {', '.join(analysis.get('categories') or []) or 'none'}; "
@@ -49,18 +48,11 @@ def build_request(transcript: str, analysis: dict, context: dict) -> dict:
         ),
         "transcript (last minute, oldest first)": transcript,
     }
-    return {
-        "state": state,
-        "questions": {
-            "action": {"type": "choice", "instructions": INSTRUCTIONS, "criteria": {o: None for o in OPTIONS}},
-            "in_danger": {"type": "noul", "instructions": "Is the owner in danger right now?"},
-        },
-    }
 
 
 def apply_rules(probabilities: dict[str, float]) -> tuple[str, bool, str]:
     """(action, urgent, why) from the model's distribution. The rules, not the argmax, decide."""
-    bar = settings.jev_min_lift / len(OPTIONS)
+    bar = settings.decider_min_lift / len(OPTIONS)
     p_discard = float(probabilities.get("discard", 0))
     p_alert = float(probabilities.get("alert", 0))
     top = max(OPTIONS, key=lambda o: probabilities.get(o, 0))
@@ -74,27 +66,19 @@ def apply_rules(probabilities: dict[str, float]) -> tuple[str, bool, str]:
 
 
 def rules_only(score: float) -> tuple[str, bool, str]:
-    """No Jev: the Analyst's score alone, through the same thresholds as the colour bands."""
+    """No Muse Spark: the Analyst's score alone, through the same thresholds as the colour bands."""
     if score >= 0.7:
-        return "ask", True, f"score {score:.2f} >= 0.70 -> urgent ask (rules only, Jev not configured)"
+        return "ask", True, f"score {score:.2f} >= 0.70 -> urgent ask (rules only)"
     if score >= settings.trigger_score:
         return "ask", False, f"score {score:.2f} >= {settings.trigger_score:.2f} -> ask (rules only)"
     return "discard", False, f"score {score:.2f} below trigger (rules only)"
 
 
-MUSE_PROMPT = INSTRUCTIONS + """
-
-You get the context, the Analyst's reading and the transcript. Give a probability for each option,
-honest about uncertainty, summing to 1. Answer with JSON only:
-{"discard": 0.0-1.0, "ask": 0.0-1.0, "alert": 0.0-1.0, "in_danger": "yes|no|unclear", "why": "one short sentence"}"""
-
-
 async def decide_with_muse(transcript: str, analysis: dict, context: dict, started: float) -> dict:
-    """The same menu and rules, with Muse Spark giving the distribution."""
-    state = build_request(transcript, analysis, context)["state"]
+    state = build_state(transcript, analysis, context)
     answer = muse._first_json(await muse._chat(
-        MUSE_PROMPT, "\n\n".join(f"{k}:\n{v}" for k, v in state.items()),
-        max_tokens=1200, timeout=settings.jev_timeout + 4, model=settings.decider_model))
+        PROMPT, "\n\n".join(f"{k}:\n{v}" for k, v in state.items()),
+        max_tokens=1200, timeout=settings.decider_timeout, model=settings.decider_model))
     raw = {o: max(0.0, float(answer.get(o, 0) or 0)) for o in OPTIONS}
     total = sum(raw.values())
     if total <= 0:
@@ -110,42 +94,13 @@ async def decide_with_muse(transcript: str, analysis: dict, context: dict, start
 
 async def decide(transcript: str, analysis: dict, context: dict) -> dict:
     started = time.perf_counter()
-    if not settings.jev_ready and settings.muse_ready:
-        try:
-            return await decide_with_muse(transcript, analysis, context, started)
-        except Exception as error:
-            # A failed call must never mean "discard": fall back to the rules, which ask on any trigger.
-            action, urgent, why = rules_only(max(float(analysis.get("score", 0)), settings.trigger_score))
-            return {"action": action, "urgent": urgent, "why": f"Muse Spark failed ({type(error).__name__}); {why}",
-                    "engine": "rules", "ms": round((time.perf_counter() - started) * 1000)}
-    if not settings.jev_ready:
+    if not settings.muse_ready:
         action, urgent, why = rules_only(float(analysis.get("score", 0)))
         return {"action": action, "urgent": urgent, "why": why, "engine": "rules", "ms": 0}
-    url = settings.jev_base_url.rstrip("/")
-    for suffix in ("/v1/systemone", "/v1"):
-        if url.endswith(suffix):
-            url = url[: -len(suffix)]
     try:
-        async with httpx.AsyncClient(timeout=settings.jev_timeout) as client:
-            response = await client.post(
-                url + "/v1/systemone",
-                headers={"Authorization": f"Bearer {settings.jev_api_key}"},
-                json={**build_request(transcript, analysis, context), "model": settings.jev_model},
-            )
-            response.raise_for_status()
-            answers = response.json().get("answers") or {}
-        probabilities = (answers.get("action") or {}).get("probabilities") or {}
-        if not any(o in probabilities for o in OPTIONS):
-            raise ValueError(f"no menu option in answer: {answers.get('action')!r}")
-        action, urgent, why = apply_rules(probabilities)
-        return {
-            "action": action, "urgent": urgent, "why": why, "engine": "jev",
-            "probabilities": {o: round(float(probabilities.get(o, 0)), 3) for o in OPTIONS},
-            "in_danger": (answers.get("in_danger") or {}).get("noul"),
-            "ms": round((time.perf_counter() - started) * 1000),
-        }
+        return await decide_with_muse(transcript, analysis, context, started)
     except Exception as error:
-        # A dead link must never mean "discard": fall back to the rules, which ask on any trigger.
+        # A failed call must never mean "discard": fall back to the rules, which ask on any trigger.
         action, urgent, why = rules_only(max(float(analysis.get("score", 0)), settings.trigger_score))
-        return {"action": action, "urgent": urgent, "why": f"Jev failed ({type(error).__name__}); {why}",
+        return {"action": action, "urgent": urgent, "why": f"Muse Spark failed ({type(error).__name__}); {why}",
                 "engine": "rules", "ms": round((time.perf_counter() - started) * 1000)}

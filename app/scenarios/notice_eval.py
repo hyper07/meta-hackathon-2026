@@ -36,7 +36,7 @@ async def main(args: list[str]) -> None:
     else:
         from .notice_cases import CASES
     if not settings.muse_ready:
-        raise SystemExit("Notice needs Muse Spark: set MODEL_API_KEY (or META_API_KEY or BASETEN_API_KEY).")
+        raise SystemExit("Notice needs Muse Spark: set MODEL_API_KEY (or META_API_KEY).")
     rows = []
     for case in CASES:
         t0 = time.time()

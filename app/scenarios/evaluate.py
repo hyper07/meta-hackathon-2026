@@ -163,7 +163,7 @@ async def main(args: list[str]) -> None:
     phrases_only = "--phrases-only" in args
     only = [a for a in args if not a.startswith("--")]
     if phrases_only:
-        settings.meta_api_key, settings.jev_base_url = None, None
+        settings.meta_api_key = None
     settings.checkin_timeout_s = settings.urgent_checkin_timeout_s = 10**6   # measure the ask, not the alert
     messenger.alert_all = _dry_run
     clock = SimTime()
@@ -180,7 +180,7 @@ async def main(args: list[str]) -> None:
         rows.append(row)
         print(f"{row['id']:20s} {row['label']:4s} asked={str(row['asked']):5s} delay={row['delay']} top={row['max_score']:.2f}")
 
-    mode = "phrase list and fixed rules" if phrases_only else f"agents: {settings.analyst_model or settings.describe()['muse_spark']} + {settings.jev_model if settings.jev_ready else settings.decider_model if settings.muse_ready else 'rules'}"
+    mode = "phrase list and fixed rules" if phrases_only else f"agents: {settings.analyst_model or settings.describe()['muse_spark']} + {settings.decider_model if settings.muse_ready else 'rules'}"
     report = summarise(rows, mode)
     RESULTS.mkdir(exist_ok=True)
     stamp = real_time.strftime("%Y%m%d-%H%M")
