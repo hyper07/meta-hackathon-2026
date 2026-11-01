@@ -32,7 +32,7 @@ uv run python -m pytest # 25 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # 22 realistic scenes, see scenarios/
 ```
 
-Keys go in the repo-root `.env`; see [.env.example](.env.example). Everything is optional:
+Keys go in the repo-root `.env`; copy [.env.example](../.env.example) (`cp -n .env.example .env` from the repo root). Everything is optional:
 
 | Set | You get | Without it |
 |---|---|---|

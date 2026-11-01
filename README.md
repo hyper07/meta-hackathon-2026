@@ -36,7 +36,7 @@ You need macOS or Linux, [uv](https://docs.astral.sh/uv/) and Python 3.11+. For 
 **1. Add the key.** Every model agent runs on the Meta Model API. Without a key the app still runs, with the phrase list and fixed rules.
 
 ```bash
-cp -n app/.env.example .env   # (-n keeps an existing .env) then set MODEL_API_KEY=<your Meta Model API key>
+cp -n .env.example .env       # (-n keeps an existing .env) then set MODEL_API_KEY=<your Meta Model API key>
 ```
 
 **2. Run the web app.**
