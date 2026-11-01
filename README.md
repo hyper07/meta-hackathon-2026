@@ -146,17 +146,6 @@ A tool that reads other people's private conversations to find victims without t
 - **Self-installed use:** the person installs it for their own messages.
 - **Organization channels:** for example a campus app where students choose to enable the feature.
 
-## Hackathon facts (from the participant guide)
-
-| Item | Detail |
-|---|---|
-| Building period | Oct 27 – Nov 4, 2026 |
-| Submission | **Wed, Nov 4, 9:00 PM ET**: public repo, a 3-minute demo video, and the live product |
-| Judging | Nov 5–8; closing ceremony and finalists Nov 9; community vote Nov 16 |
-| Track | Indie |
-| Problem statement | Build for Your World |
-| Rules that matter here | public repo; new work only, clearly marked (above); the demo shows only what was built during the hackathon; rights to every asset used |
-
 ## Documents
 
 - [app/README.md](app/README.md): the Watch Me app: how to run it, its agents, and measured timings
