@@ -14,6 +14,8 @@ uv run python -m scenarios.build                    # renders scenarios/out/*.wa
 uv run python -m scenarios.evaluate                 # the agents as configured in .env
 uv run python -m scenarios.evaluate --phrases-only  # baseline: phrase list and fixed rules
 uv run python -m scenarios.evaluate party-drink     # one scene
+uv run python -m scenarios.evaluate --hearing=script      # the agents read the scripts (no speech-to-text)
+uv run python -m scenarios.evaluate --hearing=muse-whole  # the agents read Muse Voice Transcribe's transcript
 ```
 
 The evaluator always forces alerts to dry run: it never texts or calls anyone, whatever is in `.env`. Results go to `results/` as JSON plus a Markdown table.
@@ -106,15 +108,23 @@ Word errors count every extra word, and in the party and TV scenes both also tra
 
 On whole recordings Muse was far better where people talk over each other: party-grab 8% against 57%, stranger-stop 14% against 41%, dizzy-alone 14% against 63%, game-night 0% against 61%.
 
-The app, end to end on the 22 scenes (`results/20261031-1614-agents.md`, `20261101-0756-agents.md`, `20261101-0823-agents.md`):
+The app, end to end on the 22 scenes. The last three rows take live hearing out of the test: the agents read a transcript, handed over line by line in the 4-second chunk where each line ends (`--hearing`; `results/20261031-1614-agents.md`, `20261101-0756-agents.md`, `20261101-0823-agents.md`, `20261101-1109-agents-muse-whole.md`, `20261101-1104-agents-script.md`, `20261101-1111-phrases-script.md`):
 
-| Live chunks | What the Analyst reads | Started | Harmful asked | Needless | Check-in (median) |
+| What's heard | Who judges it | Started | Harmful asked | Needless | Check-in (median) |
 |---|---|---|---|---|---|
-| Whisper | Whisper's lines | 20 of 22 | 9 of 11 | 0 of 9 | 5.4 s |
-| Muse Voice Transcribe | Muse's lines | 19 of 22 | 8 of 11 | 0 of 9 | 9.5 s |
-| **Whisper** | **Muse Voice Transcribe, the last minute** | **20 of 22** | **9 of 11** | **0 of 9** | **5.4 s** |
+| Whisper, 4 s chunks | Muse agents, reading Whisper's lines | 20 of 22 | 9 of 11 | 0 of 9 | 5.4 s |
+| Muse Voice Transcribe, 4 s chunks | Muse agents, reading Muse's lines | 19 of 22 | 8 of 11 | 0 of 9 | 9.5 s |
+| **Whisper, 4 s chunks** | **Muse agents, reading Muse Voice Transcribe's last minute** | **20 of 22** | **9 of 11** | **0 of 9** | **5.4 s** |
+| Muse Voice Transcribe's transcript of the whole recording | Muse agents | 19 of 22 | 10 of 11 | 0 of 9 | 9.5 s |
+| The script, word for word (perfect hearing) | Muse agents | 22 of 22 | **11 of 11** | **0 of 9** | 6.2 s |
+| The script, word for word | phrase list and fixed rules | 22 of 22 | 10 of 11 | 2 of 9 | 9.1 s |
 
 So each does what it measured best at. Whisper on 4-second chunks keeps check-ins fast and the voice lock tight. Muse on the whole last minute gives the Analyst the clearest transcript to quote from.
+
+**What the transcript rows show:**
+- **With perfect hearing, the Muse agents get every scene right:** 11 of 11 harmful scenes asked and 0 of 9 needless check-ins, including the two the app misses today (they-talk-about-her and date-pressure). So the remaining misses come from hearing and the voice lock, not from the Muse agents' judgment.
+- **The phrase list, on the same perfect transcript,** misses party-drink and checks in needlessly on movie-talk and retelling ("I'll kill you" in a film, someone else's story). The Muse agents read the context and discarded both (0.97 and 0.95 discard).
+- **Muse Voice Transcribe's whole-recording transcript** heard "Watch me" in all 22 scenes. But 3 sessions didn't start (party-drink, party-banter, flirting): its turn times are coarse, so the voiceprint window held party noise or another voice, and the match fell below the start bar (0.04–0.17 against 0.20). Muse's transcript is good for the Analyst to read, but its turn times aren't good enough for the voice lock, which is why the live voice lock stays on Whisper's word times.
 
 Whisper isn't deterministic on noisy audio: on the same chunk it sometimes hears an extra "Wait" in the party noise before "Watch me", which shortens that clip and lowers the voice match. So one scene's start can differ between runs.
 

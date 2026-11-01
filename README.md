@@ -67,7 +67,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 25 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 28 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 ```
 
@@ -93,6 +93,23 @@ The building period was Oct 27 – Nov 4, 2026. Everything that runs was written
 | Muse Wonder 1.0 (Meta Model API) | the Notice reviewer: which exact words match how the EEOC describes harassment |
 | Muse Voice Transcribe 1.0 (Meta Model API) | what the Analyst reads: the last minute, transcribed again before each analysis (in noisy scenes it made far fewer errors than Whisper on whole stretches); audio kept while offline, once the connection is back; spoken Notice accounts; checking the demo's synthetic voices. Whisper on the device does the fast 4-second live chunks |
 | Muse Image 1.0 (Meta Model API) | the Muse Charm concept images |
+
+**Measured on the 22 test scenes** (11 harmful, 9 harmless, 2 school and work; synthetic voices over party, bar, street and TV noise; details in [app/scenarios/](app/scenarios/README.md#speech-to-text-whisper-on-this-machine-or-muse-voice-transcribe)):
+
+| What's heard | Who judges it | Started | Harmful asked | Needless | Check-in (median) |
+|---|---|---|---|---|---|
+| Whisper, 4 s chunks | Muse agents, reading Whisper's lines | 20 of 22 | 9 of 11 | 0 of 9 | 5.4 s |
+| Muse Voice Transcribe, 4 s chunks | Muse agents, reading Muse's lines | 19 of 22 | 8 of 11 | 0 of 9 | 9.5 s |
+| **Whisper, 4 s chunks (the app today)** | **Muse agents, reading Muse Voice Transcribe's last minute** | **20 of 22** | **9 of 11** | **0 of 9** | **5.4 s** |
+| Muse Voice Transcribe's transcript of the whole recording | Muse agents | 19 of 22 | 10 of 11 | 0 of 9 | 9.5 s |
+| The script, word for word (perfect hearing) | Muse agents | 22 of 22 | **11 of 11** | **0 of 9** | 6.2 s |
+| The script, word for word | phrase list and fixed rules | 22 of 22 | 10 of 11 | 2 of 9 | 9.1 s |
+
+- **Given a perfect transcript, the Muse agents get every scene right:** 11 of 11 harmful scenes asked "Are you OK?" and no needless check-ins. The app's remaining misses come from hearing in noise and the voice lock, not from the agents' judgment.
+- **On the same transcript, a phrase list** missed one harmful scene and raised two false alarms: "I'll kill you" quoted from a film, and someone else's story retold. The Muse agents read the context and discarded both.
+- **Muse Voice Transcribe** heard "Watch me" in every scene, but its turn times are too coarse for the voiceprint, so 3 sessions didn't start. That's why the live voice lock stays on Whisper's word timings.
+
+These are single runs on scripted, synthetic scenes: good for comparing versions, not a claim about real-world accuracy.
 
 ## The idea
 
