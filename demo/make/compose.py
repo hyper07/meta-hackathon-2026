@@ -11,6 +11,7 @@ subtitles, the narration, and the scene audio the phone heard (ducked under the 
 """
 import json
 import re
+import os
 import subprocess
 import sys
 from functools import lru_cache
@@ -359,9 +360,13 @@ sf.write(WORK / "mix.wav", mix[: int(TOTAL * SR)], SR, subtype="PCM_16")
 # ── encode ───────────────────────────────────────────────────────────────────
 
 VIDEO.parent.mkdir(parents=True, exist_ok=True)
+# UPLOAD=1 makes a copy for YouTube: scaled to 1440p (YouTube then uses its better codec, so it looks sharper even
+# at 1080p) at a high bitrate, so its re-encode has detail to keep. The default is the small copy kept in the repo.
+ENCODE = (["-vf", "scale=2560:1440:flags=lanczos", "-preset", "slow", "-tune", "animation", "-crf", "12"]
+          if os.environ.get("UPLOAD") else ["-preset", "medium", "-crf", "20"])
 proc = subprocess.Popen([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
                          "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", str(WORK / "mix.wav"), "-c:v", "libx264",
-                         "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k",
+                         *ENCODE, "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
                          "-shortest", "-movflags", "+faststart", str(VIDEO)], stdin=subprocess.PIPE)
 for f in range(int(TOTAL * FPS)):
     proc.stdin.write(render(f / FPS).tobytes())
