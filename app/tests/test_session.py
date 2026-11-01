@@ -20,7 +20,7 @@ LOUD_SPEECH = (np.sin(np.linspace(0, 2000, 64000)) * 0.1).astype(np.float32)
 @pytest.fixture
 def harness(monkeypatch):
     script: list[tuple[str, np.ndarray]] = []
-    monkeypatch.setattr(speech, "transcribe", lambda audio: [speech.Piece(0.0, 1.0, script[0][0])] if script[0][0] else [])
+    monkeypatch.setattr(speech, "transcribe", lambda audio, *_: [speech.Piece(0.0, 1.0, script[0][0])] if script[0][0] else [])
     monkeypatch.setattr(speech, "voiceprint", lambda audio: script.pop(0)[1])
 
     store.save_profile({"name": "Alex", "pin": "2468", "sos_phrase": "purple elephant",
@@ -123,7 +123,7 @@ async def test_a_sentence_cut_by_the_chunk_end_is_held_for_the_next_chunk(harnes
     s, send, sent, say = harness
     seen = []
 
-    def transcribe(audio):
+    def transcribe(audio, *_):
         seen.append(audio.size / speech.SAMPLE_RATE)
         # First chunk: "watch me" runs to the very end, so it's held. Second: the whole sentence.
         return [speech.Piece(3.5, 3.95, "watch")] if len(seen) == 1 else [speech.Piece(0.0, 1.2, "watch me")]
@@ -203,3 +203,78 @@ async def test_offline_keeps_all_audio_and_catches_up_later(harness, monkeypatch
     flagged = next(x for x in session["segments"] if x["text"] == "no, stop, get off me")
     assert flagged["engine"] == "muse-spark" and flagged["score"] == 0.8 and flagged.get("later") is True
     assert session["chain"]["ok"] and "online" in [e["kind"] for e in session["events"]]
+
+
+async def test_offline_audio_is_transcribed_by_muse_before_the_analysis(harness, monkeypatch):
+    s, send, sent, say = harness
+    from watchme import muse
+    from watchme.config import settings
+    if store.pending_path().exists():
+        store.pending_path().unlink()
+    monkeypatch.setattr(settings, "stt_engine", "muse")
+    monkeypatch.setattr(settings, "voice_api_key", "test")
+
+    async def api_down(transcript):
+        return {"error": "ConnectError: no route to host", "retry": True}
+
+    monkeypatch.setattr(muse, "analyse", api_down)
+    await s.attach(send)
+    await say("watch me")
+    await say("no, stop, get off me", STRANGER)
+    await say("what a nice evening", STRANGER)
+    await s.answer_checkin_tap(True, "2468")
+    await s.stop_with_pin("2468")
+    assert {i["kind"] for i in store.read_pending()} == {"analyse", "transcribe"}
+
+    seen = []
+
+    async def api_back(transcript):
+        seen.append(transcript)
+        return {"score": 0.8, "categories": ["coercion"], "quotes": [], "reason": "later analysis"}
+
+    async def online():
+        return True
+
+    monkeypatch.setattr(muse, "analyse", api_back)
+    monkeypatch.setattr(muse, "online", online)
+    monkeypatch.setattr(speech, "transcribe_muse", lambda audio: [speech.Piece(0.0, 1.0, "No. Stop. Get off me!")])
+    monkeypatch.setattr(speech, "voiceprint", lambda audio: STRANGER)
+    assert await s.catch_up_once() == 2
+    assert not store.read_pending()
+    assert seen == ["[other] No. Stop. Get off me!"]          # the Analyst read Muse's transcript, not Whisper's
+    events = store.read_session(s.log.id)["events"]
+    transcript = next(e for e in events if e["kind"] == "transcript")
+    assert transcript["engine"] == "muse-voice-transcribe" and transcript["turns"][0]["speaker"] == "other"
+    assert store.read_session(s.log.id)["chain"]["ok"]
+
+
+async def test_the_analyst_reads_muse_transcript_of_the_last_minute(harness, monkeypatch):
+    s, send, sent, say = harness
+    from watchme import muse
+    from watchme.config import settings
+    monkeypatch.setattr(settings, "analyst_stt", "muse")
+    monkeypatch.setattr(settings, "voice_api_key", "test")
+    monkeypatch.setattr(settings, "meta_api_key", "test")
+    sent_audio, seen = [], []
+
+    def transcribe_muse(audio, mode="DIARIZATION", timeout=30):
+        sent_audio.append(audio.size)
+        return [speech.Piece(0.0, 1.0, "Finish your drink. Nobody will know.")]
+
+    async def label_turns(audio, pieces, started):
+        return [{"t": started, "speaker": "other", "similarity": 0.1, "text": p.text} for p in pieces]
+
+    async def analyse(transcript):
+        seen.append(transcript)
+        return {"score": 0.8, "categories": ["drink_pressure"], "quotes": [], "reason": "pressure to drink"}
+
+    monkeypatch.setattr(speech, "transcribe_muse", transcribe_muse)
+    monkeypatch.setattr(s, "label_turns", label_turns)
+    monkeypatch.setattr(muse, "analyse", analyse)
+    await s.attach(send)
+    await say("watch me")
+    await say("no, stop, get off me", STRANGER)               # flagged: the Analyst runs
+    assert seen and seen[0] == "[other] Finish your drink. Nobody will know."
+    assert sent_audio == [LOUD_SPEECH.size]                  # the minute since "Watch me", in one request
+    flagged = next(x for x in store.read_session(s.log.id)["segments"] if x["text"] == "no, stop, get off me")
+    assert flagged["engine"] == "muse-spark" and flagged["transcript_engine"] == "muse-voice-transcribe"

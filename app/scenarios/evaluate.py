@@ -116,7 +116,7 @@ async def run_scene(entry: dict, clock: SimTime) -> dict:
         "stop_refused": any(e["kind"] == "stop_refused" for e in events),
         "transcript": [{"who": m.get("speaker"), "text": m.get("text"), "score": m.get("score")}
                        for m in sent if m["type"] == "segment"],
-        "analyst": [{"seg": m["seg"], "score": m.get("score"), "reason": m.get("reason")}
+        "analyst": [{"seg": m["seg"], "score": m.get("score"), "reason": m.get("reason"), "heard_by": m.get("transcript_engine")}
                     for m in sent if m["type"] == "update"],
         "notice": {"match": review.get("match"), "types": sorted({m["type"] for m in review.get("moments", [])})}
                   if review else None,
@@ -180,7 +180,7 @@ async def main(args: list[str]) -> None:
         rows.append(row)
         print(f"{row['id']:20s} {row['label']:4s} asked={str(row['asked']):5s} delay={row['delay']} top={row['max_score']:.2f}")
 
-    mode = "phrase list and fixed rules" if phrases_only else f"agents: {settings.analyst_model or settings.describe()['muse_spark']} + {settings.decider_model if settings.muse_ready else 'rules'}"
+    mode = "phrase list and fixed rules" if phrases_only else f"agents: {settings.analyst_model or settings.describe()['muse_spark']} + {settings.decider_model if settings.muse_ready else 'rules'}; live speech-to-text {settings.stt_engine}, the Analyst reads {settings.analyst_stt if settings.voice_api_key else 'whisper'}"
     report = summarise(rows, mode)
     RESULTS.mkdir(exist_ok=True)
     stamp = real_time.strftime("%Y%m%d-%H%M")

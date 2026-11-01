@@ -72,12 +72,19 @@ class Settings:
     smtp_from: str | None = field(default_factory=lambda: _env("SMTP_FROM", "SMTP_USER"))
 
     # Listening.
-    # Live speech-to-text: "whisper" (on this machine) or "muse" (Muse Voice Transcribe on the Meta
-    # Model API; needs MODEL_API_KEY or META_API_KEY). Whisper stays the default
-    # live: on the 22 scenes it started 20 against 18, because its word timings give the voice lock
-    # tighter clips than Muse's speaker turns. Spoken Notice accounts use Muse whenever a key is set.
-    stt_engine: str = field(default_factory=lambda: _env("STT_ENGINE", default="whisper"))
+    # Speech-to-text, each where it measured best on the 22 scenes (scenarios/README.md):
+    #  * live 4-second chunks (STT_ENGINE): "whisper" on this machine, the default: faster (0.3 s against
+    #    0.8 s), fewer errors on short chunks, earlier check-ins. "muse" = Muse Voice Transcribe while
+    #    watching, with Whisper as the fallback. Standby is always Whisper, so no audio leaves the device.
+    #  * the last minute, each time the Analyst runs (ANALYST_STT): "muse", the default with a Meta key:
+    #    on whole stretches of noisy, overlapping speech it makes far fewer errors than Whisper.
+    #  * audio kept while offline: Muse, once the connection is back.
     voice_api_key: str | None = field(default_factory=lambda: _env("MODEL_API_KEY", "META_API_KEY"))
+    stt_engine: str = field(default_factory=lambda: _env("STT_ENGINE", default="whisper"))
+    stt_timeout: float = field(default_factory=lambda: _float("STT_TIMEOUT", 6))
+    analyst_stt: str = field(default_factory=lambda: _env(
+        "ANALYST_STT", default="muse" if _env("MODEL_API_KEY", "META_API_KEY") else "whisper"))
+    analyst_stt_timeout: float = field(default_factory=lambda: _float("ANALYST_STT_TIMEOUT", 10))
     voice_url: str = field(default_factory=lambda: _env("VOICE_TRANSCRIBE_URL", default="https://api.meta.ai/v1/asr/transcribe"))
     # A sentence still going at the end of a chunk is held and transcribed with the next one,
     # up to this many seconds of audio; 0 turns holding off.
@@ -137,7 +144,10 @@ class Settings:
             "decider": self.decider_model if self.muse_ready else "not configured (fixed rules)",
             "sms_and_calls": "Twilio" if self.sms_ready else "dry run",
             "email": self.smtp_host if self.email_ready else "dry run",
-            "whisper": "Muse Voice Transcribe" if self.stt_engine == "muse" else f"Whisper {self.whisper_model}",
+            "whisper": (f"Muse Voice Transcribe (Whisper {self.whisper_model} as fallback)"
+                        if self.stt_engine == "muse" and self.voice_api_key else f"Whisper {self.whisper_model}"),
+            "analyst_speech": ("Muse Voice Transcribe, the last minute" if self.analyst_stt == "muse" and self.voice_api_key
+                               else "the live lines"),
             "recording_rule": self.recording_rule,
         }
 

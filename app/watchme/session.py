@@ -16,10 +16,15 @@ One owner, one Watch Me session, and the agents that share it.
                                    ▼ no answer, "not OK", SOS or duress phrase, phone gone
                                Messenger (Muse Spark writes, Twilio + SMTP send)
 
-Offline: speech-to-text, the voiceprint, the phrase list and the rules are all local, so the check-in
-loop keeps working without the network. What needs the model API (the Analyst, the Notice review) is
-queued with its transcript and time, every chunk of audio is kept meanwhile, and a catch-up loop
-finishes the work when the connection is back, appending to the same hash-chained logs.
+Speech-to-text, each where it measured best: Whisper on this machine for the live 4-second chunks (fast;
+tight clips for the voice lock), and Muse Voice Transcribe for whole stretches: the last minute each time
+the Analyst runs, and audio kept while offline once the connection is back.
+
+Offline: Whisper, the voiceprint, the phrase list and the rules are all local, so the check-in loop keeps
+working without the network. What needs the model API (the Analyst, the Notice review) is queued with
+its transcript and time, and every chunk of audio is kept meanwhile. When the connection is back, the
+catch-up loop has Muse Voice Transcribe transcribe the kept audio again, then runs the queued analyses
+on Muse's transcript, appending to the same hash-chained logs.
 
 The session outlives the browser connection on purpose: if the phone drops off
 while watching (battery, network, someone takes it), that counts as a missed
@@ -34,11 +39,13 @@ stops, the transcript goes to notice.review() and into the notice book.
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 from collections import deque
 from typing import Awaitable, Callable
 
 import numpy as np
+import soundfile as sf
 
 from . import commands, decider, lexicon, messenger, muse, notice, speech, store
 from .config import settings
@@ -57,8 +64,11 @@ class Session:
         self.log: store.EvidenceLog | None = None
         self.recent: deque[tuple[float, str, str]] = deque()      # (t, speaker, text), last minute
         self.ring: deque[np.ndarray] = deque(maxlen=2)             # audio before a flag, for its clip
+        self.minute: deque[tuple[float, np.ndarray]] = deque()     # (t, chunk) of the last minute while watching
         self.clip: list[np.ndarray] = []
         self.clip_segments: list[str] = []
+        self.clip_started = 0.0         # when the clip's first sample was heard
+        self.clip_offline = False       # some of it was kept while offline: Muse transcribes it later
         self.record_until = 0.0
         self.prev_text = ""
         self.held: np.ndarray | None = None   # audio of a sentence still going when its chunk ended
@@ -145,10 +155,18 @@ class Session:
         loudness = speech.dbfs(audio)
         loud = loudness > settings.loud_dbfs
         self.ring.append(audio)
+        if self.state == "watching":
+            # The last minute of audio, for Muse Voice Transcribe when the Analyst runs.
+            self.minute.append((now, audio))
+            while self.minute and now - self.minute[0][0] > CONTEXT_SECONDS:
+                self.minute.popleft()
         # Offline, every chunk is kept, in clips of about a minute, so nothing is lost before the analysis can run.
         recording = self.state == "watching" and settings.keep_audio and (now < self.record_until or self.offline)
         if recording:
+            if not self.clip:
+                self.clip_started = now - audio.size / speech.SAMPLE_RATE
             self.clip.append(audio)
+            self.clip_offline = self.clip_offline or self.offline
             if self.offline and len(self.clip) * audio.size >= settings.offline_clip_s * speech.SAMPLE_RATE:
                 self._close_clip()
         elif self.clip:
@@ -163,7 +181,11 @@ class Session:
         if self.held is not None:
             audio = np.concatenate([self.held, audio])
             self.held = None
-        pieces = await speech.run(speech.transcribe, audio)
+        pieces = await speech.run(speech.transcribe, audio, self.state == "watching")
+        if speech.last_error and self.state == "watching" and not self.offline:
+            # Muse Voice Transcribe couldn't be reached; Whisper made this transcript. Keep all audio from now
+            # on, so Muse can transcribe it properly once the connection is back.
+            await self.go_offline(f"speech-to-text: {speech.last_error}")
         seconds = audio.size / speech.SAMPLE_RATE
         if (settings.hold_max_s > 0 and pieces and seconds - pieces[-1].end < 0.6 and loudness >= settings.silence_dbfs
                 and seconds - pieces[-1].start < settings.hold_max_s):
@@ -310,6 +332,7 @@ class Session:
         self.state, self.covert = "watching", False
         self.log = store.EvidenceLog()
         self.recent.clear()
+        self.minute.clear()
         self.transcript_all = []
         self.loud_times.clear()
         self.last_sweep = time.time()
@@ -401,6 +424,7 @@ class Session:
             return
         if not self.clip:
             self.clip = list(self.ring)
+            self.clip_started = time.time() - sum(a.size for a in self.clip) / speech.SAMPLE_RATE
         self.clip_segments.append(seg)
         self.record_until = max(self.record_until, time.time() + settings.record_after_flag_s)
 
@@ -410,14 +434,50 @@ class Session:
             return
         name = f"{time.strftime('%Y%m%d-%H%M%S')}-{self.clip_segments[0] if self.clip_segments else 'clip'}.wav"
         saved = self.log.save_clip(name, np.concatenate(self.clip))
-        self._event("clip", segments=self.clip_segments, **saved)
-        self.clip, self.clip_segments = [], []
+        self._event("clip", segments=self.clip_segments, started_t=round(self.clip_started, 3), **saved)
+        if self.clip_offline and settings.voice_api_key:
+            store.queue_pending(kind="transcribe", session=self.log.id, file=saved["file"],
+                                started_t=round(self.clip_started, 3), seconds=saved["seconds"])
+        self.clip, self.clip_segments, self.clip_offline = [], [], False
 
     def transcript(self) -> str:
         return "\n".join(f"[{speaker}] {text}" for _, speaker, text in self.recent)
 
+    async def minute_transcript(self) -> str | None:
+        """
+        The last minute, transcribed again by Muse Voice Transcribe in one request: on whole stretches it
+        hears overlapping, noisy speech far better than Whisper does on 4-second chunks (scenarios/README.md).
+        None when it isn't set up or can't be reached; the Analyst then reads Whisper's lines.
+        """
+        if not (settings.analyst_stt == "muse" and settings.voice_api_key and settings.keep_audio and self.minute):
+            return None
+        audio = np.concatenate([chunk for _, chunk in self.minute])
+        started = self.minute[-1][0] - audio.size / speech.SAMPLE_RATE
+        try:
+            pieces = await speech.run(speech.transcribe_muse, audio, "DIARIZATION", settings.analyst_stt_timeout)
+        except Exception:
+            return None
+        turns = await self.label_turns(audio, pieces, started)
+        return "\n".join(f"[{t['speaker']}] {t['text']}" for t in turns) or None
+
+    async def label_turns(self, audio: np.ndarray, pieces: list, started: float) -> list[dict]:
+        """Each Muse turn labelled owner or other by the owner's voiceprint, as the live lines are."""
+        reference = self.profile.get("voiceprint")
+        reference = np.asarray(reference, dtype=np.float32) if reference else None
+        turns = []
+        for piece in pieces:
+            speaker, similarity = "unknown", None
+            if reference is not None:
+                print_ = await speech.run(speech.voiceprint, speech.window(audio, piece))
+                similarity = round(speech.similarity(print_, reference), 3)
+                speaker = "owner" if similarity >= settings.voice_threshold else "other"
+            turns.append({"t": round(started + piece.start, 2), "speaker": speaker, "similarity": similarity,
+                          "text": piece.text})
+        return turns
+
     async def analyse(self, seg: str, phrase_score: float, hits: list[lexicon.Hit]) -> None:
-        transcript = self.transcript()
+        muse_text = await self.minute_transcript()
+        transcript = muse_text or self.transcript()
         result = await muse.analyse(transcript) if transcript else None
         heard = ", ".join(f"\"{h.phrase}\"" for h in hits)
         analysis = {"score": phrase_score, "categories": sorted({h.category for h in hits}),
@@ -435,7 +495,8 @@ class Session:
             analysis = {**result, "engine": "muse-spark", "phrase_score": phrase_score}
             update = self._event("update", seg=seg, score=round(result["score"], 3), level=lexicon.level(result["score"]),
                                  categories=result["categories"], quotes=result["quotes"], reason=result["reason"],
-                                 engine="muse-spark", phrase_score=phrase_score)
+                                 engine="muse-spark", phrase_score=phrase_score,
+                                 transcript_engine="muse-voice-transcribe" if muse_text else "whisper")
             await self.show({"type": "update", **update})
             if result["score"] >= settings.review_mark:
                 self._keep_audio(seg)
@@ -458,6 +519,7 @@ class Session:
 
     async def go_online(self, done: int) -> None:
         self.offline = False
+        speech.resume_muse()
         self._event("online", detail=f"model API reachable again; {done} queued moment(s) analyzed")
         await self.show({"type": "online", "done": done, "pending": len(store.read_pending())})
 
@@ -473,18 +535,27 @@ class Session:
 
     async def catch_up_once(self) -> int:
         """Finish the queued work the network allowed. Returns how many items were completed."""
-        items, done = store.read_pending(), 0
+        if self.offline and self.clip:
+            self._close_clip()    # the audio kept so far goes to Muse Voice Transcribe too
+        # Transcripts first: the queued analyses then read Muse's transcript instead of Whisper's.
+        items, done = sorted(store.read_pending(), key=lambda i: i["kind"] != "transcribe"), 0
         for item in list(items):
-            if item["kind"] == "analyse":
-                result = await muse.analyse(item["transcript"])
+            log = self.log if self.log and self.log.id == item.get("session") else (
+                store.EvidenceLog(item["session"]) if item.get("session") else None)
+            if item["kind"] == "transcribe":
+                if log and not await self.transcribe_clip(log, item):
+                    break
+            elif item["kind"] == "analyse":
+                better = muse_transcript(log, item["queued_t"]) if log else None
+                result = await muse.analyse(better or item["transcript"])
                 if not result or "error" in result:
                     break
-                log = self.log if self.log and self.log.id == item["session"] else (store.EvidenceLog(item["session"]) if item["session"] else None)
                 if log:
                     update = log.append("update", seg=item["seg"], score=round(result["score"], 3), level=lexicon.level(result["score"]),
                                         categories=result["categories"], quotes=result["quotes"], reason=result["reason"],
                                         engine="muse-spark", phrase_score=item.get("phrase_score"), later=True,
-                                        heard_at=item.get("queued_at"))
+                                        heard_at=item.get("queued_at"),
+                                        transcript_engine="muse-voice-transcribe" if better else "whisper")
                     if log is self.log:
                         await self.show({"type": "update", **update})
             elif item["kind"] == "review":
@@ -499,6 +570,26 @@ class Session:
         if done and not items:
             await self.go_online(done)
         return done
+
+    async def transcribe_clip(self, log: store.EvidenceLog, item: dict) -> bool:
+        """Muse Voice Transcribe on a clip kept while offline, each turn labelled by the owner's voiceprint."""
+        path = log.dir / "clips" / item["file"]
+        if not path.exists():
+            return True     # nothing to do; drop the item
+        audio, _ = sf.read(path, dtype="float32")
+        try:
+            pieces = await speech.run(speech.transcribe_muse, audio)
+        except Exception as error:
+            if log is self.log:
+                self._event("transcribe_error", file=item["file"], detail=f"{type(error).__name__}: {str(error)[:120]}")
+            return False
+        turns = await self.label_turns(audio, pieces, item["started_t"])
+        heard_at = time.strftime("%H:%M:%S", time.localtime(item["started_t"]))
+        log.append("transcript", file=item["file"], engine="muse-voice-transcribe", later=True,
+                   heard_at=time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime(item["started_t"])), turns=turns,
+                   detail=f"Muse Voice Transcribe, audio kept offline from {heard_at}: "
+                          + (" ".join(f"[{t['speaker']}] {t['text']}" for t in turns) or "no speech"))
+        return True
 
     # ── Decider + Check-in ──────────────────────────────────────────────────
 
@@ -606,3 +697,14 @@ def seg_tried_stop(session: Session) -> bool:
 
 
 SESSION = Session()
+
+
+def muse_transcript(log: store.EvidenceLog, until: float) -> str | None:
+    """The last minute before `until`, from Muse transcripts of clips kept offline, if there are any."""
+    if not log.path.exists():
+        return None
+    turns = [turn for line in log.path.read_text().splitlines() if '"transcript"' in line
+             for record in [json.loads(line)] if record["kind"] == "transcript" for turn in record["turns"]]
+    lines = [f"[{t['speaker']}] {t['text']}" for t in sorted(turns, key=lambda t: t["t"])
+             if until - CONTEXT_SECONDS - 5 <= t["t"] <= until + 1]
+    return "\n".join(lines) or None

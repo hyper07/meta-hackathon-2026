@@ -33,9 +33,9 @@ The evaluator always forces alerts to dry run: it never texts or calls anyone, w
 
 Use the numbers to compare versions of the app, not as a claim about real-world accuracy.
 
-## Results (2026-10-31, realistic voices)
+## Results (2026-11-01, realistic voices)
 
-Agents, all on the Meta Model API (reasoning low): Muse Spark 1.3 as the Analyst, Muse Spark 1.1 as the Decider. 22 scenes, with a sentence cut off at the end of a chunk held for the next one.
+Agents, all on the Meta Model API (reasoning low): Muse Voice Transcribe re-hears the last minute for the Analyst, Muse Spark 1.3 is the Analyst, Muse Spark 1.1 the Decider. Whisper transcribes the live 4-second chunks. 22 scenes, with a sentence cut off at the end of a chunk held for the next one.
 
 | | Phrase list and fixed rules | Agents |
 |---|---|---|
@@ -45,7 +45,7 @@ Agents, all on the Meta Model API (reasoning low): Muse Spark 1.3 as the Analyst
 | First harmful line to check-in | median 9.1 s, worst 13.1 s | median 5.4 s, worst 13.1 s |
 | School and work scenes without a check-in | 2 of 2 | 2 of 2 |
 
-Full tables: `results/20261031-1749-phrases.md` and `results/20261031-1614-agents.md`.
+Full tables: `results/20261031-1749-phrases.md` and `results/20261101-0823-agents.md`. Times are on the scenes' own clock, one step per 4-second chunk; the model calls' own time is not added. In real use, Muse Voice Transcribe adds about 3.4 s (median) to each analysis and the Analyst about 3 s.
 
 **The two misses:**
 - **they-talk-about-her.** Party chatter overlaps her "Watch me", so the start bar refuses it and the session never starts.
@@ -73,7 +73,8 @@ Every agent can use a different model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITE
 
 | Agent | Job | Chosen | Why |
 |---|---|---|---|
-| Listener (live) | speech-to-text, every 4 s | **Whisper base** on this machine | Its word timings give the voice lock tight clips. With Muse Voice Transcribe, 18 of 22 scenes started against 20 of 22: its speaker turns include the noise around "Watch me", so the owner's match fell below the start bar. Check-ins also came later (median 9.5 s against 5.0 s). |
+| Listener (live) | speech-to-text, every 4 s | **Whisper base** on this machine | Faster (0.29 s a chunk against 0.84 s) and fewer errors on 4-second chunks (median 15% against 27%). With Muse Voice Transcribe live, check-ins came later (median 9.5 s against 5.4 s) and one fewer harmful scene asked. See [speech-to-text](#speech-to-text-whisper-on-this-machine-or-muse-voice-transcribe) below. |
+| What the Analyst reads | speech-to-text of the last minute, before each analysis | **Muse Voice Transcribe**, diarization | On whole recordings it made far fewer errors than Whisper in the noisy scenes (party-grab 8% against 57%, game-night 0% against 61%) and heard 100% of the harmful lines' words. Same results as Whisper alone on the 22 scenes (9 of 11, 0 of 9), with a cleaner transcript to quote from. Also used for audio kept offline. |
 | Spoken Notice account | speech-to-text of a whole recording | **Muse Voice Transcribe** | 33 s of audio in 5.4 s, with clean speaker turns (A and B) in diarization mode. No voice lock is involved. |
 | Analyst (live) | score the last minute | **Muse Spark 1.3**, reasoning low | Spark 1.1 and Muse Wonder caught as many scenes (8 of 11 each, against 9 of 11). The difference was Whisper missing "Watch me" in one scene, not the Analyst. Wonder added a needless check-in ("retelling"). Spark 1.3 is the newest and had none. |
 | Decider | discard, ask or alert | **Muse Spark 1.1** (Meta Model API), reasoning low | On the 22 scenes: 9 of 11 harmful scenes asked, 0 of 9 needless check-ins, median 5.4 s (`results/20261031-1614-agents.md`). It answers in about 2 s, inside one 4-second chunk. Spark 1.3 decided the same on test moments but took 4–10 s. |
@@ -89,6 +90,33 @@ Every agent can use a different model (`ANALYST_MODEL`, `REVIEWER_MODEL`, `WRITE
 | Muse Spark 1.1 | 30 | 6 | 16 | 2.3 s |
 
 Spark 1.3 and 1.1 both missed the two religion cases where the EEOC found remarks insensitive but not severe or pervasive (a yarmulke remark, prayers in meetings). Spark 1.1 also flagged two official "not harassment" cases: one polite ask for a date, and a coworker's own social-media posts.
+
+## Speech-to-text: Whisper on this machine or Muse Voice Transcribe
+
+The same 22 recordings, transcribed by both, compared with the scenes' scripts ([stt_compare.py](stt_compare.py), `uv run python -m scenarios.stt_compare`; 2026-11-01, `results/20261101-0806-stt.md`):
+
+| | word errors (mean / median) | harmful lines' words heard | "Watch me" heard | time per request (median) |
+|---|---|---|---|---|
+| Whisper base, 4 s chunks | 41% / **15%** | 92% | 22 of 22 | **0.29 s** |
+| Muse Voice Transcribe, 4 s chunks | 59% / 27% | **97%** | 22 of 22 | 0.84 s |
+| Whisper base, whole recording | 27% / **3%** | 99% | 21 of 22 | 0.51 s |
+| Muse Voice Transcribe, whole recording | 27% / 7% | **100%** | **22 of 22** | 3.4 s |
+
+Word errors count every extra word, and in the party and TV scenes both also transcribe background voices that aren't in the script (Muse more of them), so those scenes score above 100%. The harmful lines' words are the better guide to what matters.
+
+On whole recordings Muse was far better where people talk over each other: party-grab 8% against 57%, stranger-stop 14% against 41%, dizzy-alone 14% against 63%, game-night 0% against 61%.
+
+The app, end to end on the 22 scenes (`results/20261031-1614-agents.md`, `20261101-0756-agents.md`, `20261101-0823-agents.md`):
+
+| Live chunks | What the Analyst reads | Started | Harmful asked | Needless | Check-in (median) |
+|---|---|---|---|---|---|
+| Whisper | Whisper's lines | 20 of 22 | 9 of 11 | 0 of 9 | 5.4 s |
+| Muse Voice Transcribe | Muse's lines | 19 of 22 | 8 of 11 | 0 of 9 | 9.5 s |
+| **Whisper** | **Muse Voice Transcribe, the last minute** | **20 of 22** | **9 of 11** | **0 of 9** | **5.4 s** |
+
+So each does what it measured best at. Whisper on 4-second chunks keeps check-ins fast and the voice lock tight. Muse on the whole last minute gives the Analyst the clearest transcript to quote from.
+
+Whisper isn't deterministic on noisy audio: on the same chunk it sometimes hears an extra "Wait" in the party noise before "Watch me", which shortens that clip and lowers the voice match. So one scene's start can differ between runs.
 
 ## Notice mode
 

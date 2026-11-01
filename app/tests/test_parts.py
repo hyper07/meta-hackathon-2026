@@ -79,3 +79,28 @@ async def test_muse_decider_uses_the_same_rules(monkeypatch):
     assert (await decider.decide("t", analysis, {}))["action"] == "discard"
     failed = await decider.decide("t", analysis, {})          # a bad answer falls back to the rules, which ask
     assert (failed["engine"], failed["action"]) == ("rules", "ask")
+
+
+def test_muse_transcribe_falls_back_to_whisper(monkeypatch):
+    import httpx
+    from watchme import speech
+    from watchme.config import settings
+    monkeypatch.setattr(settings, "stt_engine", "muse")
+    monkeypatch.setattr(settings, "voice_api_key", "test")
+    calls = []
+
+    def muse_down(audio, timeout=30):
+        calls.append("muse")
+        raise httpx.ConnectError("no route to host")
+
+    monkeypatch.setattr(speech, "transcribe_muse", muse_down)
+    monkeypatch.setattr(speech, "transcribe_whisper", lambda audio: [speech.Piece(0, 1, "from whisper")])
+    speech.resume_muse()
+    assert speech.transcribe(None)[0].text == "from whisper"
+    assert speech.last_engine == "whisper" and "ConnectError" in speech.last_error
+    speech.transcribe(None)                                    # paused: no second wait on a dead connection
+    assert calls == ["muse"]
+    monkeypatch.setattr(speech, "transcribe_muse", lambda audio, timeout=30: [speech.Piece(0, 1, "from muse")])
+    speech.resume_muse()                                       # back online
+    assert speech.transcribe(None)[0].text == "from muse" and speech.last_engine == "muse"
+    assert speech.transcribe(None, False)[0].text == "from whisper"   # standby: only on this machine

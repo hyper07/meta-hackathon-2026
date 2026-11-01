@@ -99,18 +99,51 @@ class Piece:
     text: str
 
 
-def transcribe(audio: np.ndarray) -> list[Piece]:
+# Which engine made the last live transcript, and why Muse wasn't used if it wasn't. Read by the
+# session right after transcribe(); safe because every speech call runs on the one speech thread.
+last_engine = "whisper"
+last_error: str | None = None
+_muse_paused_until = 0.0
+
+
+def transcribe(audio: np.ndarray, watching: bool = True) -> list[Piece]:
     """
     The chunk's text, split into sentences or speaker turns with their timings. Splitting
     matters: a 4-second chunk often holds the owner and someone else, and each piece gets
     its own voiceprint, so "stop watching" is judged on the voice that said it.
+
+    While watching: Muse Voice Transcribe first (STT_ENGINE=muse, the default with a Meta key), and
+    Whisper on this machine when Muse can't be reached, so listening never stops. After a network
+    failure Muse is skipped for CATCH_UP_S seconds, so each chunk doesn't wait for a dead connection.
+    In standby, only Whisper on this machine: speech is checked for "Watch me" and dropped, and no
+    audio leaves the device until the owner turns Watch Me on.
     """
-    if settings.stt_engine == "muse" and settings.voice_api_key:
-        return transcribe_muse(audio)
+    global last_engine, last_error, _muse_paused_until
+    import time
+
+    last_error = None
+    use_muse = watching and settings.stt_engine == "muse" and settings.voice_api_key
+    if use_muse and time.time() >= _muse_paused_until:
+        try:
+            pieces = transcribe_muse(audio, timeout=settings.stt_timeout)
+            last_engine = "muse"
+            return pieces
+        except Exception as error:   # network, timeout, 429/5xx, or a bad answer: Whisper takes over
+            last_error = f"{type(error).__name__}: {str(error)[:120]}"
+            _muse_paused_until = time.time() + settings.catch_up_s
+    elif use_muse:
+        last_error = "Muse Voice Transcribe paused after a failure"
+    last_engine = "whisper"
     return transcribe_whisper(audio)
 
 
-def transcribe_muse(audio: np.ndarray, mode: str = "DIARIZATION") -> list[Piece]:
+def resume_muse() -> None:
+    """The network is back: try Muse again on the next chunk."""
+    global _muse_paused_until
+    _muse_paused_until = 0.0
+
+
+def transcribe_muse(audio: np.ndarray, mode: str = "DIARIZATION", timeout: float = 30) -> list[Piece]:
     """
     Muse Voice Transcribe, one request per buffer. DIARIZATION returns speaker turns with
     start and end times (no word timings), which is what the per-piece voiceprint needs.
@@ -122,7 +155,7 @@ def transcribe_muse(audio: np.ndarray, mode: str = "DIARIZATION") -> list[Piece]
     buffer = io.BytesIO()
     sf.write(buffer, audio, SAMPLE_RATE, format="WAV", subtype="PCM_16")
     request = {"mode": mode, "model": "muse-voice-transcribe-1.0", "audioEncoding": "WAV", "languageBias": ["English"]}
-    response = httpx.post(settings.voice_url, headers={"Authorization": f"Bearer {settings.voice_api_key}"}, timeout=30,
+    response = httpx.post(settings.voice_url, headers={"Authorization": f"Bearer {settings.voice_api_key}"}, timeout=timeout,
                           files={"request": (None, json.dumps(request), "application/json"),
                                  "audio": ("chunk.wav", buffer.getvalue(), "audio/wav")})
     response.raise_for_status()
