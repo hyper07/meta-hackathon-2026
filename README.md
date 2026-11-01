@@ -76,9 +76,6 @@ uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 
 The building period was Oct 27 – Nov 4, 2026. Everything that runs was written during it.
 
 - **Before the event (Oct 18), no code.** The idea and planning notes only: [MODELS.md](MODELS.md), [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md), and early drafts of this README and [DESIGN.md](DESIGN.md), which then described a "harassment and assault safety assistant" concept.
-- **Ideas from Kibaek's earlier projects, re-implemented here; no code copied:**
-  - asking a model for a probability for each action on a fixed menu, and letting rules pick the action (from the Deterrence simulator);
-  - hash-chained logs that show if anything was changed (from Knowledge-Addressed Transport).
 - **Built during the hackathon:**
   - [app/](app/README.md): the server and its agents, the voice lock, Emergency and Notice modes, offline catch-up, and the web page;
   - [app/scenarios/](app/scenarios/README.md): the 22 test scenes, 56 written cases and the evaluator;

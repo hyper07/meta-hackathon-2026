@@ -71,7 +71,7 @@ Not built: MVP items 1–5, which are chat import, the assessment agent, the vau
 3. Safety mode at a party: the phone hears "stop… I don't want to". The agent buzzes "Are you OK?", gets no tap back within 60 s, and texts her chosen contact her location. The 60 s buffer is saved because she is in a one-party-consent state.
 4. A closing slide covers the metrics (recall, false positives, n) and the consent design.
 
-## Open questions for Kibaek
+## Open questions
 
 - Which track: Indie or Startup?
 - Team members, if any?

@@ -8,8 +8,7 @@ Each Watch Me session is a folder:
 
 Nothing is edited in place. When an agent revises a segment's score, it appends
 an "update" line; the review screen folds updates onto their segments. So the
-chain shows if anyone changes or deletes a line afterwards, the same
-verify-by-hash idea as Knowledge-Addressed Transport.
+chain shows if anyone changes or deletes a line afterwards.
 """
 
 from __future__ import annotations

@@ -140,11 +140,11 @@ The user switches it on for a specific situation: a party, a date, walking home.
 
 **Decision step: Muse Spark on a fixed menu**
 
-The pattern comes from the commanders in Kibaek's Deterrence simulator: the model scores a fixed menu, and rules, not the model, pick the action. Every model runs on the Meta Model API.
+The model scores a fixed menu, and rules, not the model, pick the action. Every model runs on the Meta Model API.
 
 - **Why a menu and not free text.** Muse Spark 1.1 (`DECIDER_MODEL`) returns a probability for every option as JSON. Anything off the menu or unreadable falls back to the rules, which ask. In an emergency, that matters more than eloquence.
 - **The menu.** `discard`, `ask`, `alert`. The state is the transcript plus context and the Analyst's reading, written as a short text brief.
-- **Rules between the scores and the action.** In Deterrence, the rule was "hold when unsure". Here, it is **ask when unsure**:
+- **Rules between the scores and the action.** The rule is **ask when unsure**:
   - `discard` only when its probability is at least `MIN_LIFT` times a blind guess (start at 2.5 of 3 options, so p ≥ 0.83).
   - Anything else becomes `ask`. Uncertainty never discards silently and never alerts silently.
   - `alert` without asking happens only on the user's own SOS phrase, a rule they set. Otherwise alerting needs a missed "ask".
