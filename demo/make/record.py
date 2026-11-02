@@ -64,20 +64,26 @@ try:
         folder = data / "sessions"
         return set(p.name for p in folder.iterdir()) if folder.exists() else set()
 
-    def record_session(name, wav, steps, tries=3):
-        """A scene take must start a Watch Me session (her "Watch me" over noise is sometimes misheard on the
-        first chunk); otherwise the take is a dud, so stop the session if any and record it again."""
+    def stopped_by_voice(session):
+        records = [json.loads(l) for l in (data / "sessions" / session / "log.jsonl").read_text().splitlines()]
+        return any(r["kind"] == "stop" and "PIN" not in (r.get("detail") or "") for r in records)
+
+    def record_session(name, wav, steps, tries=4, voice_stop=False):
+        """A scene take must start a Watch Me session by voice (her "Watch me" over noise is sometimes misheard
+        on the first chunk) and, when the scene ends with her "Stop watching", be stopped by her voice too: the
+        video never shows the screen being used to start or stop it. Otherwise the take is a dud: reset and
+        record it again."""
         for attempt in range(1, tries + 1):
             before = sessions()
             record(name, wav, steps)
-            new = sessions() - before
-            if new:
-                print(f"{name}: session {sorted(new)[-1]}", flush=True)
-                reset()
-                return
-            print(f"{name}: no session started (attempt {attempt} of {tries})", flush=True)
+            new = sorted(sessions() - before)
+            ok = bool(new) and (not voice_stop or stopped_by_voice(new[-1]))
             reset()
-        raise SystemExit(f"{name}: the session never started in {tries} takes")
+            if ok:
+                print(f"{name}: session {new[-1]}", flush=True)
+                return
+            print(f"{name}: {'not stopped by her voice' if new else 'no session started'} (attempt {attempt} of {tries})", flush=True)
+        raise SystemExit(f"{name}: no good take in {tries} tries")
 
     def reset():
         record("reset", "enroll.wav", [["wait", 1], ["js", 'sendJson({type:"stop_pin", pin:"2468"})'], ["wait", 1.5]])
@@ -100,14 +106,14 @@ try:
         record_session("notice", "office-hours.wav", [
             ["wait", 1.0], ["mark", "mode"], ["js", 'document.querySelector("#modeSwitch [data-mode=notice]").click()'], ["wait", 1.5],
             ["mark", "mic"], ["js", '$("micButton").click()'], ["wait", 44],
-            ["mark", "fallback"], ["js", '(() => { if (state === "watching") { sendJson({type:"stop_pin", pin:"2468"}); return "pin" } return "voice" })()'], ["wait", 9],
+            ["mark", "stopped"], ["js", 'state'], ["wait", 9],
             ["mark", "tab"], ["js", 'document.querySelector("[data-tab=notice]").click()'], ["wait", 1.5],
             ["js", '$("ntResult").scrollIntoView({behavior:"smooth"})'], ["wait", 5],
             ["mark", "label"], ["js", '(() => { const b=document.querySelector(".nt-label"); if (b) b.scrollIntoView({behavior:"smooth", block:"center"}); return !!b })()'], ["wait", 1.5],
             ["js", '(() => { const b=document.querySelector(".nt-label"); b.querySelector("[data-k=who]").value="Prof. R"; b.querySelector("[data-k=where]").value="office hours"; return 1 })()'], ["wait", 1.2],
             ["js", '(() => { document.querySelector(".nt-label button").click(); return 1 })()'], ["wait", 2.5],
             ["mark", "patterns"], ["js", '$("ntPatterns").scrollIntoView({behavior:"smooth"})'], ["wait", 6],
-            ["mark", "end"]])
+            ["mark", "end"]], voice_stop=True)
 finally:
     server.terminate()
 

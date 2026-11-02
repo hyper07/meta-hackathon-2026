@@ -428,7 +428,7 @@ function showCheckin(m) {
   clearInterval(countdownTimer);
   countdownTimer = setInterval(() => { left = Math.max(0, left - 1); tick(); }, 1000);
   navigator.vibrate?.([400, 200, 400, 200, 400]);
-  say("are-you-ok", "Are you OK? Say I'm OK, or tap the screen.");
+  say("are-you-ok", "Are you OK? Say I'm OK.");
 }
 
 // The app's spoken prompts are recorded files (static/voice, a natural voice); the browser's own

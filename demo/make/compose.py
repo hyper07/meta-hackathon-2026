@@ -90,11 +90,11 @@ def card_hood(img):
     d.text((W // 2, 110), "Every agent has its own model", font=font(64, HEAVY), fill=TEXT, anchor="mm")
     rows = [
         ("Listener", "Whisper + ECAPA voiceprint", "on the device", ACCENT),
+        ("Last minute, again", "Muse Voice Transcribe 1.0", "Meta Model API", ACCENT),
         ("Analyst", "Muse Spark 1.3", "Meta Model API", ACCENT),
         ("Decider", "Muse Spark 1.1: discard · ask · alert", "Meta Model API", ACCENT),
         ("Check-in, Messenger", "Muse Spark writes · Twilio sends", "SMS, call, email", RED),
         ("Notice reviewer", "Muse Wonder 1.0", "Meta Model API", PURPLE),
-        ("Spoken accounts", "Muse Voice Transcribe", "Meta Model API", PURPLE),
     ]
     y = 180
     for name, model, where, color in rows:
@@ -106,12 +106,13 @@ def card_hood(img):
         y += 94
     x = 260
     for big, small in [("9 / 11", "harmful scenes asked “Are you OK?”"), ("0 / 9", "needless check-ins"),
-                       ("40 / 40", "public training cases (NY State, EEOC)")]:
+                       ("11 / 11", "given a perfect transcript; a phrase list had 2 false alarms"),
+                       ("40 / 40", "public training cases, NY State and EEOC")]:
         d.text((x, 780), big, font=font(72, HEAVY), fill=GREEN, anchor="lm")
-        d.text((x, 843), small, font=font(26, MED), fill=MUTED, anchor="lm")
-        x += 480
-    d.text((260, 900), "22 scripted scenes with synthetic voices and background noise; test sets described in the repo.",
-           font=font(24, REG), fill=MUTED, anchor="lm")
+        text_block(d, (x, 830), small, font(24, MED), MUTED, 320, 1.2)
+        x += 360
+    d.text((260, 935), "22 scripted scenes with synthetic voices and background noise; the perfect transcript is the scenes' "
+           "own script. Test sets in the repo.", font=font(22, REG), fill=MUTED, anchor="lm")
 
 
 def card_close(img):
@@ -131,8 +132,8 @@ SEGMENTS = {
                    bullets=["Three lines become one voiceprint (ECAPA, on the device)",
                             "70% match to start · 90% to stop or to say “I'm OK”"]),
     "party": dict(kicker="EMERGENCY MODE", title="“Watch me”", color=RED,
-                  bullets=["Whisper transcribes every few seconds", "Muse Spark scores the last minute",
-                           "A decision model picks discard, ask or alert",
+                  bullets=["Whisper transcribes every few seconds", "Muse Voice Transcribe hears the last minute again",
+                           "Muse Spark scores it and picks discard, ask or alert",
                            "No answer, or “no” in her voice: SMS, call, email"]),
     "lock": dict(kicker="VOICE LOCK", title="Only her voice stops it", color=RED,
                  bullets=["A stranger's “stop watching” is refused", "Recording continues, and she's asked right away"]),

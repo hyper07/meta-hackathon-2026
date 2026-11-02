@@ -28,6 +28,7 @@ Everything heavy goes in a work directory outside the repo (`$WORK` below).
 - The profile starts with no voiceprint, so the enrollment can be filmed.
 - Two earlier notice entries about "Prof. R" are seeded through `/api/notice/debrief`.
 - Between segments, a short "reset" recording stops the session with the PIN.
+- On screen, Watch Me is only ever started, stopped and answered by her voice. A take that doesn't start on her "Watch me", or (Notice) doesn't stop on her own stop line, is recorded again; the PIN is used only in the off-camera reset.
 - At the end it prints each session's log with times, which is where the cut points in `edit.json` come from.
 
 **Cuts:** they live in `$WORK/edit.json`, in recording seconds (see `compose.py`). Find the moments with a contact sheet of the frames: when the check-in appears, the alert, the refusal.

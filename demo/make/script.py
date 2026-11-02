@@ -8,7 +8,7 @@ NARRATION = {
     "enroll": "First, she reads three short lines. Watch Me turns her voice into a voiceprint, drawn here as a "
               "fingerprint. From now on, only this voice can start Watch Me, stop it, or answer, I'm OK.",
     "party1": "At a party, she says: watch me.",
-    "party2": "Muse Spark reads what it hears. A fast decision model chooses to ask.",
+    "party2": "Muse Spark reads what it hears, and decides to ask.",
     "party3": "She answers, no. In her voice, that means she's not OK. So Watch Me texts and calls the people she "
               "chose, with what it heard and where she is. Here, in dry run.",
     "lock": "Now someone grabs her phone and says, stop watching. It isn't her voice. Watch Me refuses, keeps "
@@ -19,10 +19,11 @@ NARRATION = {
                "Strings attached. Getting her alone. It never decides for her.",
     "notice3": "And it counts patterns. This is the third time from the same professor, kept in a dated record "
                "that shows if anyone changes it.",
-    "hood": "Under the hood, every agent has its own model. Whisper and a voiceprint on the device. Muse Spark "
-            "as the live analyst, and again as the decider. Muse Wonder for reviews, and Muse Voice Transcribe "
-            "for spoken accounts. On twenty two realistic scenes, it asked in nine of eleven harmful ones, with no "
-            "needless check ins. On forty public training cases, the reviewer got all forty right.",
+    "hood": "Under the hood: Whisper and a voiceprint on the device. Muse Voice Transcribe hears the last minute "
+            "again, and Muse Spark analyses it and decides. Muse Wonder reviews. On twenty two realistic scenes, it "
+            "asked in nine of eleven harmful ones, with no needless check ins. Given a perfect transcript, Muse caught "
+            "all eleven, while a phrase list raised two false alarms. And the reviewer got all forty public training "
+            "cases right.",
     "close": "Watch Me. You turn it on. Only your voice turns it off. And only you decide what happened.",
 }
 
@@ -34,7 +35,7 @@ REFERENCES = {"owner": "af_heart", "party": "am_adam", "stranger": "am_onyx", "p
 
 # What the app says out loud (app/static/voice/*.wav, made by app_voice.py). Spoken in the video too.
 APP_PROMPTS = {
-    "are-you-ok": "Are you OK? Say I'm OK, or tap the screen.",
+    "are-you-ok": "Are you OK? Say I'm OK.",
     "alerting": "Alerting your people now.",
 }
 
@@ -60,4 +61,4 @@ EMOTION = {
     "Suit yourself. But B students don't usually get recommendation letters.": 0.55,
     "I'd rather go over it here, if that's okay.": 0.55,
 }
-STOP_LINE = "Stop watching."   # the owner, ending the office-hours scene
+STOP_LINE = "Okay, I am heading out now, so you can stop watching."   # the owner, ending the office-hours scene (a whole sentence: enough voice for the stop bar)
