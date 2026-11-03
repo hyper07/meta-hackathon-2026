@@ -6,7 +6,7 @@ A harassment and assault safety assistant, built for the Meta Global AI Develope
   <img src="demo/watch-me-preview.gif" width="720" alt="Watch Me demo preview: Are you OK? with only a Get help button, the alert with a map link, a stranger's stop watching refused, and the Notice review with patterns">
 </a>
 
-**▶ [Watch the full demo (2:52, MP4)](https://github.com/hyper07/meta-hackathon-2026/raw/main/demo/watch-me-demo.mp4)**, with captions in [watch-me-demo.srt](demo/watch-me-demo.srt). The preview above shows three moments: "Are you OK?" (only her voice can answer "I'm OK"; the one button gets help) and the alert with her map link, a stranger's "stop watching" refused, and the Notice review with its pattern.
+**▶ [Watch the full demo on YouTube (2:52)](https://www.youtube.com/watch?v=3rpIye3bV0A)**, or [as an MP4](https://github.com/hyper07/meta-hackathon-2026/raw/main/demo/watch-me-demo.mp4) with captions in [watch-me-demo.srt](demo/watch-me-demo.srt). The preview above shows three moments: "Are you OK?" (only her voice can answer "I'm OK"; the one button gets help) and the alert with her map link, a stranger's "stop watching" refused, and the Notice review with its pattern.
 
 <p>
 <img src="demo/screens/ios-watch.png" width="190" alt="Watch: the orb, Emergency or Notice, Start listening">
