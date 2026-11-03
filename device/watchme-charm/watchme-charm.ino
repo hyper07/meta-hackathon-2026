@@ -201,6 +201,20 @@ void usbFrame(uint8_t type, const uint8_t *a, size_t na, const uint8_t *b = null
   Serial.write(tail, 2);
 }
 
+// Off, as far as a USB-powered board can be: the panel asleep, the backlight off and held off, and the
+// chip in deep sleep with no wake-up source. RESET or replugging the cable brings Momo back. On the
+// battery alone, BATTERY_EN is released too, which cuts the power.
+void goToSleep() {
+  Serial.println("sleep: screen off; press RESET or replug to wake");
+  Serial.flush();
+  lcd->displayOff();
+  digitalWrite(LCD_BL, LOW);
+  gpio_hold_en((gpio_num_t)LCD_BL);
+  digitalWrite(BATTERY_EN, LOW);
+  delay(50);
+  esp_deep_sleep_start();
+}
+
 void usbRead() {
   static uint8_t buf[4100];
   static size_t have = 0;
@@ -214,6 +228,7 @@ void usbRead() {
       if (len > sizeof buf - 5) { have = 0; continue; }
       if (have == 5 + len) {
         if (buf[2] == 'J') onText((const char *)buf + 5, len);
+        else if (buf[2] == 'S') goToSleep();     // the Mac says: switch off
         else if (buf[2] == 'P') { lastHeard = millis(); xStreamBufferSend(speakerBuf, buf + 5, len, pdMS_TO_TICKS(200)); }
         have = 0;
       }
