@@ -103,6 +103,7 @@ export function WatchMeProvider({ children }: { children: ReactNode }) {
   const chunker = useRef(new Chunker());
   const lastLevelAt = useRef(0);
   const locationSub = useRef<Location.LocationSubscription | null>(null);
+  const sendFixRef = useRef<((p: Location.LocationObject) => void) | null>(null);   // for 'locate', set below
   const keyCounter = useRef(0);
 
   // ── speaking ──────────────────────────────────────────────────────────────
@@ -194,6 +195,11 @@ export function WatchMeProvider({ children }: { children: ReactNode }) {
         showToast('ok', 'Back online', `${m.done} moment${m.done === 1 ? '' : 's'} analyzed and added to your record.`);
         break;
       case 'notice_review': setLastReview(m.record); showToast('info', 'Your review is ready', 'Open the Notice tab.'); break;
+      case 'locate':
+        // A fresh fix for a check-in or an alert; without permission, the last known one is used.
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
+          .then((p) => sendFixRef.current?.(p)).catch(() => {});
+        break;
     }
   }, [addLine, say, onVoice, showToast]);
 
@@ -224,6 +230,12 @@ export function WatchMeProvider({ children }: { children: ReactNode }) {
   const send = useCallback((message: Msg) => {
     if (ws.current?.readyState === WebSocket.OPEN) ws.current.send(JSON.stringify(message));
   }, []);
+
+  // Her position, with when the phone took it, so an alert can say how old it is.
+  const sendFix = useCallback((p: Location.LocationObject) => {
+    send({ type: 'location', lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy, time: p.timestamp });
+  }, [send]);
+  useEffect(() => { sendFixRef.current = sendFix; }, [sendFix]);
 
   // ── the microphone ────────────────────────────────────────────────────────
   const onBuffer = useCallback((buffer: AudioStreamBuffer) => {
@@ -280,13 +292,13 @@ export function WatchMeProvider({ children }: { children: ReactNode }) {
       if (granted && !locationSub.current) {
         locationSub.current = await Location.watchPositionAsync(
           { accuracy: Location.Accuracy.Balanced, timeInterval: 30000, distanceInterval: 25 },
-          (p) => send({ type: 'location', lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy }),
+          sendFix,
         );
       }
     } catch {
       // Watch Me works without location; the alert just won't carry a map link.
     }
-  }, [ensureMic, send]);
+  }, [ensureMic, sendFix]);
 
   const stopListening = useCallback(async () => {
     consumer.current = null;

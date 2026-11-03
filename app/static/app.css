@@ -208,21 +208,19 @@ blockquote { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(--blu
 .services dt { color: var(--muted); } .services dd { margin: 0; overflow-wrap: anywhere; text-align: right; }
 
 /* ── enrollment ─────────────────────────────────────────────────────────── */
-.enroll { display: grid; grid-template-columns: minmax(140px, 190px) 1fr; gap: 16px; align-items: center; margin: 12px 0 4px; }
-.enroll-stage { position: relative; }
-.enroll-stage canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; background: var(--bg); }
+.enroll-card { text-align: center; }
+.enroll-stage { position: relative; width: min(230px, 70%); margin: 6px auto 4px; }
+.enroll-stage canvas { width: 100%; aspect-ratio: 1; display: block; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--print) 9%, var(--bg)) 0%, var(--bg) 70%); }
 .stamp { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-12deg); padding: 6px 14px; border: 3px solid var(--ok);
   border-radius: 10px; color: var(--ok); font-weight: 900; letter-spacing: .14em; background: color-mix(in srgb, var(--bg) 80%, transparent);
   animation: stamp .45s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes stamp { from { transform: translate(-50%, -50%) rotate(-12deg) scale(2.2); opacity: 0; } }
-.enroll-steps { list-style: none; margin: 0; padding: 0; font-size: 14px; }
-.enroll-steps li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; color: var(--muted); }
-.enroll-steps li .dot { flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; background: none; border: 2px solid var(--fill-strong); }
-.enroll-steps li.current { color: var(--text); font-weight: 600; }
-.enroll-steps li.current .dot { border-color: var(--blue); animation: pulse 1.2s infinite; }
-.enroll-steps li.done { color: var(--text); }
-.enroll-steps li.done .dot { background: var(--ok); border-color: var(--ok); }
-.saved { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--tint-ok); font-size: 14px; }
+.enroll-say { margin: 10px 0 2px; font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+.enroll-line { border: 0; padding: 0; background: none; margin: 0 auto 12px; max-width: 30ch; font-size: 19px; line-height: 1.35; font-weight: 650; color: var(--text); transition: color .3s; }
+.enroll-card.recording .enroll-line { color: var(--print); }
+.enroll-card .actions { justify-content: center; }
+.saved { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--tint-ok); font-size: 14px; text-align: center; }
 .saved .hint { margin-top: 4px; }
 
 /* ── notice ─────────────────────────────────────────────────────────────── */
@@ -271,8 +269,7 @@ blockquote { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(--blu
 .toast .big-icon { font-size: 22px; margin-right: 6px; vertical-align: -3px; }
 
 @media (max-width: 420px) {
-  .contact, .nt-grid, .enroll { grid-template-columns: 1fr; }
-  .enroll-stage { max-width: 200px; margin: 0 auto; }
+  .contact, .nt-grid { grid-template-columns: 1fr; }
   .vl-body { grid-template-columns: 1fr 1.3fr 1fr; }
 }
 
@@ -292,3 +289,6 @@ button:active:not(:disabled) { transform: scale(.97); opacity: .85; }
 .slide-knob { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--ok); color: #fff;
   font-size: 24px; font-weight: 800; cursor: grab; transition: transform .25s cubic-bezier(.2,.9,.3,1.2); }
 .slide.dragging .slide-knob { transition: none; cursor: grabbing; }
+
+.map-pin { display: inline-block; margin-top: 4px; padding: 3px 10px; border-radius: 999px; background: var(--tint-ok, rgba(49,162,76,.12));
+  color: inherit; font-weight: 600; text-decoration: none; white-space: nowrap; }

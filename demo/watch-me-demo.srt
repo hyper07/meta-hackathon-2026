@@ -7,138 +7,142 @@ This is Watch Me.
 It listens only when you ask it to, and it only answers to your voice.
 
 3
-00:00:06,599 --> 00:00:11,167
+00:00:06,599 --> 00:00:11,647
 In a recent lawsuit, a student said she felt like bait at a fraternity party, and that she had been drugged.
 
 4
-00:00:11,167 --> 00:00:12,056
+00:00:11,647 --> 00:00:12,629
 The case is disputed.
 
 5
-00:00:12,056 --> 00:00:14,255
+00:00:12,629 --> 00:00:15,059
 Someone who's been drugged can't say they're not OK.
 
 6
-00:00:14,255 --> 00:00:16,919
-And at school or at work, harassment often hides inside a joke.
+00:00:16,759 --> 00:00:20,804
+And at home, more than one in three women has faced violence from a partner.
 
 7
-00:00:18,519 --> 00:00:20,677
-First, she reads three short lines.
+00:00:20,804 --> 00:00:23,093
+Nearly half of it never reaches the police.
 
 8
-00:00:20,677 --> 00:00:25,115
-Watch Me turns her voice into a voiceprint, drawn here as a fingerprint.
+00:00:23,093 --> 00:00:26,179
+When reaching for a phone isn't safe, her voice is enough.
 
 9
-00:00:25,115 --> 00:00:29,799
-From now on, only this voice can start Watch Me, stop it, or answer, I'm OK.
+00:00:27,779 --> 00:00:29,239
+First, she says one line.
 
 10
-00:00:40,119 --> 00:00:42,159
-At a party, she says: watch me.
+00:00:29,239 --> 00:00:33,443
+Watch Me turns her voice into a voiceprint, drawn here as a fingerprint.
 
 11
-00:01:07,120 --> 00:01:07,959
-She answers, no.
+00:00:33,443 --> 00:00:37,879
+From now on, only this voice can start Watch Me, stop it, or answer, I'm OK.
 
 12
-00:01:07,959 --> 00:01:09,954
-In her voice, that means she's not OK.
+00:00:40,679 --> 00:00:42,719
+At a party, she says: watch me.
 
 13
-00:01:09,954 --> 00:01:14,467
-So Watch Me texts and calls the people she chose, with what it heard and where she is.
+00:01:03,379 --> 00:01:06,179
+Muse Spark reads what it hears, and decides to ask.
 
 14
-00:01:14,467 --> 00:01:15,359
-Here, in dry run.
+00:01:09,779 --> 00:01:11,370
+She's too dizzy to answer.
 
 15
-00:01:25,819 --> 00:01:28,747
-Now someone grabs her phone and says, stop watching.
+00:01:11,370 --> 00:01:17,180
+So Watch Me texts and calls the people she chose, with what it heard and a map of where she is.
 
 16
-00:01:28,747 --> 00:01:29,817
-It isn't her voice.
+00:01:17,180 --> 00:01:18,219
+Here, in dry run.
 
 17
-00:01:29,817 --> 00:01:33,140
-Watch Me refuses, keeps recording, and asks her right away.
+00:01:28,879 --> 00:01:31,807
+Now someone grabs her phone and says, stop watching.
 
 18
-00:01:35,519 --> 00:01:37,351
-Not all harassment is an emergency.
+00:01:31,807 --> 00:01:32,877
+It isn't her voice.
 
 19
-00:01:37,351 --> 00:01:39,706
-At office hours, she switches to Notice mode.
+00:01:32,877 --> 00:01:36,200
+Watch Me refuses, keeps recording, and asks her right away.
 
 20
-00:01:39,706 --> 00:01:41,120
-Nothing will interrupt her.
+00:01:38,579 --> 00:01:40,411
+Not all harassment is an emergency.
 
 21
-00:02:08,019 --> 00:02:13,192
-When she stops, Muse Wonder shows which exact words match how the EEOC describes harassment.
+00:01:40,411 --> 00:01:42,766
+At office hours, she switches to Notice mode.
 
 22
-00:02:13,192 --> 00:02:14,118
-Strings attached.
+00:01:42,766 --> 00:01:44,180
+Nothing will interrupt her.
 
 23
-00:02:14,118 --> 00:02:15,098
-Getting her alone.
+00:02:11,079 --> 00:02:16,252
+When she stops, Muse Wonder shows which exact words match how the EEOC describes harassment.
 
 24
-00:02:15,098 --> 00:02:16,460
-It never decides for her.
+00:02:16,252 --> 00:02:17,178
+Strings attached.
 
 25
-00:02:16,519 --> 00:02:17,637
-And it counts patterns.
+00:02:17,178 --> 00:02:18,158
+Getting her alone.
 
 26
-00:02:17,637 --> 00:02:22,639
-This is the third time from the same professor, kept in a dated record that shows if anyone changes it.
+00:02:18,158 --> 00:02:19,520
+It never decides for her.
 
 27
-00:02:23,519 --> 00:02:26,704
-Under the hood: Whisper and a voiceprint on the device.
+00:02:19,579 --> 00:02:20,697
+And it counts patterns.
 
 28
-00:02:26,704 --> 00:02:31,916
-Muse Voice Transcribe hears the last minute again, and Muse Spark analyses it and decides.
+00:02:20,697 --> 00:02:25,699
+This is the third time from the same professor, kept in a dated record that shows if anyone changes it.
 
 29
-00:02:31,916 --> 00:02:33,074
-Muse Wonder reviews.
+00:02:26,579 --> 00:02:29,681
+Under the hood: Whisper and a voiceprint on the device.
 
 30
-00:02:33,074 --> 00:02:38,864
-On 22 realistic scenes, it asked in nine of eleven harmful ones, with no needless check-ins.
+00:02:29,681 --> 00:02:34,756
+Muse Voice Transcribe hears the last minute again, and Muse Spark analyses it and decides.
 
 31
-00:02:38,864 --> 00:02:44,423
-Given a perfect transcript, Muse caught all eleven, while a phrase list raised two false alarms.
+00:02:34,756 --> 00:02:35,884
+Muse Wonder reviews.
 
 32
-00:02:44,423 --> 00:02:47,839
-And the reviewer got all forty public training cases right.
+00:02:35,884 --> 00:02:41,523
+On 22 realistic scenes, it asked in nine of eleven harmful ones, with no needless check-ins.
 
 33
-00:02:49,539 --> 00:02:50,032
-Watch Me.
+00:02:41,523 --> 00:02:44,399
+Given a perfect transcript, Muse caught all eleven.
 
 34
-00:02:50,032 --> 00:02:50,853
-You turn it on.
+00:02:46,099 --> 00:02:46,592
+Watch Me.
 
 35
-00:02:50,853 --> 00:02:52,439
-Only your voice turns it off.
+00:02:46,592 --> 00:02:47,413
+You turn it on.
 
 36
-00:02:52,439 --> 00:02:54,299
+00:02:47,413 --> 00:02:48,999
+Only your voice turns it off.
+
+37
+00:02:48,999 --> 00:02:50,859
 And only you decide what happened.
 

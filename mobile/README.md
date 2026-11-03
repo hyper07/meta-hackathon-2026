@@ -55,7 +55,7 @@ The web page in `app/static/` has the same hold, slide and enter animations. It 
 3. **In the app, open Setup.**
    - **Server:** enter the address from step 1 and tap Connect. For a development build, `EXPO_PUBLIC_SERVER_URL=192.168.1.20:8000 npx expo run:ios` fills it in.
    - **You and your people:** fill in your details and contacts, and save.
-   - **Your voice:** record the three lines.
+   - **Your voice:** tap Record my voice and say the one line shown, once.
 4. **Go to Watch.** Tap Start listening and say "Watch me".
 
 ## How it works
@@ -77,7 +77,7 @@ The web page in `app/static/` has the same hold, slide and enter animations. It 
 
 ## Not done yet
 
-- **Location in the background:** location is foreground-only. With the screen locked, an alert carries the last place the phone was seen.
+- **Location in the background:** location is foreground-only. With the screen locked, an alert carries the last place the phone was seen, labelled with the time it was taken ("last known, at 23:14, 6 min ago").
 - **A notification for "Are you OK?":** with the screen locked she hears the prompt and can answer by voice, but no notification appears yet (that needs `expo-notifications`).
 - **No connection to the server:** the server treats a phone that drops off as a missed check-in and alerts; the app doesn't keep audio itself while disconnected.
 - **Release builds:** there's no signing set up yet for TestFlight or the Play Store.

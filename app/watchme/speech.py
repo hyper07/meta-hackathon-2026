@@ -214,6 +214,23 @@ def window(audio: np.ndarray, piece: Piece, minimum: float = 0.8) -> np.ndarray:
     return audio[a:b]
 
 
+def voiced(audio: np.ndarray, frame: int = 320) -> np.ndarray:
+    """The audio from the first to the last frame with speech in it (louder than 5% of the peak frame)."""
+    energy = np.array([np.sqrt(np.mean(audio[i:i + frame] ** 2)) for i in range(0, max(1, len(audio) - frame), frame)])
+    if not energy.size or energy.max() <= 0:
+        return audio[:0]
+    on = np.where(energy > energy.max() * 0.05)[0]
+    return audio[on[0] * frame:(on[-1] + 1) * frame]
+
+
+def enrollment_pieces(audio: np.ndarray, n: int = 3) -> list[np.ndarray]:
+    """One spoken line, as n half-overlapping windows of its speech: the voiceprint averages them, and how
+    much they agree says whether the recording was clean."""
+    speech = voiced(audio)
+    width = int(len(speech) / (1 + (n - 1) * 0.5))
+    return [speech[int(i * width * 0.5):int(i * width * 0.5) + width] for i in range(n)]
+
+
 def signature(print_: np.ndarray, size: int = 64) -> list[float]:
     """A coarse 64-number summary of a voiceprint, for drawing it. Not enough to rebuild it."""
     groups = np.asarray(print_, dtype=np.float32)[: len(print_) // size * size].reshape(size, -1).mean(axis=1)

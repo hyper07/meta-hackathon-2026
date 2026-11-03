@@ -1,6 +1,6 @@
 // Setup: the server address, you, the people to alert, and your voice.
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Card, Field, Hint, SectionLabel, Segmented, SwitchRow } from '../components/ui';
@@ -13,11 +13,8 @@ type Contact = { name: string; phone: string; email: string; relation: string; d
 
 const RELATIONS = ['mom', 'dad', 'sister', 'brother', 'partner', 'friend', 'roommate', 'other'];
 const FAMILY = ['mom', 'dad', 'sister', 'brother'];
-const LINES = [
-  'Watch me. This is my voice, and only I can turn this on or off.',
-  'I’m heading out tonight, so keep an eye on things for me.',
-  'My name is on this phone, and this is how I normally talk.',
-];
+const LINE = 'Watch me. This is my voice, and only I can turn this on or off.';   // said once
+const ENROLL_SECONDS = 6;
 
 const blank = (): Contact => ({ name: '', phone: '', email: '', relation: '', default: false, call: true });
 
@@ -143,47 +140,58 @@ function ProfileForm() {
 function VoiceCard() {
   const t = useTheme();
   const w = useWatchMe();
-  const [step, setStep] = useState(0);
-  const [samples, setSamples] = useState<string[]>([]);
+  const [recording, setRecording] = useState(false);
   const [voiceMsg, setVoiceMsg] = useState('');
+  const [pulse] = useState(() => new Animated.Value(0));
 
-  const recordLine = async () => {
-    setVoiceMsg(`Listening… read line ${step + 1} now.`);
+  useEffect(() => {
+    if (!recording) { pulse.setValue(0); return; }
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [recording, pulse]);
+
+  const recordVoice = async () => {
+    setRecording(true);
+    setVoiceMsg('Say the line now.');
     try {
-      const pcm = await w.record(4);
-      const next = [...samples, int16ToBase64(pcm)];
-      if (next.length < 3) { setSamples(next); setStep(next.length); setVoiceMsg('Got it.'); return; }
-      setVoiceMsg('Building your voiceprint…');
-      const out = await api.post<Record<string, unknown> & { advice?: string }>(w.serverUrl, '/api/enroll', { samples: next });
+      const pcm = await w.record(ENROLL_SECONDS);
+      setRecording(false);
+      setVoiceMsg('Making your voiceprint…');
+      const out = await api.post<Record<string, unknown> & { advice?: string }>(w.serverUrl, '/api/enroll', { samples: [int16ToBase64(pcm)] });
       w.setProfile({ ...w.profile, ...out });
-      setSamples([]); setStep(0);
-      setVoiceMsg(out.advice ?? 'Saved. Only your voice can stop Watch Me now.');
+      setVoiceMsg(out.advice ?? '');
     } catch (e) {
-      setSamples([]); setStep(0);
+      setRecording(false);
       setVoiceMsg(e instanceof Error ? e.message : String(e));
     }
   };
 
+  const enrolled = !!w.profile.enrolled && !recording;
+  const ring = recording ? t.blue : enrolled ? t.ok : t.fillStrong;
   return (
     <>
       <SectionLabel>Your voice</SectionLabel>
       <Card>
-        <Hint>Only your voice can start Watch Me, stop it, or answer “I’m OK”. Read each line once, in your normal voice.</Hint>
-        {LINES.map((line, i) => (
-          <View key={i} style={styles.step}>
-            <View style={[styles.stepDot, { borderColor: i < step ? t.ok : i === step ? t.blue : t.fillStrong,
-              backgroundColor: i < step ? t.ok : 'transparent' }]} />
-            <Text style={{ color: i <= step ? t.text : t.muted, flex: 1, fontWeight: i === step ? '600' : '400' }}>“{line}”</Text>
-          </View>
-        ))}
-        <View style={styles.row}><Button title={`Record line ${step + 1} of 3`} onPress={recordLine} disabled={!w.connected} /></View>
-        {!!voiceMsg && <Hint style={{ marginTop: 8 }}>{voiceMsg}</Hint>}
-        {w.profile.enrolled && (
-          <View style={[styles.saved, { backgroundColor: t.tintOk }]}>
-            <Text style={{ color: t.text, fontWeight: '700' }}>Voiceprint saved · {w.profile.voice_id}</Text>
-            <Hint>70% match starts Watch Me. Stopping it, or answering “I’m OK”, needs 90%.</Hint>
-          </View>
-        )}
+        <View style={styles.voice}>
+          <Animated.View style={[styles.orb, { borderColor: ring, backgroundColor: enrolled ? t.tintOk : t.tintBlue,
+            transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] }) }] }]}>
+            <Text style={styles.orbIcon}>{enrolled ? '🔒' : '🎙️'}</Text>
+          </Animated.View>
+          <Text style={[styles.say, { color: t.muted }]}>{enrolled ? 'Your voiceprint is saved' : 'Say this once, in your normal voice'}</Text>
+          <Text style={[styles.line, { color: recording ? t.blue : t.text }]}>“{LINE}”</Text>
+          <Button title={recording ? 'Listening…' : enrolled ? 'Record again' : 'Record my voice'} onPress={recordVoice}
+            disabled={!w.connected || recording} />
+          {!!voiceMsg && <Hint style={{ marginTop: 8, textAlign: 'center' }}>{voiceMsg}</Hint>}
+          {enrolled && (
+            <Hint style={{ marginTop: 8, textAlign: 'center' }}>
+              Only your voice can start Watch Me, stop it, or answer “I’m OK”. 70% match to start · 90% to stop.
+            </Hint>
+          )}
+        </View>
       </Card>
     </>
   );
@@ -195,8 +203,10 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 10, marginTop: 12 },
   small: { fontSize: 14, fontWeight: '600', marginTop: 12 },
   route: { borderRadius: 14, padding: 12, marginVertical: 12 },
-  step: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginTop: 10 },
-  stepDot: { width: 16, height: 16, borderRadius: 8, borderWidth: 2, marginTop: 2 },
-  saved: { borderRadius: 14, padding: 12, marginTop: 12 },
+  voice: { alignItems: 'center', paddingVertical: 8 },
+  orb: { width: 128, height: 128, borderRadius: 64, borderWidth: 4, alignItems: 'center', justifyContent: 'center' },
+  orbIcon: { fontSize: 48 },
+  say: { fontSize: 13, fontWeight: '600', marginTop: 14 },
+  line: { fontSize: 19, fontWeight: '700', textAlign: 'center', lineHeight: 26, marginTop: 4, marginBottom: 14, maxWidth: 300 },
   service: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 4 },
 });

@@ -83,14 +83,22 @@ async def save_profile(body: dict):
 
 @app.post("/api/enroll")
 async def enroll(body: dict):
-    """Three or more recordings of the owner (16 kHz PCM16, base64) become one voiceprint."""
+    """Recordings of the owner (16 kHz PCM16, base64) become one voiceprint: one spoken line (the app's
+    setup), or three or more (older clients)."""
     samples = [speech.pcm16_to_float(base64.b64decode(s)) for s in body.get("samples") or []]
     samples = [s for s in samples if s.size >= speech.SAMPLE_RATE and speech.dbfs(s) > settings.silence_dbfs]
+    whole = []
+    if 0 < len(samples) < 3:
+        line = np.concatenate(samples)
+        if len(speech.voiced(line)) < 2.5 * speech.SAMPLE_RATE:
+            raise HTTPException(400, "That was too short. Say the whole line, in your normal voice.")
+        whole = [await speech.run(speech.voiceprint, line)]
+        samples = speech.enrollment_pieces(line)
     if len(samples) < 3:
-        raise HTTPException(400, "Need three recordings with clear speech, at least a second each.")
+        raise HTTPException(400, "Say the line once, clearly, in your normal voice.")
     prints = [await speech.run(speech.voiceprint, s) for s in samples]
     pairs = [speech.similarity(a, b) for i, a in enumerate(prints) for b in prints[i + 1:]]
-    mean = np.mean(prints, axis=0)
+    mean = np.mean([p / np.linalg.norm(p) for p in prints + whole], axis=0)
     mean = mean / np.linalg.norm(mean)
     profile = store.load_profile()
     profile["voiceprint"] = mean.tolist()
@@ -106,7 +114,7 @@ async def enroll(body: dict):
         "sample_signatures": [speech.signature(p) for p in prints],
         "threshold": 0.70, "strict_threshold": 0.90,
         "advice": None if consistency >= settings.voice_strict_threshold else
-        "Your recordings differ a lot from each other. Record again somewhere quieter, at your normal speaking distance.",
+        "That recording wasn't clear enough. Try again somewhere quieter, at your normal speaking distance.",
     }
 
 

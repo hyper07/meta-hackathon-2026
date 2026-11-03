@@ -6,7 +6,7 @@ A harassment and assault safety assistant, built for the Meta Global AI Develope
   <img src="demo/watch-me-preview.gif" width="720" alt="Watch Me demo preview: Are you OK? and the alert, a stranger's stop watching refused, and the Notice review with patterns">
 </a>
 
-**▶ [Watch the full demo (2:55, MP4)](https://github.com/hyper07/meta-hackathon-2026/raw/main/demo/watch-me-demo.mp4)**, with captions in [watch-me-demo.srt](demo/watch-me-demo.srt). The preview above shows three moments: "Are you OK?" and the alert, a stranger's "stop watching" refused, and the Notice review with its pattern.
+**▶ [Watch the full demo (2:52, MP4)](https://github.com/hyper07/meta-hackathon-2026/raw/main/demo/watch-me-demo.mp4)**, with captions in [watch-me-demo.srt](demo/watch-me-demo.srt). The preview above shows three moments: "Are you OK?" and the alert, a stranger's "stop watching" refused, and the Notice review with its pattern.
 
 <p>
 <img src="demo/screens/ios-watch.png" width="190" alt="Watch: the orb, Emergency or Notice, Start listening">
@@ -48,7 +48,7 @@ uv sync                       # once: installs the server, Whisper and the voice
 ./run.sh --https              # https://<Wi-Fi IP>:8443, for a phone's browser on the same Wi-Fi (needs mkcert; see app/README.md)
 ```
 
-Open Setup, enter your name, PIN and contacts, and record your voice. Then go to Watch, turn on listening and say "Watch me".
+Open Setup, enter your name, PIN and contacts, and record your voice: one line, said once. Then go to Watch, turn on listening and say "Watch me".
 
 **3. Build and run the iPhone or Android app.** It uses native modules, so it needs a development build; Expo Go won't work.
 
@@ -67,7 +67,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 28 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 31 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 ```
 
@@ -81,6 +81,7 @@ The building period was Oct 27 – Nov 4, 2026. Everything that runs was written
   - [app/scenarios/](app/scenarios/README.md): the 22 test scenes, 56 written cases and the evaluator;
   - [mobile/](mobile/README.md): the iPhone and Android app;
   - [demo/](demo/): the video, screenshots, Charm concept images and the scripts that make them;
+  - [device/](device/README.md): a Charm stand-in on an ESP32-C6 board, with Momo the cat on its screen, and its USB bridge;
   - the tests, and the measurements in the docs.
 - **Open-source parts used, not written by us:** Whisper (faster-whisper, the offline fallback) and SpeechBrain's ECAPA voiceprint model; FastAPI; Expo and React Native; the Kokoro and Chatterbox voices, used only for the demo and test scenes.
 
@@ -124,6 +125,25 @@ It also covers emergencies. If someone may be in danger right now, for example u
 
 The motivating case is campus sexual assault. In 2026 a former student's lawsuit, reported by the AP, said she "felt like bait" at a fraternity party in 2024 and that she had been given ketamine; she went to campus police three weeks later ([ABC News/AP, 2026-10-03](https://abcnews.com/US/wireStory/woman-told-cornell-investigators-felt-bait-alleged-gang-136963907); [NBC New York](https://www.nbcnewyork.com/new-york/woman-cornell-investigators-felt-like-bait-alleged-gang-rape/6555069/)). The accusations are disputed and investigations are ongoing, so the pitch describes them as allegations and doesn't name the school. Someone who has been drugged cannot answer "are you OK?". That is the case Watch Me is built for. Many victims never file a report. They talk to friends first, or to no one. The aim is to meet them where those conversations already happen, with support they control.
 
+### Domestic violence
+
+The same danger is often at home, from someone the person knows:
+
+- **More than 1 in 3 women** (about 43.5 million) and **more than 1 in 6 men** (20.7 million) in the US have experienced contact sexual violence, physical violence or stalking by an intimate partner ([CDC, NISVS 2023/2024 data brief](https://www.cdc.gov/intimate-partner-violence/about/index.html)).
+- **Over half of female homicide victims** in the US are killed by a current or former male partner ([CDC](https://www.cdc.gov/intimate-partner-violence/about/index.html), from 2015 data in 27 states).
+- Worldwide, **about 50,000 women and girls** were killed by a partner or family member in 2024: 137 a day, almost one every 10 minutes ([UN Women and UNODC, 2025](https://www.unwomen.org/en/news-stories/press-release/2025/11/every-day-137-women-and-girls-are-killed-by-intimate-partners-or-family-members)).
+- **Only 56%** of nonfatal domestic violence is reported to police. The reasons victims gave for not reporting include privacy (32%), shielding the offender (21%) and fear of retaliation (19%) ([Bureau of Justice Statistics, 2006–2015](https://bjs.ojp.gov/content/pub/pdf/prdv0615.pdf)).
+
+Watch Me fits this case because it was built for a person who can't safely reach for a phone:
+
+- **Hands-free.** She starts it by saying "Watch me". On the Charm, once it ships, it would look like any other pendant, so a partner sees nothing to take away.
+- **Only her voice turns it off.** "Stop watching" in anyone else's voice is refused, and the PIN is a fallback only she knows.
+- **The duress phrase.** If she is forced to switch it off, she says the duress phrase. Watch Me looks switched off, keeps listening, and alerts the people she chose.
+- **"Are you OK?"** When the agents hear threats or violence, Watch Me asks first. If she can't answer, it alerts the people she chose. It never calls anyone just because the model judged the scene.
+- **A dated record.** Every session and Notice entry goes into a dated log in which each line carries the hash of the one before, so any change or deletion shows. Advocates help survivors put together exactly this kind of timeline for a protective order. Recording laws still apply; see [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md).
+
+Partners who abuse also use technology to monitor and control. That is why Watch Me only installs on the owner's own device and only listens to conversations she is part of (see [What it must not become](#what-it-must-not-become)). In the US, the National Domestic Violence Hotline is 1-800-799-7233, or text START to 88788.
+
 ## What it does
 
 1. **Detect.** Flag messages and conversations that suggest harassment, coercion, threats, drugging or assault. Each flag gets a risk level and the exact lines that triggered it.
@@ -132,10 +152,11 @@ The motivating case is campus sexual assault. In 2026 a former student's lawsuit
 4. **Inform.** Give plain-language legal information and next steps for the user's location: campus Title IX office, police report, protective orders, hotlines. It refers to lawyers and advocates instead of giving legal advice itself (see [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md)).
 5. **Protect.** If an emergency trigger fires, alert the emergency contacts the user chose in advance, with a location if the user allowed it. The triggers include a missed safety check-in during a night out and an "I'm not OK" phrase.
 6. **Watch Me**, the safety mode, built in [app/](app/README.md) (phone now, Meta's **Muse Charm** pendant once it ships):
-   - The owner says "Watch me" for a party, a date or a walk home. Only their voice, checked against a voiceprint, can start or stop it.
+   - The owner says "Watch me" for a party, a date or a walk home. Only their voice, checked against a voiceprint, can start or stop it. Setting up the voiceprint takes one line, said once.
    - It transcribes what it hears, telling the owner apart from other voices. The lines are scored as they come in, colour-coded for later review, and the audio around flagged moments is kept.
    - A team of agents works on it. Muse Spark analyses and quotes the exact words. Muse Spark, as the Decider, gives a probability for discard, ask or alert in about 2 s, and fixed rules make it ask when unsure.
    - It first asks the owner "Are you OK?". If there is no answer, or they say the SOS phrase, it texts, calls and emails the people they chose. A duress phrase makes it look switched off while it keeps listening and sends the alert.
+   - The alert carries her location as a map link, with its accuracy and, if the phone hasn't reported in a while, the time of the last known fix. The app adds the link itself, so the model can never drop it. The email also lists her earlier positions. While Watch Me is still on after an alert, her people get a new link each time she moves 150 m or more (at most every 2 minutes, for an hour).
 7. **Notice**, for school and work, built in [app/](app/README.md). Harassment there is often a "joke" or a comment people only recognise later. She tells the app what happened (or records a class or meeting where one-party consent applies). Muse Spark shows which exact words match how the EEOC and the Department of Education describe harassment, and links each definition. Every entry goes into a dated, hash-chained record, with patterns counted per person ("3 times from Prof. R since Oct 14"). No alerts, no verdicts: only she decides what it was.
 
 ## What it must not become
@@ -150,6 +171,7 @@ A tool that reads other people's private conversations to find victims without t
 
 - [app/README.md](app/README.md): the Watch Me app: how to run it, its agents, and measured timings
 - [mobile/README.md](mobile/README.md): the iPhone and Android app (React Native, Expo): listens with the screen locked
+- [device/README.md](device/README.md): the Charm prototype on an ESP32-C6 board
 - [DESIGN.md](DESIGN.md): the system, its components and how data flows
 - [MODELS.md](MODELS.md): which models, how to train them, and the JEPA question
 - [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md): consent, privacy, recording laws, legal information versus legal advice

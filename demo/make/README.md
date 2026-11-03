@@ -26,6 +26,7 @@ Everything heavy goes in a work directory outside the repo (`$WORK` below).
 **The demo server** (`record.py` does all of this):
 - It runs with its own `DATA_DIR`, `CHECKIN_TIMEOUT_S=12` and `URGENT_CHECKIN_TIMEOUT_S=10`, so check-ins fit the video.
 - The profile starts with no voiceprint, so the enrollment can be filmed.
+- Chrome is given a made-up GPS position (a street in Brooklyn), so the alert on screen shows its map link.
 - Two earlier notice entries about "Prof. R" are seeded through `/api/notice/debrief`.
 - Between segments, a short "reset" recording stops the session with the PIN.
 - On screen, Watch Me is only ever started, stopped and answered by her voice. A take that doesn't start on her "Watch me", or (Notice) doesn't stop on her own stop line, is recorded again; the PIN is used only in the off-camera reset.

@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import time
 from collections import deque
 from typing import Awaitable, Callable
@@ -53,6 +54,34 @@ from .config import settings
 Send = Callable[[dict], Awaitable[None]]
 
 CONTEXT_SECONDS = 60
+
+# Location. A fix older than this is "last known" in the alert, and Watch Me asks the phone for a fresh one.
+FRESH_FIX_S = 60
+# After an alert, while still watching, her contacts get her new position when she has moved this far,
+# at most this often, for this long.
+UPDATE_MOVED_M, UPDATE_EVERY_S, UPDATE_FOR_S = 150, 120, 3600
+
+
+def distance_m(a: dict, b: dict) -> float:
+    """Great-circle distance between two fixes, in metres."""
+    la1, la2 = math.radians(a["lat"]), math.radians(b["lat"])
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin(math.radians(b["lon"] - a["lon"]) / 2) ** 2
+    return 2 * 6_371_000 * math.asin(math.sqrt(h))
+
+
+def map_link(fix: dict) -> str:
+    return f"https://maps.google.com/?q={fix['lat']:.6f},{fix['lon']:.6f}"
+
+
+def location_line(fix: dict | None, now: float | None = None) -> str | None:
+    """The line the app itself adds to every alert, so the model can never drop or cut the link."""
+    if not fix:
+        return None
+    age = (now or time.time()) - fix["at"]
+    when = "now" if age < FRESH_FIX_S else \
+        f"last known, at {time.strftime('%H:%M', time.localtime(fix['at']))}, {max(1, round(age / 60))} min ago"
+    accuracy = f", within {fix['accuracy']:.0f} m" if fix.get("accuracy") else ""
+    return f"Location ({when}{accuracy}): {map_link(fix)}"
 
 
 class Session:
@@ -74,7 +103,12 @@ class Session:
         self.held: np.ndarray | None = None   # audio of a sentence still going when its chunk ended
         self.seq = 0
         self.transcript_all: list[str] = []   # the whole session, for the notice review
-        self.location: dict | None = None
+        self.location: dict | None = None    # her latest fix: lat, lon, accuracy (m), at (epoch s)
+        self.trail: deque[dict] = deque(maxlen=30)   # earlier fixes, for the alert email
+        self.fresh_fix = asyncio.Event()
+        self.alert_contacts: list[dict] = []
+        self.last_sent_fix: dict | None = None
+        self.last_update_at = 0.0
         self.loud_times: deque[float] = deque()
         self.stop_refused_at = 0.0
         self.last_sweep = 0.0
@@ -338,6 +372,7 @@ class Session:
         self.last_sweep = time.time()
         # The 2-minute de-duplication is within a session: an alert in the last one must not mute this one.
         self.last_alert_at = self.last_ok_at = self.last_ok_score = 0.0
+        self.alert_contacts, self.last_sent_fix, self.last_update_at = [], None, 0.0
         self._event("start", detail=how, location=self.location, recording_rule=settings.recording_rule, mode=self.mode)
         await self.send({"type": "state", "state": "watching", "session": self.log.id, "mode": self.mode, "notice": (
             "Noticing. Nothing will alert anyone; you'll get a review when you stop." if self.mode == "notice"
@@ -630,6 +665,7 @@ class Session:
         self.checkin_reason = reason
         self._event("checkin", urgent=urgent, timeout=timeout, detail=reason)
         await self.show({"type": "checkin", "urgent": urgent, "timeout": timeout, "reason": reason})
+        await self.send({"type": "locate"})   # a fresh fix now, so an alert won't carry an old one
         self.checkin_task = self._spawn(self._checkin_timer(timeout))
 
     async def _checkin_timer(self, timeout: float) -> None:
@@ -676,20 +712,70 @@ class Session:
         self.record_until = max(self.record_until, now + 300)
         name = self.profile.get("name") or "the Watch Me user"
         heard = next((text for _, speaker, text in reversed(self.recent) if lexicon.scan(text)), "")
+        if self.location and now - self.location["at"] > FRESH_FIX_S and self._send:
+            # Her fix is old and the phone is still here: ask for a new one, a few seconds at most.
+            self.fresh_fix.clear()
+            await self.send({"type": "locate"})
+            try:
+                await asyncio.wait_for(self.fresh_fix.wait(), 4)
+            except asyncio.TimeoutError:
+                pass   # then the last known fix, with its time
+        where = location_line(self.location)
         facts = {
             "name": name, "why": why, "time": time.strftime("%H:%M %Z"),
-            "map": (f"https://maps.google.com/?q={self.location['lat']},{self.location['lon']}" if self.location else None),
+            "location_link_added_by_app": bool(where),
             "heard": heard[:160],
         }
         body = await muse.write_alert(facts)
+        if where:
+            body += "\n" + where
         contacts, rule = messenger.recipients(self.profile.get("contacts") or [])
-        results = await messenger.alert_all(contacts, name, body)
+        self.alert_contacts, self.last_sent_fix, self.last_update_at = contacts, self.location, time.time()
+        results = await messenger.alert_all(contacts, name, body, email_extra=self.trail_text())
         self._event("alert", detail=why, message=body, results=results, location=self.location, sent_to=rule)
         await self.show({"type": "alert", "why": why, "message": body, "results": results,
                          "contacts": len(contacts), "sent_to": rule})
 
+    def trail_text(self) -> str:
+        """Her earlier positions this session, newest first, for the alert email."""
+        earlier = [f for f in reversed(self.trail) if f is not self.location][:6]
+        if not earlier:
+            return ""
+        return "Earlier positions:\n" + "\n".join(
+            f"  {time.strftime('%H:%M', time.localtime(f['at']))}: {map_link(f)}" for f in earlier)
+
     def set_location(self, location: dict) -> None:
-        self.location = {k: location.get(k) for k in ("lat", "lon", "accuracy")}
+        try:
+            lat, lon = float(location["lat"]), float(location["lon"])
+        except (KeyError, TypeError, ValueError):
+            return
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            return
+        now = time.time()
+        at = now
+        if isinstance(location.get("time"), (int, float)) and 0 <= now - location["time"] / 1000 < 3600:
+            at = location["time"] / 1000   # when the phone took the fix, if it says
+        accuracy = location.get("accuracy")
+        fix = {"lat": lat, "lon": lon, "accuracy": float(accuracy) if isinstance(accuracy, (int, float)) else None,
+               "at": at}
+        self.location = fix
+        if not self.trail or distance_m(self.trail[-1], fix) >= 25 or at - self.trail[-1]["at"] >= 60:
+            self.trail.append(fix)
+        self.fresh_fix.set()
+        # After an alert, while still watching: tell her people when she has moved.
+        if (self.state == "watching" and self.alert_contacts and now - self.last_alert_at < UPDATE_FOR_S
+                and now - self.last_update_at >= UPDATE_EVERY_S
+                and (not self.last_sent_fix or distance_m(self.last_sent_fix, fix) >= UPDATE_MOVED_M)):
+            self.last_sent_fix, self.last_update_at = fix, now
+            self._spawn(self.send_location_update(fix))
+
+    async def send_location_update(self, fix: dict) -> None:
+        name = self.profile.get("name") or "the Watch Me user"
+        body = (f"Watch Me update for {name}: they have moved since the alert.\n{location_line(fix)}\n"
+                f"Please call {name}. If you can't reach them, call 911.")
+        results = await messenger.alert_all(self.alert_contacts, name, body, calls=False,
+                                            subject=f"Watch Me location update: {name}")
+        self._event("location_update", message=body, results=results, location=fix)
 
 
 def seg_tried_stop(session: Session) -> bool:

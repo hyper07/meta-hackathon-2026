@@ -40,9 +40,10 @@ score: 0 nothing wrong; 0.2 worth a note; 0.45 the owner should be asked if they
 
 ALERT_PROMPT = """You write one SMS for a personal safety app. The user chose these contacts in
 advance and asked to be alerted when they do not answer a safety check. Write at most 320
-characters: who, that they did not answer, when, where (if given), what was heard in plain
-words, and what to do (call them; if no answer, call 911). Calm, factual, no speculation about
-what happened to them. Plain text only."""
+characters: who, that they did not answer, when, what was heard in plain words, and what to do
+(call them; if no answer, call 911). The app adds the location link on its own line after your
+text: never write a link, an address or coordinates. Calm, factual, no speculation about what
+happened to them. Plain text only."""
 
 SUMMARY_PROMPT = """You summarise a Watch Me session for the person who switched it on. Use their
 own transcript and flags. Five sentences at most, in plain words: when it ran, the moments the
@@ -127,10 +128,9 @@ async def analyse(transcript: str) -> dict | None:
 
 
 def _alert_fallback(facts: dict) -> str:
-    where = f" Last location: {facts['map']}." if facts.get("map") else ""
     heard = f" Heard: \"{facts['heard'].rstrip('.!?')}\"." if facts.get("heard") else ""
     return (
-        f"Watch Me alert for {facts['name']}: {facts['why']} at {facts['time']}.{where}{heard} "
+        f"Watch Me alert for {facts['name']}: {facts['why']} at {facts['time']}.{heard} "
         f"Please call {facts['name']} now. If you can't reach them, call 911."
     )[:480]
 

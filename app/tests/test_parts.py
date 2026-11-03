@@ -104,3 +104,14 @@ def test_muse_transcribe_falls_back_to_whisper(monkeypatch):
     speech.resume_muse()                                       # back online
     assert speech.transcribe(None)[0].text == "from muse" and speech.last_engine == "muse"
     assert speech.transcribe(None, False)[0].text == "from whisper"   # standby: only on this machine
+
+
+def test_one_enrollment_line_becomes_three_overlapping_pieces():
+    import numpy as np
+    from watchme import speech
+    sr = speech.SAMPLE_RATE
+    line = np.concatenate([np.zeros(sr), (np.sin(np.linspace(0, 9000, 4 * sr)) * 0.2).astype(np.float32), np.zeros(sr)])
+    pieces = speech.enrollment_pieces(line)
+    assert len(pieces) == 3
+    assert all(abs(len(p) / sr - 2.0) < 0.05 for p in pieces)   # 4 s of speech -> three 2 s windows, half overlapping
+    assert abs(len(speech.voiced(line)) / sr - 4.0) < 0.05      # the silence around it is dropped

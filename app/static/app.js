@@ -132,20 +132,26 @@ function drawPrint(canvas, sig, { color = cssVar("--print"), reveal = 1, alpha =
   ctx.restore();
 }
 
-function drawScan(canvas, t, level) {
+function drawScan(canvas, t, level, progress = 0) {
   const ctx = canvas.getContext("2d"), W = canvas.width, c = W / 2;
   ctx.clearRect(0, 0, W, W);
   ctx.save();
-  ctx.strokeStyle = cssVar("--print-ghost");
-  ctx.lineWidth = W / 160;
-  for (let i = 1; i <= 8; i++) { ctx.globalAlpha = 0.25; ctx.beginPath(); ctx.arc(c, c, (W * 0.42 * i) / 8, 0, 2 * Math.PI); ctx.stroke(); }
+  // faint ridges, so the empty print already looks like a fingerprint waiting to be filled
+  ctx.strokeStyle = cssVar("--print-ghost"); ctx.lineWidth = W / 180; ctx.globalAlpha = 0.35;
+  for (let i = 1; i <= 9; i++) { ctx.beginPath(); ctx.ellipse(c, c, (W * 0.36 * i) / 9 * 0.84, (W * 0.36 * i) / 9, 0, 0, 2 * Math.PI); ctx.stroke(); }
   ctx.globalAlpha = 1;
-  ctx.strokeStyle = cssVar("--print"); ctx.lineWidth = W / 70;
-  ctx.beginPath(); ctx.arc(c, c, W * 0.2 + Math.min(1, level * 9) * W * 0.22, 0, 2 * Math.PI); ctx.stroke();
-  const a = t * 3;
-  const g = ctx.createConicGradient ? ctx.createConicGradient(a, c, c) : null;
-  if (g) { g.addColorStop(0, "rgba(59,91,219,.45)"); g.addColorStop(0.15, "rgba(59,91,219,0)"); g.addColorStop(1, "rgba(59,91,219,0)");
-           ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, W * 0.44, 0, 2 * Math.PI); ctx.fill(); }
+  if (progress > 0) {
+    // her voice: a soft pulse with the loudness, and the time left as a ring
+    ctx.fillStyle = cssVar("--print"); ctx.globalAlpha = 0.12;
+    ctx.beginPath(); ctx.arc(c, c, W * 0.12 + Math.min(1, level * 9) * W * 0.26, 0, 2 * Math.PI); ctx.fill();
+    ctx.globalAlpha = 0.25; ctx.strokeStyle = cssVar("--print-ghost"); ctx.lineWidth = W / 40;
+    ctx.beginPath(); ctx.arc(c, c, W * 0.45, 0, 2 * Math.PI); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.strokeStyle = cssVar("--print"); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(c, c, W * 0.45, -Math.PI / 2, -Math.PI / 2 + progress * 2 * Math.PI); ctx.stroke();
+    const a = t * 3, g = ctx.createConicGradient ? ctx.createConicGradient(a, c, c) : null;
+    if (g) { g.addColorStop(0, "rgba(8,102,255,.35)"); g.addColorStop(0.12, "rgba(8,102,255,0)"); g.addColorStop(1, "rgba(8,102,255,0)");
+             ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, W * 0.4, 0, 2 * Math.PI); ctx.fill(); }
+  }
   ctx.restore();
 }
 
@@ -285,6 +291,7 @@ function handle(m) {
     case "checkin": showCheckin(m); break;
     case "checkin_result": hideCheckin(); notice(m.ok ? "Thanks. Still watching." : "Alerting your contacts now."); break;
     case "alert": showAlert(m); break;
+    case "locate": locateNow(); break;
   }
 }
 
@@ -334,12 +341,21 @@ async function toggleMic() {
   setState(state);
 }
 
+function sendFix(p) {
+  lastLocationSent = Date.now();
+  sendJson({ type: "location", lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy, time: p.timestamp });
+}
+
 function watchLocation() {
   navigator.geolocation?.watchPosition((p) => {
     if (Date.now() - lastLocationSent < 30000) return;
-    lastLocationSent = Date.now();
-    sendJson({ type: "location", lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy });
+    sendFix(p);
   }, () => {}, { enableHighAccuracy: true, maximumAge: 30000 });
+}
+
+// The server asks for a fresh fix when it checks in or is about to alert.
+function locateNow() {
+  navigator.geolocation?.getCurrentPosition(sendFix, () => {}, { enableHighAccuracy: true, maximumAge: 10000, timeout: 8000 });
 }
 
 // While the model API is unreachable the phone keeps every chunk and queues the analysis; this bar says so.
@@ -440,13 +456,19 @@ function say(name, fallbackText) {
 
 function hideCheckin() { $("checkin").hidden = true; clearInterval(countdownTimer); }
 
+// The alert text with its map link as a tappable pin.
+function linkMap(text) {
+  return esc(text).replace(/\n/g, "<br>").replace(/https:\/\/maps\.google\.com\/\?q=(-?[\d.]+),(-?[\d.]+)/g,
+    (url, lat, lon) => `<a class="map-pin" href="${url}" target="_blank" rel="noopener">📍 ${(+lat).toFixed(5)}, ${(+lon).toFixed(5)}</a>`);
+}
+
 function showAlert(m) {
   hideCheckin();
   buzz([200, 100, 200]);
   say("alerting", "Alerting your people now.");
   const sent = (m.results || []).map((r) => `${esc(r.to)} · ${esc(r.channel)}: ${esc(r.result)}`).join("<br>") || "No contacts set up. Add them in Setup.";
   $("alertCard").innerHTML = `<h4>Alert sent to ${m.contacts} contact${m.contacts === 1 ? "" : "s"}${m.sent_to ? ` · ${esc(m.sent_to)}` : ""}</h4>
-    <div class="small">${esc(m.why)}</div><p>${esc(m.message)}</p><div class="small">${sent}</div>`;
+    <div class="small">${esc(m.why)}</div><p>${linkMap(m.message)}</p><div class="small">${sent}</div>`;
   $("alertCard").hidden = false;
 }
 
@@ -508,7 +530,8 @@ function eventHtml(id, e) {
   switch (e.kind) {
     case "clip": return `Audio kept (${e.seconds} s, sha256 ${esc(e.sha256.slice(0, 12))}…)<audio controls preload="none" src="/api/sessions/${id}/clips/${encodeURIComponent(e.file)}"></audio>`;
     case "decision": return decisionText(e);
-    case "alert": return `<b>Alert sent</b>: ${esc(e.detail)}<br>${esc(e.message)}`;
+    case "alert": return `<b>Alert sent</b>: ${esc(e.detail)}<br>${linkMap(e.message)}`;
+    case "location_update": return `<b>Location update sent</b><br>${linkMap(e.message)}`;
     default: return `<b>${esc(e.kind.replace(/_/g, " "))}</b>${e.detail ? ": " + esc(e.detail) : ""}`;
   }
 }
@@ -712,19 +735,18 @@ function fillProfile() {
 }
 
 function showEnrollState() {
-  const steps = [...$("enrollSteps").children];
-  steps.forEach((li, i) => { li.className = profile.enrolled && !samples.length ? "done" : i < samples.length ? "done" : i === samples.length ? "current" : ""; });
   $("voiceSaved").hidden = !profile.enrolled;
   $("stamp").hidden = !profile.enrolled;
   if (profile.enrolled) {
     drawPrint($("enrollPrint"), profile.voice_signature);
     $("voiceId").textContent = profile.voice_id; $("voiceWhen").textContent = profile.enrolled_at || "";
-    $("voiceMsg").textContent = "Record all three lines again any time to replace it.";
+    $("voiceMsg").textContent = "";
+    $("recSample").textContent = "Record again";
   } else {
-    drawScan($("enrollPrint"), 0, 0);
+    drawScan($("enrollPrint"), 0, 0, 0);
     $("voiceMsg").textContent = profile.needs_reenroll
-      ? "Watch Me now uses a more accurate voice model. Please record your three lines again."
-      : "Not recorded yet.";
+      ? "Watch Me now uses a more accurate voice model. Please record your line again." : "";
+    $("recSample").textContent = "Record my voice";
   }
 }
 
@@ -740,13 +762,18 @@ async function saveProfile(e) {
   profile = out; f.elements.pin.value = ""; $("profileMsg").textContent = "Saved.";
 }
 
-let samples = [];
+const ENROLL_SECONDS = 6;
 
-// Record while the scanner animates with the live loudness.
+// Record while the scanner animates with the live loudness and a ring fills with the time left.
 async function recordWithScan(seconds) {
   let level = 0, running = true;
   const t0 = performance.now(), canvas = $("enrollPrint");
-  const frame = (now) => { if (!running) return; drawScan(canvas, (now - t0) / 1000, level); requestAnimationFrame(frame); };
+  const frame = (now) => {
+    if (!running) return;
+    const t = (now - t0) / 1000;
+    drawScan(canvas, t, level, Math.min(1, t / seconds));
+    requestAnimationFrame(frame);
+  };
   requestAnimationFrame(frame);
   try { return await recordOnce(seconds, (rms) => (level = level * 0.7 + rms * 0.3)); }
   finally { running = false; }
@@ -754,26 +781,25 @@ async function recordWithScan(seconds) {
 
 async function recordSample() {
   if (mic) { $("voiceMsg").textContent = "Turn off listening on the Watch tab first."; return; }
-  if (!samples.length) { profile.enrolled = false; $("stamp").hidden = true; $("voiceSaved").hidden = true; }
-  showEnrollState();
-  const n = samples.length + 1;
-  $("recSample").disabled = true; $("voiceMsg").textContent = `Listening… read line ${n} now.`;
-  try { samples.push(bufferToB64(await recordWithScan(4))); }
-  catch (e) { $("voiceMsg").textContent = "Microphone blocked: " + e.message; $("recSample").disabled = false; return; }
-  $("recSample").disabled = false;
-  showEnrollState();
-  if (samples.length < 3) { $("recSample").textContent = `Record line ${samples.length + 1} of 3`; $("voiceMsg").textContent = "Got it."; return; }
+  profile.enrolled = false; showEnrollState();
+  const card = document.querySelector(".enroll-card");
+  $("recSample").disabled = true; $("recSample").textContent = "Listening…";
+  $("voiceMsg").textContent = "Say the line now.";
+  card.classList.add("recording");
+  let sample;
+  try { sample = bufferToB64(await recordWithScan(ENROLL_SECONDS)); }
+  catch (e) { $("voiceMsg").textContent = "Microphone blocked: " + e.message; return; }
+  finally { card.classList.remove("recording"); $("recSample").disabled = false; }
 
-  $("voiceMsg").textContent = "Building your voiceprint…";
-  const r = await fetch("/api/enroll", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ samples }) });
+  $("recSample").textContent = "Saving…"; $("voiceMsg").textContent = "Making your voiceprint…";
+  const r = await fetch("/api/enroll", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ samples: [sample] }) });
   const out = await r.json();
-  samples = []; $("recSample").textContent = "Record line 1 of 3";
-  if (!r.ok) { $("voiceMsg").textContent = out.detail; showEnrollState(); return; }
+  if (!r.ok) { showEnrollState(); $("voiceMsg").textContent = out.detail; return; }
   profile = { ...profile, ...out };
   if (out.strict_threshold) thresholds = { start: out.threshold, strict: out.strict_threshold };
   await animateReveal($("enrollPrint"), out.voice_signature);
   showEnrollState();
-  $("voiceMsg").textContent = out.advice || "Done. Try “Test my voice”, then ask a friend to try it too.";
+  $("voiceMsg").textContent = out.advice || "";
   renderOwnerPrint();
   toast("ok", `<span class="big-icon">🔒</span><b>Voiceprint saved.</b> Only your voice can stop Watch Me now.`);
 }

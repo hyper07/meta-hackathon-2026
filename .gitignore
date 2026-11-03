@@ -12,3 +12,5 @@ app/.models/
 
 # Notes kept locally only (the kickoff transcript is Meta/Cerebral Valley content)
 meta kickoff.md
+device/watchme-charm/config.h
+device/watchme-charm/build/

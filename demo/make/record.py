@@ -28,6 +28,10 @@ if fresh:
         "contacts": [{"name": "Sam", "phone": "+12125550100", "email": "sam@example.com", "call": True, "relation": "friend", "default": True},
                      {"name": "Mom", "phone": "+12125550101", "email": "", "call": True, "relation": "mom", "default": False}]}, indent=2))
 want = lambda name: not only or name in only
+if "enroll" in only and not fresh:   # the setup take must start with no voiceprint on screen
+    profile = json.loads((data / "profile.json").read_text())
+    profile["voiceprint"] = None
+    (data / "profile.json").write_text(json.dumps(profile, indent=2))
 # Redoing the notice take starts the notice book over, so the live review is the third entry about the same person.
 reseed = fresh or "notice" in only
 if "notice" in only:
@@ -91,10 +95,8 @@ try:
     if want("enroll"):
         record("enroll", "enroll.wav", [
             ["wait", 1], ["js", 'document.querySelector("[data-tab=setup]").click()'], ["wait", 0.8],
-            ["js", 'document.querySelector(".enroll-card").scrollIntoView({behavior:"smooth", block:"start"})'], ["wait", 1.5],
-            ["mark", "rec1"], ["js", '$("recSample").click()'], ["wait", 6.5],
-            ["mark", "rec2"], ["js", '$("recSample").click()'], ["wait", 6.5],
-            ["mark", "rec3"], ["js", '$("recSample").click()'], ["wait", 9],
+            ["js", 'document.querySelector(".enroll-card").scrollIntoView({behavior:"smooth", block:"center"})'], ["wait", 1.5],
+            ["mark", "rec1"], ["js", '$("recSample").click()'], ["wait", 10],
             ["mark", "done"], ["wait", 1]])
     assert json.loads((data / "profile.json").read_text()).get("voiceprint"), "no voiceprint: record the enroll segment first"
 

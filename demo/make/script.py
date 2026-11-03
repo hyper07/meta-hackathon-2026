@@ -3,14 +3,15 @@
 NARRATION = {
     "title": "This is Watch Me. It listens only when you ask it to, and it only answers to your voice.",
     "problem": "In a recent lawsuit, a student said she felt like bait at a fraternity party, and that she had "
-               "been drugged. The case is disputed. Someone who's been drugged can't say they're not OK. And at "
-               "school or at work, harassment often hides inside a joke.",
-    "enroll": "First, she reads three short lines. Watch Me turns her voice into a voiceprint, drawn here as a "
-              "fingerprint. From now on, only this voice can start Watch Me, stop it, or answer, I'm OK.",
+               "been drugged. The case is disputed. Someone who's been drugged can't say they're not OK.",
+    "home": "And at home, more than one in three women has faced violence from a partner. Nearly half of it never "
+            "reaches the police. When reaching for a phone isn't safe, her voice is enough.",
+    "enroll": "First, she says one line. Watch Me turns her voice into a voiceprint, drawn here as a fingerprint. "
+              "From now on, only this voice can start Watch Me, stop it, or answer, I'm OK.",
     "party1": "At a party, she says: watch me.",
     "party2": "Muse Spark reads what it hears, and decides to ask.",
-    "party3": "She answers, no. In her voice, that means she's not OK. So Watch Me texts and calls the people she "
-              "chose, with what it heard and where she is. Here, in dry run.",
+    "party3": "She's too dizzy to answer. So Watch Me texts and calls the people she chose, with what it heard and "
+              "a map of where she is. Here, in dry run.",
     "lock": "Now someone grabs her phone and says, stop watching. It isn't her voice. Watch Me refuses, keeps "
             "recording, and asks her right away.",
     "notice1": "Not all harassment is an emergency. At office hours, she switches to Notice mode. Nothing will "
@@ -22,8 +23,7 @@ NARRATION = {
     "hood": "Under the hood: Whisper and a voiceprint on the device. Muse Voice Transcribe hears the last minute "
             "again, and Muse Spark analyses it and decides. Muse Wonder reviews. On twenty two realistic scenes, it "
             "asked in nine of eleven harmful ones, with no needless check ins. Given a perfect transcript, Muse caught "
-            "all eleven, while a phrase list raised two false alarms. And the reviewer got all forty public training "
-            "cases right.",
+            "all eleven.",
     "close": "Watch Me. You turn it on. Only your voice turns it off. And only you decide what happened.",
 }
 
@@ -39,11 +39,7 @@ APP_PROMPTS = {
     "alerting": "Alerting your people now.",
 }
 
-ENROLL = [
-    "Watch me. This is my voice, and only I can turn this on or off.",
-    "I'm heading out tonight, so keep an eye on things for me.",
-    "My name is on this phone, and this is how I normally talk.",
-]
+ENROLL = ["Watch me. This is my voice, and only I can turn this on or off."]   # one line, said once
 
 # (scene id in app/scenarios/scenes.py, role there -> reference above). Lines come from the scene itself.
 SCENES = {"party-drink": {"owner": "owner", "a": "party"},

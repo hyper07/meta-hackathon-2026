@@ -28,7 +28,7 @@ cd app
 uv sync                 # once
 ./run.sh                # http://127.0.0.1:8000 on this computer
 ./run.sh --https        # https://<Wi-Fi IP>:8443 for a phone on the same Wi-Fi
-uv run python -m pytest # 28 tests; speech is faked, so no microphone needed
+uv run python -m pytest # 31 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # 22 realistic scenes, see scenarios/
 ```
 
@@ -40,7 +40,7 @@ Keys go in the repo-root `.env`; copy [.env.example](../.env.example) (`cp -n .e
 | `TWILIO_*` | real SMS and voice calls | dry run: shown on screen and in the log |
 | `SMTP_*` | real email | dry run |
 
-**First time:** open Setup. Enter your name, a PIN, an SOS phrase, an optional duress phrase and your contacts, then record your voice three times. Then go to Watch, turn on listening and say "Watch me".
+**First time:** open Setup. Enter your name, a PIN, an SOS phrase, an optional duress phrase and your contacts, then tap "Record my voice" and say the one line shown, once. It is cut into three overlapping pieces; how well they agree says whether the recording was clean. Then go to Watch, turn on listening and say "Watch me".
 
 ### On your phone
 

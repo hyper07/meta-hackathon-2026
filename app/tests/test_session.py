@@ -278,3 +278,36 @@ async def test_the_analyst_reads_muse_transcript_of_the_last_minute(harness, mon
     assert sent_audio == [LOUD_SPEECH.size]                  # the minute since "Watch me", in one request
     flagged = next(x for x in store.read_session(s.log.id)["segments"] if x["text"] == "no, stop, get off me")
     assert flagged["engine"] == "muse-spark" and flagged["transcript_engine"] == "muse-voice-transcribe"
+
+
+async def test_alerts_carry_her_location_and_follow_her_when_she_moves(harness, monkeypatch):
+    from watchme import messenger
+    monkeypatch.setattr(session_module, "UPDATE_EVERY_S", 0)
+    s, send, sent, say = harness
+    await s.attach(send)
+    await say("watch me")
+    s.set_location({"lat": 40.7484, "lon": -73.9857, "accuracy": 12})
+    await say("no, stop, get off me", STRANGER)
+    assert {"type": "locate"} in sent                 # a check-in asks the phone for a fresh fix
+    await asyncio.sleep(0.5)
+    alert = next(m for m in sent if m["type"] == "alert")
+    # The app adds the link itself, whole, whatever the model writes.
+    assert "Location (now, within 12 m): https://maps.google.com/?q=40.748400,-73.985700" in alert["message"]
+    spoken = messenger.spoken_text(alert["message"])
+    assert "http" not in spoken and spoken.endswith("Their location is in the text message.")
+
+    s.set_location({"lat": 40.7486, "lon": -73.9858})  # about 20 m: no update
+    await asyncio.sleep(0.05)
+    assert "location_update" not in kinds(s)
+    s.set_location({"lat": 40.7580, "lon": -73.9855})  # about 1 km north: her people are told
+    await asyncio.sleep(0.05)
+    update = next(e for e in store.read_session(s.log.id)["events"] if e["kind"] == "location_update")
+    assert "q=40.758000,-73.985500" in update["message"]
+    assert {r["channel"] for r in update["results"]} == {"sms", "email"}   # no second phone call
+
+
+def test_an_old_fix_is_labelled_last_known():
+    fix = {"lat": 1.0, "lon": 2.0, "accuracy": None, "at": 1000.0}
+    line = session_module.location_line(fix, now=1000.0 + 600)
+    assert line.startswith("Location (last known, at ") and "10 min ago" in line
+    assert session_module.location_line(None) is None

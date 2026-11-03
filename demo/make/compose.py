@@ -85,6 +85,22 @@ def card_problem(img):
     d.text((W // 2, 680), "At school and at work, harassment often hides inside a joke.", font=font(52, DEMI), fill=PURPLE, anchor="mm")
 
 
+def card_home(img):
+    d = ImageDraw.Draw(img)
+    d.text((W // 2, 170), "AT HOME", font=font(34, BOLD), fill=RED, anchor="mm")
+    d.text((W // 2, 300), "More than 1 in 3 women", font=font(104, HEAVY), fill=TEXT, anchor="mm")
+    d.text((W // 2, 400), "in the US have faced violence or stalking by a partner (CDC, 2023/2024)",
+           font=font(34, MED), fill=MUTED, anchor="mm")
+    x = 330
+    for big, small in [("Over half", "of women murdered in the US are killed by a current or former partner (CDC)"),
+                       ("44%", "of domestic violence never reaches the police (Bureau of Justice Statistics, 2006–2015)")]:
+        d.text((x, 540), big, font=font(72, HEAVY), fill=RED, anchor="lm")
+        text_block(d, (x, 600), small, font(30, MED), MUTED, 560, 1.25)
+        x += 700
+    d.text((W // 2, 850), "When reaching for a phone isn't safe, her voice is enough.", font=font(52, DEMI), fill=ACCENT,
+           anchor="mm")
+
+
 def card_hood(img):
     d = ImageDraw.Draw(img)
     d.text((W // 2, 110), "Every agent has its own model", font=font(64, HEAVY), fill=TEXT, anchor="mm")
@@ -111,7 +127,7 @@ def card_hood(img):
         d.text((x, 780), big, font=font(72, HEAVY), fill=GREEN, anchor="lm")
         text_block(d, (x, 830), small, font(24, MED), MUTED, 320, 1.2)
         x += 360
-    d.text((260, 935), "22 scripted scenes with synthetic voices and background noise; the perfect transcript is the scenes' "
+    d.text((260, 905), "22 scripted scenes with synthetic voices and background noise; the perfect transcript is the scenes' "
            "own script. Test sets in the repo.", font=font(22, REG), fill=MUTED, anchor="lm")
 
 
@@ -129,12 +145,12 @@ def card_close(img):
 
 SEGMENTS = {
     "enroll": dict(kicker="SETUP", title="Her voice is the key",
-                   bullets=["Three lines become one voiceprint (ECAPA, on the device)",
+                   bullets=["One line, said once, becomes her voiceprint (ECAPA, on the device)",
                             "70% match to start · 90% to stop or to say “I'm OK”"]),
     "party": dict(kicker="EMERGENCY MODE", title="“Watch me”", color=RED,
                   bullets=["Whisper transcribes every few seconds", "Muse Voice Transcribe hears the last minute again",
                            "Muse Spark scores it and picks discard, ask or alert",
-                           "No answer, or “no” in her voice: SMS, call, email"]),
+                           "No answer, or “no” in her voice: SMS, call, email, with a map link"]),
     "lock": dict(kicker="VOICE LOCK", title="Only her voice stops it", color=RED,
                  bullets=["A stranger's “stop watching” is refused", "Recording continues, and she's asked right away"]),
     "notice": dict(kicker="NOTICE MODE · SCHOOL, WORK, ONLINE", title="Was this harassment?", color=PURPLE,
@@ -144,7 +160,8 @@ SEGMENTS = {
 }
 
 CLIPS = [dict(card=card_title, dur=6.0, narr=[["title", 0.5]]),
-         dict(card=card_problem, dur=None, narr=[["problem", 0.6]])]
+         dict(card=card_problem, dur=None, narr=[["problem", 0.6]]),
+         dict(card=card_home, dur=None, narr=[["home", 0.5]])]
 for seg in ("enroll", "party", "lock", "notice"):
     CLIPS.append(dict(rec=seg, seg=seg, **EDIT[seg]))
 CLIPS += [dict(card=card_hood, dur=None, narr=[["hood", 0.5]]), dict(card=card_close, dur=None, narr=[["close", 0.5]])]

@@ -146,26 +146,20 @@
 
       <div class="label">Your voice</div>
       <div class="card enroll-card">
-        <p class="hint top">Only your voice can start Watch Me, stop it, or answer “I'm OK”. Read each line once, in your normal voice.</p>
-        <div class="enroll">
-          <div class="enroll-stage">
-            <canvas id="enrollPrint" width="480" height="480"></canvas>
-            <div class="stamp" id="stamp" hidden>SAVED</div>
-          </div>
-          <ol class="enroll-steps" id="enrollSteps">
-            <li><span class="dot"></span>“Watch me. This is my voice, and only I can turn this on or off.”</li>
-            <li><span class="dot"></span>“I'm heading out tonight, so keep an eye on things for me.”</li>
-            <li><span class="dot"></span>“My name is on this phone, and this is how I normally talk.”</li>
-          </ol>
+        <div class="enroll-stage">
+          <canvas id="enrollPrint" width="520" height="520"></canvas>
+          <div class="stamp" id="stamp" hidden>SAVED</div>
         </div>
+        <p class="enroll-say">Say this once, in your normal voice</p>
+        <blockquote class="enroll-line" id="enrollLine">“Watch me. This is my voice, and only I can turn this on or off.”</blockquote>
         <div class="actions">
-          <button class="primary" id="recSample">Record line 1 of 3</button>
+          <button class="primary" id="recSample">Record my voice</button>
           <button class="secondary" id="testVoice">Test my voice</button>
         </div>
-        <div class="hint" id="voiceMsg"></div>
+        <div class="hint center" id="voiceMsg"></div>
         <div class="saved" id="voiceSaved" hidden>
-          <b>Voiceprint saved</b> · <code id="voiceId"></code> · <span id="voiceWhen"></span>
-          <div class="hint">70% match starts Watch Me. Stopping it, or answering “I'm OK”, needs 90%. Anyone else is refused and the recording keeps going.</div>
+          <b>Only your voice</b> can start Watch Me, stop it, or answer “I'm OK”.
+          <div class="hint">70% match to start · 90% to stop or say “I'm OK” · <code id="voiceId"></code> · <span id="voiceWhen"></span></div>
         </div>
       </div>
 

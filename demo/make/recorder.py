@@ -79,6 +79,9 @@ async def main():
         task = asyncio.ensure_future(reader())
         await call("Emulation.setDeviceMetricsOverride", width=430, height=932, deviceScaleFactor=2, mobile=True)
         await call("Emulation.setEmulatedMedia", features=[{"name": "prefers-color-scheme", "value": "dark"}])
+        # A made-up phone position (a street in Brooklyn), so the alert shows its location link.
+        await call("Browser.grantPermissions", permissions=["geolocation"], origin=URL.rstrip("/"))
+        await call("Emulation.setGeolocationOverride", latitude=40.67642, longitude=-73.95114, accuracy=12)
         await call("Page.enable")
         await call("Page.navigate", url=URL)
         await asyncio.sleep(2.5)
