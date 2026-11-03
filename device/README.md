@@ -2,6 +2,13 @@
 
 A stand-in for Meta's Muse Charm, made during the hackathon on a Waveshare ESP32-C6 1.69" LCD board (240×280 ST7789 screen, ES8311 codec with a microphone and a speaker on the MX1.25 connector). It is the always-on microphone for the Watch Me server. Its screen shows **Momo**, a round mochi cat drawn from shapes ([avatar.h](watchme-charm/avatar.h)).
 
+<p>
+<img src="../demo/charm/MOMO.gif" width="260" alt="Momo on the board, then Are you OK? with a countdown">
+<img src="../demo/charm/MOMO.jpg" width="260" alt="The board asking Are you OK? Say I'm OK, Momo worried, 4 seconds left">
+</p>
+
+To film it without speaking, [momo_demo.py](momo_demo.py) plays the demo's scenes from the Mac's speakers and prints each step: "Watch me", the drink pressure, "Are you OK?", the alert (dry run), and "stop watching".
+
 **Stealth.** Momo looks the same whether Watch Me is listening or not, so nothing tells anyone nearby. The only hint is for her: while it is watching, the sparkles in Momo's eyes are tiny hearts. The only Watch Me screen it ever shows is "Are you OK?", with a countdown, because she has to see it to answer.
 
 - **Voice only, as in the app.** Start, stop and "I'm OK" are all by her voice. Holding BOOT for 1.5 s during "Are you OK?" asks for help.

@@ -29,6 +29,17 @@ On the Charm, Watch Me runs in **stealth**: while it listens and watches, the pe
 
 *Concept renders made with Muse Image (Meta Model API, [demo/make/charm_images.py](demo/make/charm_images.py)), using a Meta product photo of the Charm and the app's real screens as references. Not photos of a working product: today Watch Me runs on the phone, and the Charm becomes its always-on microphone once Meta opens it to developers.*
 
+#### Working today: a Charm-sized prototype
+
+To try the stealth design on real hardware, Watch Me also runs on a small ESP32-C6 board with a 1.69" screen, a microphone and a speaker ([device/](device/README.md)). Its screen shows **Momo**, a round cat drawn in code. Momo looks the same whether Watch Me is listening or not; only the sparkles in its eyes turn to tiny hearts while it watches, a hint just for her. When the agents hear something wrong, Momo turns worried and asks "Are you OK?" on screen and out loud, with a countdown. "I'm OK" in her own voice makes Momo happy again; no answer alerts her people, and Momo goes straight back to its usual face, so nobody nearby can tell.
+
+<p>
+<img src="demo/charm/MOMO.gif" width="300" alt="The prototype board: Momo on screen, then Are you OK? with a countdown as Watch Me checks in">
+<img src="demo/charm/MOMO.jpg" width="300" alt="The prototype board asking Are you OK? Say I'm OK, with Momo looking worried and 4 seconds left">
+</p>
+
+*The real board, filmed during a run: the party scene played from a laptop's speakers, Momo's microphone heard it, and the Muse agents decided to check in. It talks to the same Watch Me server as the phone app, over Wi-Fi or a USB cable.*
+
 ## Run it
 
 You need macOS or Linux, [uv](https://docs.astral.sh/uv/) and Python 3.11+. For the phone app, you also need Node 20+, plus Xcode and CocoaPods (iPhone) or Android Studio and JDK 17 (Android).

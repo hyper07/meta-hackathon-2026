@@ -20,6 +20,7 @@ import json
 import math
 import sys
 import threading
+import time
 import urllib.request
 import wave
 from pathlib import Path
@@ -31,10 +32,11 @@ ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
 PORT = ARGS[0] if ARGS else "/dev/cu.usbmodem1101"
 SERVER = ARGS[1] if len(ARGS) > 1 else "ws://127.0.0.1:8000/ws"
 ENROLL = "--enroll" in sys.argv
+SAVE = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--save=")), "")   # keep loud chunks as WAVs, to debug
 LINE = "Watch me. This is my voice, and only I can turn this on or off."
 PROMPT = Path(__file__).resolve().parents[1] / "app" / "static" / "voice" / "are-you-ok.wav"
 KEEP = {"hello", "state", "checkin", "checkin_result", "alert", "mode"}
-FIELDS = ("type", "state", "timeout", "urgent", "ok", "mode")
+FIELDS = ("type", "state", "timeout", "urgent", "ok", "mode")   # all the board needs; the rest is only printed
 
 
 def prompt_pcm() -> bytes:
@@ -127,6 +129,10 @@ async def main() -> None:
                 samples = array.array("h", bytes(chunk))
                 rms = (sum(x * x for x in samples) / max(1, len(samples))) ** 0.5
                 level = 20 * math.log10(rms / 32768 + 1e-9)
+                if SAVE and level > -50:
+                    Path(SAVE).mkdir(parents=True, exist_ok=True)
+                    with wave.open(str(Path(SAVE) / f"{time.strftime('%H%M%S')}{'-enroll' if enrolling else ''}.wav"), "wb") as w:
+                        w.setnchannels(1); w.setsampwidth(2); w.setframerate(16000); w.writeframes(bytes(chunk))
                 print(f"audio: {len(samples) / 16000:.2f} s chunk, {level:.0f} dBFS"
                       + (f" ({board.bad} damaged frames dropped so far)" if board.bad else ""), flush=True)
                 if enrolling:
@@ -138,17 +144,22 @@ async def main() -> None:
 
     enrolling = ENROLL
     takes: list[bytes] = []
+    before = b""
     if ENROLL:
         print("enroll: say this once to the board, in your normal voice:", flush=True)
         print(f"   {LINE}", flush=True)
 
     def enroll_chunk(audio: bytes, level: float) -> None:
         nonlocal enrolling
+        nonlocal before
         if not takes and (level < -45 or len(audio) < 32000):
-            return                       # waiting for her to start
-        takes.append(audio)              # the chunk she starts in, and the next one: her line may cross the 4 s edge
+            before = audio               # waiting for her to start; a quiet start of the line may be in here
+            return
+        if not takes and before:
+            takes.append(before)
+        takes.append(audio)              # the chunk before, the loud one, and the next: the line crosses 4 s edges
         print(f"enroll: heard you ({level:.0f} dBFS)", flush=True)
-        if len(takes) < 2:
+        if len(takes) < 3:
             return
         enrolling = False
         http = SERVER.replace("ws://", "http://").rsplit("/ws", 1)[0]
@@ -189,10 +200,17 @@ async def main() -> None:
                         if not isinstance(message, str):
                             continue
                         data = json.loads(message)
+                        if data.get("type") == "voice" and data.get("command"):
+                            print(f"server: voice {data['command']} {data.get('outcome')} (match {data.get('match')}) "
+                                  f"{data.get('text') or ''}", flush=True)
+                        elif data.get("type") == "notice":
+                            print(f"server: notice {data.get('text')}", flush=True)
                         if data.get("type") not in KEEP:
                             continue
                         board.send("J", json.dumps({k: data[k] for k in FIELDS if k in data}).encode())
-                        print(f"server: {data.get('type')} {data.get('state', '')}", flush=True)
+                        extra = {"checkin": data.get("reason"), "alert": data.get("message"),
+                                 "checkin_result": "ok" if data.get("ok") else "not ok"}.get(data["type"]) or ""
+                        print(f"server: {data.get('type')} {data.get('state', '')} {extra}".rstrip(), flush=True)
                         if data["type"] == "checkin":
                             asyncio.create_task(speak())
 
