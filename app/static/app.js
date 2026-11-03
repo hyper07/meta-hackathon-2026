@@ -845,31 +845,7 @@ $("retryPending").onclick = retryPending;
 $("ntResult").onclick = saveLabel;
 $("sessionNotice").onclick = saveLabel;
 $("micButton").onclick = toggleMic;
-// "I'm OK" is a slide, so a stray tap can't dismiss the check-in; it still asks for the PIN when there is one.
-const confirmOk = () => profile.has_pin ? askPin("PIN to confirm you're OK", (pin) => sendJson({ type: "checkin_answer", ok: true, pin }))
-                                        : sendJson({ type: "checkin_answer", ok: true });
-
-function slideToConfirm(track, onDone) {
-  const knob = track.querySelector(".slide-knob"), label = track.querySelector(".slide-label");
-  let startX = 0, x = 0, max = 0, dragging = false;
-  const set = (v) => {
-    x = Math.max(0, Math.min(v, max)); knob.style.transform = `translateX(${x}px)`;
-    label.style.opacity = String(Math.max(0, 1 - x / ((max || 1) * 0.6))); track.setAttribute("aria-valuenow", Math.round(100 * x / (max || 1))); };
-  knob.addEventListener("pointerdown", (e) => {
-    dragging = true; startX = e.clientX - x; max = track.clientWidth - knob.offsetWidth - 8;
-    track.classList.add("dragging"); try { knob.setPointerCapture(e.pointerId); } catch {} buzz(10);
-  });
-  knob.addEventListener("pointermove", (e) => { if (dragging) set(e.clientX - startX); });
-  const end = () => {
-    if (!dragging) return;
-    dragging = false; track.classList.remove("dragging");
-    if (x >= max * 0.85) { set(max); buzz(30); setTimeout(() => { set(0); onDone(); }, 150); } else set(0);
-  };
-  knob.addEventListener("pointerup", end);
-  knob.addEventListener("pointercancel", end);
-  track.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onDone(); } });
-}
-slideToConfirm($("imOk"), confirmOk);
+// "I'm OK" is voice only: a tap could come from whoever holds the phone. "Get help now" is the one button.
 
 // Press and hold the orb to start listening: a ring fills for 0.7 s; letting go early cancels.
 function holdOrb() {

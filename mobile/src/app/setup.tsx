@@ -105,7 +105,7 @@ function ProfileForm() {
       <SectionLabel>You</SectionLabel>
       <Card>
         <Field label="Name" note="used in alerts" value={name} onChangeText={setName} />
-        <Field label="PIN" note="4–8 digits; a fallback to stop, and to tap “I’m OK”" value={pin} onChangeText={setPin}
+        <Field label="PIN" note="4–8 digits; a fallback to stop Watch Me" value={pin} onChangeText={setPin}
           keyboardType="number-pad" secureTextEntry placeholder={p.has_pin ? 'unchanged if blank' : ''} />
         <Field label="SOS phrase" note="alerts your people at once" value={sos} onChangeText={setSos} placeholder="e.g. purple elephant" />
         <Field label="Duress phrase" note="looks like it stops, keeps listening and alerts" value={duress} onChangeText={setDuress} />

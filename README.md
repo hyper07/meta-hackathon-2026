@@ -78,7 +78,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 31 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 32 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 ```
 

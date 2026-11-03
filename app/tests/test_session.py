@@ -58,7 +58,7 @@ async def test_only_the_owner_starts_and_stops(harness):
     assert [m for m in sent if m["type"] == "voice"][-1]["outcome"] == "refused"
     assert s.state == "watching"
     assert "stop_refused" in kinds(s) and "checkin" in kinds(s)   # someone else trying to stop it is itself a warning
-    await s.answer_checkin_tap(True, "2468")
+    await say("I'm okay")
     await say("stop watching")
     assert s.state == "standby"
 
@@ -158,7 +158,7 @@ async def test_two_decisions_at_once_open_one_checkin(harness):
     second = asyncio.ensure_future(s.start_checkin(True, "second"))
     await asyncio.gather(first, second)
     assert sum(1 for m in sent if m["type"] == "checkin") == 1
-    await s.answer_checkin_tap(True, "2468")
+    await say("I'm okay")
     await asyncio.sleep(0.5)                      # the first timer (0.3 s) would have fired by now if it were orphaned
     kinds = [e["kind"] for e in store.read_session(s.log.id)["events"]]
     assert kinds.count("checkin") == 1 and "checkin_missed" not in kinds and "alert" not in kinds
@@ -183,7 +183,7 @@ async def test_offline_keeps_all_audio_and_catches_up_later(harness, monkeypatch
     await say("the music is good", STRANGER)
     assert len(s.clip) >= 2
     assert any(m["type"] == "checkin" for m in sent)     # the phrase list and rules still work offline
-    await s.answer_checkin_tap(True, "2468")
+    await say("I'm okay")
     await s.stop_with_pin("2468")
     session = store.read_session(s.log.id)
     assert any(e["kind"] == "clip" for e in session["events"]) and any(e["kind"] == "offline" for e in session["events"])
@@ -222,7 +222,7 @@ async def test_offline_audio_is_transcribed_by_muse_before_the_analysis(harness,
     await say("watch me")
     await say("no, stop, get off me", STRANGER)
     await say("what a nice evening", STRANGER)
-    await s.answer_checkin_tap(True, "2468")
+    await say("I'm okay")
     await s.stop_with_pin("2468")
     assert {i["kind"] for i in store.read_pending()} == {"analyse", "transcribe"}
 
@@ -311,3 +311,16 @@ def test_an_old_fix_is_labelled_last_known():
     line = session_module.location_line(fix, now=1000.0 + 600)
     assert line.startswith("Location (last known, at ") and "10 min ago" in line
     assert session_module.location_line(None) is None
+
+
+async def test_a_tap_can_get_help_but_never_say_im_ok(harness):
+    s, send, sent, say = harness
+    await s.attach(send)
+    await say("watch me")
+    await say("leave me alone, let me go", STRANGER)
+    assert s.checkin_task
+    await s.answer_checkin_tap(True, "2468")          # even with her PIN: whoever holds the phone could type it
+    assert s.checkin_task and "ok_refused" in kinds(s)
+    await s.answer_checkin_tap(False, None)           # "Get help now" needs nothing
+    assert s.checkin_task is None
+    assert next(m for m in sent if m["type"] == "alert")

@@ -28,10 +28,10 @@ The phone app for Watch Me, in React Native with Expo (SDK 58). It speaks the sa
 | **Your voice decides** | A success buzz and a green toast when "Watch me" or "I'm OK" is verified as you. An error buzz, a red toast and a shaking voice lock when another voice is refused. |
 | **The voice gauge glides** | The match arc and percentage animate to each new reading. |
 | **What it heard** | New lines slide in at the top; alerts spring in. |
-| **"Are you OK?"** | A warning buzz and vibration, the spoken prompt, and **slide to say I'm OK**, so a stray tap or a pocket can't dismiss it. Sliding still asks for the PIN if one is set. |
+| **"Are you OK?"** | A warning buzz and vibration and the spoken prompt. Only her voice can answer "I'm OK": no button or slide, so whoever holds the phone can't dismiss it. The one button is "Get help now". |
 | **Every press** | Buttons give a little under the finger, with a light tick. |
 
-The web page in `app/static/` has the same hold, slide and enter animations. It vibrates where the browser supports it; iPhone browsers don't.
+The web page in `app/static/` has the same hold and enter animations. It vibrates where the browser supports it; iPhone browsers don't.
 
 ## Run it
 

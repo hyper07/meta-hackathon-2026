@@ -28,7 +28,7 @@ cd app
 uv sync                 # once
 ./run.sh                # http://127.0.0.1:8000 on this computer
 ./run.sh --https        # https://<Wi-Fi IP>:8443 for a phone on the same Wi-Fi
-uv run python -m pytest # 31 tests; speech is faked, so no microphone needed
+uv run python -m pytest # 32 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # 22 realistic scenes, see scenarios/
 ```
 
@@ -124,7 +124,7 @@ Detection and voice-lock results on the 20 test scenes are in [scenarios/README.
 
 - **The owner turns it on.** Nothing is kept in standby: speech is only checked for "Watch me", by Whisper on this machine, and dropped. No audio leaves the device until she turns it on.
 - **What leaves the device while watching:** the last minute of audio, to Muse Voice Transcribe on the Meta Model API, each time the Analyst runs, and its text, to Muse Spark. The voiceprint never leaves. `ANALYST_STT=whisper` keeps all audio on the machine running the server.
-- **Only the owner's voice** starts it, stops it or says "I'm OK", and stopping needs a much closer match than starting. Another voice saying "stop watching" is refused and triggers a check-in. Tapping "I'm OK" needs the PIN, so someone who grabs the phone can't dismiss the check.
+- **Only the owner's voice** starts it, stops it or says "I'm OK", and stopping needs a much closer match than starting. Another voice saying "stop watching" is refused and triggers a check-in. "I'm OK" can only be said, never tapped (not even with the PIN), so someone who grabs the phone can't dismiss the check. The one button is "Get help now".
 - **No silent alerts from the model.** Alerts go out only after a missed check-in, a "not OK", the SOS or duress phrase, or the phone dropping off while watching.
 - **Audio is kept only around flagged moments**: the chunk before, and 30 s after. With `RECORDING_RULE=all-party`, no audio is kept at all, only the text notes. Check the law where you are ([../SAFETY_AND_LAW.md](../SAFETY_AND_LAW.md)).
 - **Notice mode never interrupts or alerts.** No check-ins, no alert when the phone drops off. The SOS and duress phrases still alert, since saying one is never an accident. Live notice mode is refused under `RECORDING_RULE=all-party`, and nobody's voiceprint is stored except the owner's: she names people herself.

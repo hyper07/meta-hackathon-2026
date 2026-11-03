@@ -688,12 +688,13 @@ class Session:
             await self.escalate(f"answered that they are not OK ({how})")
 
     async def answer_checkin_tap(self, ok: bool, pin: str | None) -> None:
-        """"Get help" needs nothing. "I'm OK" by tap needs the PIN when one is set, so a grabbed phone can't dismiss it."""
-        if ok and self.profile.get("pin") and pin != self.profile["pin"]:
-            self._event("ok_refused", detail="tap \"I'm OK\" with a wrong PIN")
-            await self.show({"type": "notice", "text": "Wrong PIN."})
+        """A tap can only ask for help. "I'm OK" is hers to say, in her own voice: a tap, or a PIN typed by
+        whoever holds the phone, could dismiss a check-in for someone who can't speak for herself."""
+        if ok:
+            self._event("ok_refused", detail="\"I'm OK\" by tap: only her voice can say it")
+            await self.show({"type": "notice", "text": "Say \"I'm OK\" in your voice. A tap can only get help."})
             return
-        await self.answer_checkin(ok, "tapped " + ("\"I'm OK\"" if ok else "\"Get help\""))
+        await self.answer_checkin(False, "tapped \"Get help\"")
 
     def _recent_scores(self) -> list[float]:
         if not self.log:

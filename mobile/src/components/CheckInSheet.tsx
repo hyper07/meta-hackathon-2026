@@ -1,27 +1,23 @@
-// "Are you OK?": over every screen, with a countdown ring. She can answer by voice ("I'm OK"), which the
-// server hears through the stream, or by sliding. Sliding to "I'm OK" asks for the PIN, so someone holding
-// her phone can't dismiss it; "Get help now" needs nothing.
+// "Are you OK?": over every screen, with a countdown ring. Only her voice can answer "I'm OK" (the server
+// hears it through the stream), so whoever holds the phone can't dismiss it. The one button gets help.
 import { useEffect, useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { useTheme } from '../lib/theme';
 import { useWatchMe, type CheckIn } from '../lib/watchme';
-import { SlideToConfirm } from './SlideToConfirm';
 import { Button } from './ui';
 
 export function CheckInSheet() {
   const { checkin } = useWatchMe();
-  // Keyed by the check-in, so each new one starts with a fresh countdown and no PIN typed.
+  // Keyed by the check-in, so each new one starts with a fresh countdown.
   return checkin ? <Sheet key={checkin.startedAt} checkin={checkin} /> : null;
 }
 
 function Sheet({ checkin }: { checkin: CheckIn }) {
   const t = useTheme();
-  const { answerCheckin, profile } = useWatchMe();
+  const { answerCheckin } = useWatchMe();
   const [now, setNow] = useState(() => Date.now());
-  const [askPin, setAskPin] = useState(false);
-  const [pin, setPin] = useState('');
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
@@ -31,11 +27,6 @@ function Sheet({ checkin }: { checkin: CheckIn }) {
   const left = Math.max(0, Math.ceil(checkin.timeout - (now - checkin.startedAt) / 1000));
   const fraction = left / Math.max(1, checkin.timeout);
   const r = 54, c = 2 * Math.PI * r;
-
-  const ok = () => {
-    if (profile.has_pin && !askPin) { setAskPin(true); return; }
-    answerCheckin(true, pin || undefined);
-  };
 
   return (
     <Modal transparent animationType="fade" visible>
@@ -51,14 +42,8 @@ function Sheet({ checkin }: { checkin: CheckIn }) {
             </Svg>
             <Text style={[styles.number, { color: t.red }]}>{left}</Text>
           </View>
-          <Text style={[styles.hint, { color: t.muted }]}>Say “I’m OK”, or slide. No answer alerts your people.</Text>
-          {askPin && (
-            <TextInput value={pin} onChangeText={setPin} placeholder="PIN" placeholderTextColor={t.muted} keyboardType="number-pad"
-              secureTextEntry maxLength={8} autoFocus style={[styles.pin, { backgroundColor: t.fill, color: t.text }]} />
-          )}
+          <Text style={[styles.hint, { color: t.muted }]}>Say “I’m OK” in your voice. No answer alerts your people.</Text>
           <View style={styles.buttons}>
-            {askPin ? <Button big kind="ok" title="Confirm I’m OK" onPress={ok} />
-                    : <SlideToConfirm label="Slide: I’m OK" color={t.ok} onConfirm={ok} />}
             <Button big kind="danger" title="Get help now" onPress={() => answerCheckin(false)} />
           </View>
         </View>
@@ -75,6 +60,5 @@ const styles = StyleSheet.create({
   count: { width: 150, height: 150, marginVertical: 12, alignItems: 'center', justifyContent: 'center' },
   number: { position: 'absolute', fontSize: 56, fontWeight: '800', fontVariant: ['tabular-nums'] },
   hint: { fontSize: 13, textAlign: 'center', marginBottom: 8 },
-  pin: { width: '100%', textAlign: 'center', fontSize: 26, letterSpacing: 8, borderRadius: 12, paddingVertical: 10, marginVertical: 6 },
   buttons: { width: '100%', gap: 10, marginTop: 6 },
 });

@@ -63,86 +63,86 @@ So Watch Me texts and calls the people she chose, with what it heard and a map o
 Here, in dry run.
 
 17
-00:01:28,879 --> 00:01:31,807
+00:01:28,979 --> 00:01:31,907
 Now someone grabs her phone and says, stop watching.
 
 18
-00:01:31,807 --> 00:01:32,877
+00:01:31,907 --> 00:01:32,977
 It isn't her voice.
 
 19
-00:01:32,877 --> 00:01:36,200
+00:01:32,977 --> 00:01:36,299
 Watch Me refuses, keeps recording, and asks her right away.
 
 20
-00:01:38,579 --> 00:01:40,411
+00:01:38,679 --> 00:01:40,511
 Not all harassment is an emergency.
 
 21
-00:01:40,411 --> 00:01:42,766
+00:01:40,511 --> 00:01:42,866
 At office hours, she switches to Notice mode.
 
 22
-00:01:42,766 --> 00:01:44,180
+00:01:42,866 --> 00:01:44,280
 Nothing will interrupt her.
 
 23
-00:02:11,079 --> 00:02:16,252
+00:02:11,180 --> 00:02:16,352
 When she stops, Muse Wonder shows which exact words match how the EEOC describes harassment.
 
 24
-00:02:16,252 --> 00:02:17,178
+00:02:16,352 --> 00:02:17,278
 Strings attached.
 
 25
-00:02:17,178 --> 00:02:18,158
+00:02:17,278 --> 00:02:18,258
 Getting her alone.
 
 26
-00:02:18,158 --> 00:02:19,520
+00:02:18,258 --> 00:02:19,620
 It never decides for her.
 
 27
-00:02:19,579 --> 00:02:20,697
+00:02:19,680 --> 00:02:20,797
 And it counts patterns.
 
 28
-00:02:20,697 --> 00:02:25,699
+00:02:20,797 --> 00:02:25,800
 This is the third time from the same professor, kept in a dated record that shows if anyone changes it.
 
 29
-00:02:26,579 --> 00:02:29,681
+00:02:26,680 --> 00:02:29,781
 Under the hood: Whisper and a voiceprint on the device.
 
 30
-00:02:29,681 --> 00:02:34,756
+00:02:29,781 --> 00:02:34,856
 Muse Voice Transcribe hears the last minute again, and Muse Spark analyses it and decides.
 
 31
-00:02:34,756 --> 00:02:35,884
+00:02:34,856 --> 00:02:35,984
 Muse Wonder reviews.
 
 32
-00:02:35,884 --> 00:02:41,523
+00:02:35,984 --> 00:02:41,623
 On 22 realistic scenes, it asked in nine of eleven harmful ones, with no needless check-ins.
 
 33
-00:02:41,523 --> 00:02:44,399
+00:02:41,623 --> 00:02:44,499
 Given a perfect transcript, Muse caught all eleven.
 
 34
-00:02:46,099 --> 00:02:46,592
+00:02:46,200 --> 00:02:46,692
 Watch Me.
 
 35
-00:02:46,592 --> 00:02:47,413
+00:02:46,692 --> 00:02:47,513
 You turn it on.
 
 36
-00:02:47,413 --> 00:02:48,999
+00:02:47,513 --> 00:02:49,099
 Only your voice turns it off.
 
 37
-00:02:48,999 --> 00:02:50,859
+00:02:49,099 --> 00:02:50,960
 And only you decide what happened.
 
