@@ -24,6 +24,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app/watchme ./watchme
 COPY app/static ./static
+COPY app/demo_seed ./demo_seed
 
 # The voiceprint model is saved next to the app (.models/ecapa); keep it with Whisper on one volume.
 RUN mkdir -p /data /models/ecapa && ln -s /models .models
