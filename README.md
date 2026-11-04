@@ -21,6 +21,7 @@
 | **Demo** | [3-minute video](https://www.youtube.com/watch?v=sOSY4PXw9Gg) · `docker compose up --build`, then http://localhost:8000; with no keys it runs on the phrase list and fixed rules, and alerts are always a dry run until Twilio or SMTP keys are set |
 | **Measured** | 9 of 11 harmful scenes asked "Are you OK?", 0 of 9 needless check-ins; 11 of 11 given a perfect transcript; 40 of 40 public training cases from the EEOC and NY State ([benchmarks/](benchmarks/README.md)) |
 | **Bonus prize in scope** | Best Agentic Use Case |
+| **Next devices** | Meta's Muse Charm pendant (a stealth design, already prototyped on an ESP32-C6 board) · Meta's AI glasses (hands-free, with the check-in in her ear) |
 | **Where things are** | [app/](app/README.md): the server, agents and web page · [mobile/](mobile/README.md): the iPhone and Android app · [device/](device/README.md): a Charm stand-in on an ESP32-C6 board · [demo/](demo/): the video and how it's made |
 | **Stack** | Python 3.11+, FastAPI, faster-whisper, SpeechBrain ECAPA, PyTorch (CPU) · Expo SDK 58, React Native 0.88, TypeScript · ESP32-C6 (Arduino) · Docker · GitHub Actions |
 | **License** | [Apache-2.0](LICENSE) |
@@ -62,6 +63,15 @@ To try the stealth design on real hardware, Watch Me also runs on a small ESP32-
 </p>
 
 *The real board, filmed during a run: the party scene played from a laptop's speakers, Momo's microphone heard it, and the Muse agents decided to check in. It talks to the same Watch Me server as the phone app, over Wi-Fi or a USB cable.*
+
+#### Also: Meta's AI glasses
+
+Watch Me can be adapted to Meta's AI glasses (Ray-Ban Meta, Oakley Meta, Meta Ray-Ban Display), and they suit it well:
+- **Hands-free by design.** Watch Me is already voice-only: "Watch me", "stop watching" and "I'm OK" are all spoken, and nothing needs a tap.
+- **"Are you OK?" in her ear.** The check-in can be spoken through the open-ear speakers, so only she hears it. On Meta Ray-Ban Display it can also appear privately in the lens, with its countdown.
+- **No new server work.** The server takes 16 kHz audio over `/ws` from any client: the phone app, the web page and the ESP32 board already do. The glasses' microphones would reach it through the phone app, which pairs with them. Meta's Wearables Device Access Toolkit is the way to build on the glasses directly.
+
+Not built or tested yet: this is the next step after the phone, alongside the Charm.
 
 ## Run it
 
