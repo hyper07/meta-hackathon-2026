@@ -1,6 +1,6 @@
 # Watch Me
 
-**A voice-locked safety assistant for a party, a date, the walk home, and home itself.** She says "Watch me". A team of Muse agents listens for threats, coercion and signs of drugging, and asks "Are you OK?" when something is wrong. If she can't answer, the people she chose get a text, a call and an email, with what it heard and a map of where she is. Only her voice can turn it off, and only she decides what happened. It is a multi-model pipeline with deterministic checks, not a prompt: an ECAPA voiceprint and Whisper on the device gate every command; Muse Voice Transcribe re-hears the last minute; Muse Spark 1.3 analyses it and may only quote words that are in the transcript; Muse Spark 1.1 gives probabilities that fixed rules turn into discard, ask or alert, so a model alone can never discard a real risk or send an alert; Muse Wonder reviews Notice accounts; and the app itself, not a model, adds the map link and keeps the hash-chained record. Every model runs on the Meta Model API; the voice lock and live speech-to-text run locally.
+**A voice-locked safety assistant for a party, a date, the walk home, and home itself.** She says "Watch me". A team of Muse agents listens for threats, coercion and signs of drugging, and asks "Are you OK?" when something is wrong. If she can't answer, the people she chose get a text, a call and an email, with what it heard and a map of where she is. Only her voice can turn it off, and only she decides what happened. It is a multi-model pipeline with deterministic checks, not a prompt: an ECAPA voiceprint and Whisper on the device gate every command; Muse Voice Transcribe re-hears the last minute; Muse Spark Open, Meta's open-weight model, analyses it and may only quote words that are in the transcript, then gives probabilities that fixed rules turn into discard, ask or alert, so a model alone can never discard a real risk or send an alert; Muse Wonder reviews Notice accounts; and the app itself, not a model, adds the map link and keeps the hash-chained record. Muse Spark Open runs on Baseten with the hosted Meta Model API as its backup, and on our tests it decided exactly as the hosted Muse Spark did, reaching "Are you OK?" about 6 s sooner. The voice lock and live speech-to-text run locally.
 
 **▶ Try it live, no install or key: [kibaek-kim2018--watch-me-demo-web.us-east.modal.run](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)** · [3-minute video](https://www.youtube.com/watch?v=sOSY4PXw9Gg) · [benchmarks](#benchmarks) · `docker compose up --build` to run it yourself
 
@@ -20,12 +20,12 @@
 |---|---|
 | **Track · problem statement** | Indie Developer · Build for Your World |
 | **Hackathon provenance** (Oct 26 – Nov 4, 2026) | Built from scratch during the hackathon window: work began Oct 27, and the repository was first committed and published on Oct 31 (38 commits since). Before it: idea notes only, no code ([what was built when](#what-was-built-during-the-hackathon)) |
-| **Meta AI runtime models** (Meta Model API) | `muse-spark-1.3`: the Analyst and the alert writer · `muse-spark-1.1`: the Decider · `muse-wonder-1.0`: the Notice reviewer · `muse-voice-transcribe-1.0`: re-hears the last minute, transcribes audio kept offline and spoken accounts · `muse-image-1.0`: the Charm concept images ([Built with Meta](#built-with-meta)). No open weights, no fine-tuning |
+| **Meta AI runtime models** | **Muse Spark Open** (`meta-models/muse-spark-open`, open weights, served by Baseten): the Analyst, the Decider and the alert writer · their backup on the Meta Model API: `muse-spark-1.3` (Analyst, writer), `muse-spark-1.1` (Decider) · `muse-wonder-1.0`: the Notice reviewer · `muse-voice-transcribe-1.0`: re-hears the last minute, transcribes audio kept offline and spoken accounts · `muse-image-1.0`: the Charm concept images ([Built with Meta](#built-with-meta)). Open weights are used as published; no fine-tuning |
 | **Try it live** | **https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run**: no install, no account, no key. Record your voice in Setup (one line), then say "Watch me" on the Watch tab. One visitor at a time for 10 minutes; alerts are a dry run with example contacts, and nothing you say or type is kept after you leave ([how the live demo works](#the-live-demo)) |
 | **3-minute demo video** | https://www.youtube.com/watch?v=sOSY4PXw9Gg (2:55; the provenance line is spoken and on screen at 0:00) |
 | **Quickstart & keyless mode** | `cp -n .env.example .env`, set `MODEL_API_KEY`, then `docker compose up --build` (http://localhost:8000) or `cd app && uv sync && ./run.sh` ([Run it](#run-it)). With no key, the whole check-in loop still runs on the device: Whisper, the voiceprint, the phrase list and the fixed rules. Alerts are a dry run until Twilio or SMTP keys are set. Recorded runs of the real models, scene by scene, are in [app/scenarios/results/](app/scenarios/results/) ([keyless mode and recorded traces](#without-a-key-and-recorded-traces)) |
-| **Measured** | Accuracy: 9 of 11 harmful scenes asked "Are you OK?", 0 of 9 needless check-ins; 11 of 11 given a perfect transcript; 40 of 40 public training cases from the EEOC and NY State. Latency: Whisper hears a 4 s chunk in 0.34 s and the voiceprint takes 27 ms on the device; the Decider answers in 3.1 s (median of 20) ([Benchmarks](#benchmarks)) |
-| **Bonus prize category targeted** | Best Agentic Use-Case: five agents on Muse models (Analyst, Decider, Writer, Notice reviewer, and Muse Voice Transcribe re-hearing the last minute), with fixed rules that decide to discard, ask or alert |
+| **Measured** | Open weights against hosted, the same tests: given a perfect transcript, Muse Spark Open and the hosted Muse agents both asked in 11 of 11 harmful scenes with 0 of 9 needless check-ins; Muse Spark Open decided in 1.6 s against 2.6 s and analysed in 1.7 s against 7.2 s (medians of 20, run the same afternoon); on the live demo, "Are you OK?" came 9.6 s after the first harmful line, against 15.0 s. Notice: Muse Wonder right on 40 of 40 public EEOC and NY State cases. On the device, Whisper hears a 4 s chunk in 0.34 s and the voiceprint takes 27 ms ([Benchmarks](#benchmarks)) |
+| **Bonus prize categories targeted** | **Best Build on Meta Open Weight Models**: Muse Spark Open runs the live safety loop (Analyst, Decider, alert writer), measured against the hosted models on the same tests · **Best Agentic Use-Case**: five agents on Muse models, with fixed rules that decide to discard, ask or alert |
 | **Next devices** | Meta's Muse Charm pendant (a stealth design, already prototyped on an ESP32-C6 board) · Meta's AI glasses (hands-free, with the check-in in her ear) |
 | **Where things are** | [app/](app/README.md): the server, agents and web page · [mobile/](mobile/README.md): the iPhone and Android app · [device/](device/README.md): a Charm stand-in on an ESP32-C6 board · [demo/](demo/): the video and how it's made |
 | **Stack** | Python 3.11+, FastAPI, faster-whisper, SpeechBrain ECAPA, PyTorch (CPU) · Expo SDK 58, React Native 0.88, TypeScript · ESP32-C6 (Arduino) · Docker · GitHub Actions · the live demo hosted on [Modal](https://modal.com) |
@@ -51,7 +51,7 @@ Watch Me handles the most sensitive moments people have, so these rules are buil
 - [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration) · [Deploying](#deploying)
 - [Built with Meta](#built-with-meta): which model does what, and how the agents fit together
 - [Benchmarks](#benchmarks): accuracy, the Notice reviewer, the voice lock, latency
-- [Test cases](#test-cases): 70 automated tests, 22 scenes and 56 written cases
+- [Test cases](#test-cases): 76 automated tests, 22 scenes and 56 written cases
 - [Code layout](#code-layout) · [Technical notes](#technical-notes)
 - [What was built during the hackathon](#what-was-built-during-the-hackathon)
 - [The idea](#the-idea) · [Domestic violence](#domestic-violence) · [What it does](#what-it-does) · [What it must not become](#what-it-must-not-become)
@@ -61,7 +61,7 @@ Watch Me handles the most sensitive moments people have, so these rules are buil
 
 **[https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)**: open it in Chrome or Safari and tap **Turn on microphone and sound** (it asks for the microphone, and plays "Are you OK?" so you know you'll hear it). Record your voice in Setup (one line, said once), then go to Watch, tap Start listening and say **"Watch me"**. Talk about a drink someone keeps pushing on you, or say you feel dizzy, and don't answer "Are you OK?": you'll see the alert it would have sent.
 
-It runs on [Modal](https://modal.com) ([deploy/modal_app.py](deploy/modal_app.py)), on the CPU, with every Muse agent live on the Meta Model API. The server was built for one owner, so the public demo runs it in **demo mode** (`DEMO_MODE=1`, tested in [app/tests/test_demo.py](app/tests/test_demo.py)):
+It runs on [Modal](https://modal.com) ([deploy/modal_app.py](deploy/modal_app.py)), on the CPU, with every agent live: Muse Spark Open on Baseten for the Analyst, the Decider and the alert writer (the hosted Muse models as their backup), and Muse Wonder and Muse Voice Transcribe on the Meta Model API. The server was built for one owner, so the public demo runs it in **demo mode** (`DEMO_MODE=1`, tested in [app/tests/test_demo.py](app/tests/test_demo.py)):
 
 - **One visitor at a time**, for 10 minutes. Anyone else sees "someone is trying the demo right now", and their page connects by itself when it's free.
 - **Only that visitor's page can use the API.** Each visit gets its own token; without it, every endpoint except the status answers 423.
@@ -162,7 +162,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 59 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 65 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
@@ -195,7 +195,8 @@ Everything is in [.env.example](.env.example), and all of it is optional. The ma
 | `SMTP_HOST` · `SMTP_PORT` · `SMTP_USER` · `SMTP_PASSWORD` | empty · `587` | real email; empty: dry run |
 | `DATA_DIR` | `app/data` | the profile, logs and clips (`/data` in Docker) |
 | `DEMO_MODE` · `DEMO_VISIT_S` · `DEMO_IDLE_S` | off · `600` · `45` | a public demo: one visitor at a time for 10 minutes, ended after 45 s without a heartbeat; alerts always a dry run, no audio kept, everything wiped after each visit |
-| `OPEN_WEIGHTS_MODEL` · `MODAL_PROXY_TOKEN` (or `OPEN_WEIGHTS_API_KEY`) · `OPEN_WEIGHTS_BASE` | empty · empty · `https://inference.us-west.modal.direct/v1` | Muse Spark Open, the open-weight model, on a Modal shared endpoint: the backup when a Meta Model API call fails. Set an agent's model to `open` to run it there directly |
+| `BASETEN_API_KEY` (or `OPEN_WEIGHTS_API_KEY`, `MODAL_PROXY_TOKEN`) · `OPEN_WEIGHTS_BASE` · `OPEN_WEIGHTS_MODEL` | empty · `https://inference.baseten.co/v1` · `meta-models/muse-spark-open` | Muse Spark Open, the open-weight model. With a key, it runs the Analyst, the Decider and the writer, and the hosted models are their backup; without one, everything runs on the Meta Model API. Any endpoint that serves it works, such as a Modal shared endpoint |
+| `DECIDER_HOSTED_MODEL` | `muse-spark-1.1` | the Decider's hosted backup when it runs on Muse Spark Open |
 
 `.env` is git-ignored and never copied into the Docker image; compose reads it at run time.
 
@@ -205,13 +206,13 @@ Every model agent runs on the **Meta Model API** (`api.meta.ai`, with `MODEL_API
 
 | Agent | Model | What it does |
 |---|---|---|
-| Analyst | `muse-spark-1.3` | scores the last minute, names the categories and quotes the exact words; a quote not in the transcript is dropped |
-| Decider | `muse-spark-1.1` | a probability each for discard, ask and alert; fixed rules turn them into the action and ask when unsure |
-| Writer | `muse-spark-1.3` | the alert text and session summaries; the app adds the map link itself; a template takes over on a timeout |
+| Analyst | **Muse Spark Open** (open weights, Baseten); backup `muse-spark-1.3` | scores the last minute, names the categories and quotes the exact words; a quote not in the transcript is dropped |
+| Decider | **Muse Spark Open**; backup `muse-spark-1.1` | a probability each for discard, ask and alert; fixed rules turn them into the action and ask when unsure |
+| Writer | **Muse Spark Open**; backup `muse-spark-1.3` | the alert text and session summaries; the app adds the map link itself; a template takes over on a timeout |
 | Notice reviewer | `muse-wonder-1.0` | which exact words match how the EEOC describes harassment, and which description |
 | The last minute, again | `muse-voice-transcribe-1.0` | re-transcribes the last minute before each analysis (far fewer errors than Whisper in noise); audio kept while offline, once the connection is back; spoken Notice accounts, with speaker turns |
 | Concept art | `muse-image-1.0` | the Muse Charm concept images |
-| Backup | **Muse Spark Open** (`meta-models/Muse-Spark-Open-816B-A42B`, open weights, on a Modal shared endpoint) | when a Meta Model API call fails (no network, a timeout, the service busy or down, or an empty answer), the same request goes to Muse Spark Open before any fixed rule takes over; the log records which model answered. Any agent can also run on it directly (`ANALYST_MODEL=open`). Tested in [app/tests/test_open_weights.py](app/tests/test_open_weights.py) |
+| Two providers | **Muse Spark Open** (`meta-models/muse-spark-open`, open weights) on Baseten, and the hosted Meta Model API | each live agent's call goes to Muse Spark Open first; if it fails (no network, a timeout, busy or down, an empty or cut-off answer), the same request goes to that agent's hosted model; if both fail, the fixed rules ask. The log records which model answered. Without a Baseten key the order flips: hosted first, Muse Spark Open as backup. Tested in [app/tests/test_open_weights.py](app/tests/test_open_weights.py) |
 | Listener, on the device | Whisper base and SpeechBrain ECAPA (open source, not Meta) | the live 4-second chunks, and the voiceprint that locks start, stop and "I'm OK" to her voice |
 
 **Why each model.** Each agent got the model that measured best for its job ([app/scenarios/README.md](app/scenarios/README.md#which-model-for-which-agent)): Muse Wonder was right on 40 of 40 public harassment cases, against 38 for Spark 1.3 and 36 for Spark 1.1; as the Decider, Spark 1.1 made the same decisions as Spark 1.3 in a fraction of the time; Muse Voice Transcribe made far fewer errors than Whisper on whole stretches in noise (8% against 57% of words in the noisiest party scene), while Whisper's word timings keep the voice lock tight on 4-second chunks.
@@ -267,9 +268,31 @@ Measured with the app's own code on 22 scripted scenes (11 harmful, 9 harmless i
 
 ECAPA voiceprints, scored per sentence as the app does: 61 of her sentences and 70 from 15 other voices. The closest other voice scored 0.328; the bar to stop or say "I'm OK" is 0.36, and no other voice passed it. The bar to start is 0.20, and it accepted her "Watch me" in 18 of 19 scenes. The model it replaced (WavLM-SV) let similar female voices score 0.88–0.92, as high as she did.
 
+### Open weights against the hosted models
+
+Muse Spark Open (open weights, on Baseten) and the hosted Muse models (Muse Spark 1.3 as the Analyst, 1.1 as the Decider), on the same tests:
+
+| Test | Muse Spark Open | Hosted Muse | Result files |
+|---|---|---|---|
+| 22 scenes, perfect hearing: harmful scenes asked | **11 of 11** | 11 of 11 | [open](app/scenarios/results/20261104-1423-agents-script-open.md) · [hosted](app/scenarios/results/20261101-1104-agents-script.md) |
+| the same: harmless scenes with a needless check-in | **0 of 9** | 0 of 9 | |
+| 22 scenes, noisy hearing (Whisper live): started · asked · needless | 19 of 22 · 8 of 11 · **0 of 9** | 20 of 22 · 9 of 11 · 0 of 9 | [open](app/scenarios/results/20261104-1508-agents-open.md) · [hosted](app/scenarios/results/20261101-0756-agents.md) |
+| Notice reviewer, 40 public EEOC and NY State cases | 38 of 40 | **40 of 40** (Muse Wonder 1.0) | [open](app/scenarios/results/20261104-1432-notice-training-open.md) |
+| Notice reviewer, our 16 cases | 16 of 16 | 16 of 16 | [open](app/scenarios/results/20261104-1433-notice-open.md) |
+| Analyst, median of 20 | **1.69 s** | 7.20 s (1 of 20 failed) | [open](benchmarks/results/latency-20261104-1438-open.md) · [hosted](benchmarks/results/latency-20261104-1448.md) |
+| Decider, median of 20 | **1.59 s** | 2.62 s | |
+| Alert text, median of 20 | **2.74 s** | 5.94 s | |
+| Check-in path (Muse Voice Transcribe, Analyst, Decider), median | **9.3 s** | 15.5 s | |
+| Live demo, the party scene: first harmful line to "Are you OK?" | **9.6 s** | 15.0 s | `deploy/smoke_test.py`, one run each |
+
+- **The same judgment, sooner.** On every scene that started, Muse Spark Open asked exactly where the hosted agents did. With noisy hearing it started one scene fewer: party-drink, where Whisper and the voiceprint, with no model involved, didn't accept her "Watch me" over the music in that run (Whisper varies by about a scene between runs on noisy audio). The other two misses are the same as the hosted agents' (they-talk-about-her doesn't start; date-pressure ends before the first sweep).
+- **So Muse Spark Open runs the live loop, and Muse Wonder stays the Notice reviewer**, where it is still the most accurate (40 of 40 against 38 of 40).
+- **What we fixed on the way.** In the first Notice run, Muse Spark Open ran out of its token budget in 5 of 40 reviews (no answer, or JSON cut off): the same thing the hosted Muse Spark did before we set reasoning effort to low. With low effort and twice the budget, it answered all 40, and a cut-off answer now counts as a failure that goes to the backup. That first run is kept as [20261104-1429-notice-training-open](app/scenarios/results/20261104-1429-notice-training-open.md).
+- The two latency runs were made ten minutes apart on 2026-11-04, because the Meta Model API's speed varies by time of day. `./benchmarks/open_weights.sh` and `latency.py --open` run them again.
+
 ### Latency
 
-Measured on 2026-11-03: 20 runs of each Meta Model API stage after a warm-up, 50 of each local stage, on an Apple Silicon Mac with no GPU ([benchmarks/results/latency-20261103-2336.md](benchmarks/results/latency-20261103-2336.md), every timing in the JSON next to it). `cd app && uv run python ../benchmarks/latency.py` runs it again.
+The hosted models, measured on 2026-11-03 (the comparison with Muse Spark Open, made on 2026-11-04, is above): 20 runs of each Meta Model API stage after a warm-up, 50 of each local stage, on an Apple Silicon Mac with no GPU ([benchmarks/results/latency-20261103-2336.md](benchmarks/results/latency-20261103-2336.md), every timing in the JSON next to it). `cd app && uv run python ../benchmarks/latency.py` runs it again.
 
 | Stage | Where | median | p90 | max | failed |
 |---|---|---|---|---|---|
@@ -292,7 +315,7 @@ What that means for her:
 
 ## Test cases
 
-**70 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
+**76 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
 
 | File | Tests | What it proves |
 |---|---|---|
@@ -300,7 +323,7 @@ What that means for her:
 | [app/tests/test_parts.py](app/tests/test_parts.py) | 9 | the phrase list scores distress above the trigger and banter below; the Decider asks when unsure and never alerts directly; the evidence chain detects an edit; alerts go to the right contacts; one enrollment line becomes three voiceprint pieces |
 | [app/tests/test_notice.py](app/tests/test_notice.py) | 9 | an account is reviewed, saved and counted toward a pattern; quotes not in the text are dropped; Notice mode notes instead of asking; live Notice needs one-party consent; offline accounts are reviewed later |
 | [app/tests/test_next_steps.py](app/tests/test_next_steps.py) | 8 | similar cases are only real public cases with their official answer; a case about a different basis (race, religion) is never shown for sexual harassment; none when the review found nothing; rescinded guidance is labelled; the hotline numbers are the verified ones; an export about one person leaves everyone else out |
-| [app/tests/test_open_weights.py](app/tests/test_open_weights.py) | 10 | a Meta Model API failure (no network, a timeout, 429, 5xx, an empty answer) goes to Muse Spark Open; a bad request isn't hidden; the Decider records which model decided; without the backup, the rules still ask |
+| [app/tests/test_open_weights.py](app/tests/test_open_weights.py) | 16 | Muse Spark Open answers first when set up, and a failure (down, a timeout, a cut-off answer) goes to that agent's hosted model; with hosted first, a failure (no network, a timeout, 429, 5xx, an empty answer) goes to Muse Spark Open; a bad request isn't hidden; the Decider records which model decided; without either, the rules still ask; the agents run on open weights only when a key is set |
 | [app/tests/test_demo.py](app/tests/test_demo.py) | 8 | the public demo: a second visitor waits; only the visitor's page can use the API (the audio player carries its token in the clip's URL); alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
 | [tests/test_bridge.py](tests/test_bridge.py) | 11 | the Charm board's USB link: CRC-16, frames split across reads, damaged frames dropped, noise never mistaken for a frame, 4-second audio chunks with missing blocks dropped |
 
@@ -320,7 +343,7 @@ What that means for her:
 2. Deploy: `MODAL_IMAGE_BUILDER_VERSION=2025.06 uvx modal deploy deploy/modal_app.py`. The image installs the same lock as Docker (CPU-only torch), bakes Whisper and the voiceprint model in, and sets `DEMO_MODE=1`. Only the model keys are sent to Modal as the app's secret; Twilio and SMTP keys never are, so the demo can't text or call anyone.
 3. It runs one container (`max_containers=1`, because the demo keeps its one visit in memory), kept warm (`min_containers=1`, about $3 a day on 2 CPUs). Set `min_containers=0` to start it on demand instead.
 4. Check it with a whole visit: `uvx --with websockets --with httpx --with soundfile --with numpy python deploy/smoke_test.py <url>`.
-5. Optional, the open-weight backup: `modal endpoint create --shared --model meta-models/Muse-Spark-Open-816B-A42B`, create a proxy token, and put `OPEN_WEIGHTS_MODEL` (the endpoint's hostname) and `MODAL_PROXY_TOKEN` (`id.secret`) in `.env` before deploying.
+5. Muse Spark Open: put `BASETEN_API_KEY` in `.env` before deploying, and the live agents run on it, with the hosted models as their backup; only that key is sent along. To serve it from a Modal shared endpoint instead: `modal endpoint create --shared --model meta-models/Muse-Spark-Open-816B-A42B`, a proxy token, and `OPEN_WEIGHTS_BASE`, `OPEN_WEIGHTS_MODEL` (the endpoint's hostname) and `MODAL_PROXY_TOKEN` (`id.secret`).
 
 **The phone app:** a development build with `npx expo run:ios` or `run:android`, or in the cloud with EAS ([mobile/README.md](mobile/README.md)). **The Charm board:** `arduino-cli compile` and `upload` ([device/README.md](device/README.md)).
 
@@ -342,7 +365,7 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    59 server tests (speech is faked)
+  tests/                    65 server tests (speech is faked)
   demo_seed/                the live demo's example history: three recorded sessions and a Notice book (README.md says where each came from)
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
@@ -364,7 +387,7 @@ DESIGN.md, MODELS.md, SAFETY_AND_LAW.md, PLAN.md   the design notes
 
 - **Model output is checked, never trusted.** Every agent answers in JSON. A quote the Analyst or the Notice reviewer can't point to in the transcript is dropped. The Decider's probabilities are normalised and judged by fixed rules ("ask when unsure"), so a model alone can never discard a real risk or send an alert. The alert's map link is added by the app, so a model can't drop it.
 - **The voice lock.** ECAPA voiceprints, compared per sentence on Whisper's word timings: 0.20 to start, 0.36 to stop or say "I'm OK" (no other voice of 70 passed 0.33). The screen shows them as 70% and 90%.
-- **Two providers for the agents.** The Meta Model API first; if a call fails, Muse Spark Open on a Modal shared endpoint; if both fail, the fixed rules on the phrase-list score. The check-in loop never waits on a model.
+- **Two providers for the agents.** Muse Spark Open on Baseten first; if a call fails or its answer is cut off, the same request goes to the agent's hosted Muse model; if both fail, the fixed rules on the phrase-list score. The check-in loop never waits on a model.
 - **Offline.** Whisper, the voiceprint, the phrase list and the rules all run on the device. What needs a model is queued with its transcript and time, all audio is kept meanwhile, and when the network is back Muse Voice Transcribe re-hears the kept audio and the queued analyses run, appending to the same hash-chained logs.
 - **One model thread.** Whisper (CTranslate2) and ECAPA (torch) each bring their own OpenMP pool, and called from different threads they deadlocked twice; every local model call goes through one worker thread.
 - **The record can't be edited quietly.** Each session log and the Notice book is a hash chain: each line carries the hash of the one before, so a change or a deletion shows, and exports print the chain's head.

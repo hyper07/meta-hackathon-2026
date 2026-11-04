@@ -36,6 +36,20 @@ ECAPA-TDNN voiceprints, scored per sentence as the app does: 61 owner sentences 
 | Bar to start ("Watch me") | 0.20, accepted her in 18 of 19 scenes |
 | The old model (WavLM-SV) | similar female voices scored 0.88–0.92, as high as the owner; replaced |
 
+## Open weights against the hosted models
+
+Muse Spark Open (`meta-models/muse-spark-open`, open weights, on Baseten) against the hosted Muse models, on the same tests. With a Baseten key, Muse Spark Open runs the live Analyst, Decider and alert writer, and the hosted models are their backup.
+
+| Test | Muse Spark Open | Hosted Muse |
+|---|---|---|
+| 22 scenes, perfect hearing: harmful asked · needless | **11 of 11 · 0 of 9** | 11 of 11 · 0 of 9 |
+| 22 scenes, noisy hearing: started · asked · needless | 19 of 22 · 8 of 11 · 0 of 9 | 20 of 22 · 9 of 11 · 0 of 9 (the one fewer start is Whisper and the voiceprint, no model involved) |
+| Notice, 40 public cases · our 16 | 38 of 40 · 16 of 16 | 40 of 40 · 16 of 16 (Muse Wonder, which stays the reviewer) |
+| Analyst · Decider · alert text, medians of 20 (2026-11-04, ten minutes apart) | **1.69 s · 1.59 s · 2.74 s** | 7.20 s · 2.62 s · 5.94 s |
+| Live demo, first harmful line to "Are you OK?" | **9.6 s** | 15.0 s |
+
+Results: `app/scenarios/results/20261104-*-open.md`, `results/latency-20261104-1438-open.md` and `results/latency-20261104-1448.md`. Run again with `./benchmarks/open_weights.sh` and `latency.py --open`. The first Notice run, before the fix to the token budget (5 of 40 ran out), is kept as `20261104-1429-notice-training-open.md`.
+
 ## Latency: every stage, timed with the app's own code
 
 `latency.py` runs each stage the way the app does, on the test scenes: the local stages 50 times, the Meta Model API stages 20 times after a warm-up. A call that fails or falls back (to the fixed rules, or to the alert template) counts as a failure, not as a time. Results: [results/latency-20261103-2336.md](results/latency-20261103-2336.md), with every raw timing in the JSON next to it.

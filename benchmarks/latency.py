@@ -3,6 +3,7 @@ Latency of each stage of Watch Me's pipeline, measured with the app's own code o
 
     cd app && uv run python ../benchmarks/latency.py            # 20 runs of each Meta Model API stage
     cd app && uv run python ../benchmarks/latency.py --runs=5   # quicker
+    cd app && uv run python ../benchmarks/latency.py --open     # the agents on Muse Spark Open instead
 
 On this machine: Whisper on a 4-second chunk, the ECAPA voiceprint, and the phrase list.
 On the Meta Model API (MODEL_API_KEY in .env): Muse Voice Transcribe on the last minute, the Muse Spark
@@ -34,6 +35,10 @@ from watchme import decider, lexicon, muse, notice, speech  # noqa: E402
 from watchme.config import settings  # noqa: E402
 
 RUNS = int(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--runs=")), 20))
+# --open: the same agents on Muse Spark Open, the open-weight model (OPEN_WEIGHTS_*), instead of the hosted models.
+OPEN = "--open" in sys.argv
+if OPEN:
+    settings.analyst_model = settings.decider_model = settings.writer_model = settings.reviewer_model = "open"
 LOCAL_RUNS = max(RUNS, 50)
 OUT = ROOT / "app" / "scenarios" / "out"
 RESULTS = ROOT / "benchmarks" / "results"
@@ -64,6 +69,8 @@ def stats(times: list[float]) -> dict:
 async def main() -> None:
     if not settings.muse_ready or not settings.voice_api_key:
         raise SystemExit("needs MODEL_API_KEY in .env: the Meta Model API stages are the point of this benchmark")
+    if OPEN and not settings.open_ready:
+        raise SystemExit("--open needs Muse Spark Open configured (OPEN_WEIGHTS_* or BASETEN_API_KEY)")
     manifest = json.loads((OUT / "manifest.json").read_text())
     harm = [s for s in manifest["scenes"] if s["label"] == "harm"]
     cases = [c for c in CASES if c.get("text")]
@@ -143,11 +150,12 @@ async def main() -> None:
               f"decider {decide:.2f}s, writer {write:.2f}s, review {reviewed:.2f}s", flush=True)
 
     # ── report ───────────────────────────────────────────────────────────────
-    stamp = time.strftime("%Y%m%d-%H%M")
+    stamp = time.strftime("%Y%m%d-%H%M") + ("-open" if OPEN else "")
     summary = {name: stats(values) for name, values in times.items()}
     data = {
         "when": time.strftime("%Y-%m-%d %H:%M %Z"), "runs": RUNS, "local_runs": LOCAL_RUNS,
         "machine": f"{platform.system()} {platform.machine()}, Python {platform.python_version()}",
+        "open_weights": {"model": settings.open_weights_model, "base": settings.open_weights_base} if OPEN else None,
         "models": {"analyst": settings.analyst_model or settings.meta_model, "decider": settings.decider_model,
                    "writer": settings.writer_model or settings.meta_model,
                    "reviewer": settings.reviewer_model or settings.meta_model,
@@ -156,15 +164,16 @@ async def main() -> None:
     }
     RESULTS.mkdir(parents=True, exist_ok=True)
     (RESULTS / f"latency-{stamp}.json").write_text(json.dumps(data, indent=2))
+    who = "Muse Spark Open" if OPEN else None
     rows = [("whisper_4s_chunk", "Whisper base, one 4 s chunk", "this machine"),
             ("voiceprint", "ECAPA voiceprint, one sentence", "this machine"),
             ("phrase_list", "Phrase list, the whole scene", "this machine"),
             ("voice_transcribe_last_minute", "Muse Voice Transcribe 1.0, the last minute", "Meta Model API"),
-            ("analyst_muse_spark_1_3", "Analyst, Muse Spark 1.3", "Meta Model API"),
-            ("decider_muse_spark_1_1", "Decider, Muse Spark 1.1", "Meta Model API"),
-            ("check_in_path_model_time", "Check-in path: transcribe + Analyst + Decider", "Meta Model API"),
-            ("alert_writer_muse_spark_1_3", "Alert text, Muse Spark 1.3", "Meta Model API"),
-            ("notice_review_muse_wonder_1_0", "Notice review, Muse Wonder 1.0", "Meta Model API")]
+            ("analyst_muse_spark_1_3", f"Analyst, {who or 'Muse Spark 1.3'}", "Baseten (open weights)" if OPEN else "Meta Model API"),
+            ("decider_muse_spark_1_1", f"Decider, {who or 'Muse Spark 1.1'}", "Baseten (open weights)" if OPEN else "Meta Model API"),
+            ("check_in_path_model_time", "Check-in path: transcribe + Analyst + Decider", "both" if OPEN else "Meta Model API"),
+            ("alert_writer_muse_spark_1_3", f"Alert text, {who or 'Muse Spark 1.3'}", "Baseten (open weights)" if OPEN else "Meta Model API"),
+            ("notice_review_muse_wonder_1_0", f"Notice review, {who or 'Muse Wonder 1.0'}", "Baseten (open weights)" if OPEN else "Meta Model API")]
     ms = lambda s: f"{s * 1000:.1f} ms" if s < 0.1 else f"{s:.2f} s"
     lines = [f"# Latency, {data['when']}", "", f"{data['machine']}. Meta Model API stages: {RUNS} runs each after a warm-up; "
              f"local stages: {LOCAL_RUNS}.", "", "| Stage | Where | median | p90 | p95 | max | n | failed |", "|---|---|---|---|---|---|---|---|"]
