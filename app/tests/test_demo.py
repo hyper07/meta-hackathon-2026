@@ -108,3 +108,15 @@ def test_a_visit_that_goes_quiet_frees_the_demo(demo, monkeypatch):
     assert main.VISIT["ws"] is None                       # the next visitor can come in
     with demo.websocket_connect("/ws") as ws:
         assert visit_messages(ws)[1]["type"] == "demo"
+
+
+def test_the_visitors_audio_player_can_load_the_example_clips(demo):
+    session = "20261102-205508-a3d1c5"                       # the party, with its 48 s clip
+    clip = next((settings.data_dir / "sessions" / session / "clips").glob("*.wav")).name
+    url = f"/api/sessions/{session}/clips/{clip}"
+    with demo.websocket_connect("/ws") as ws:
+        _, note = visit_messages(ws)
+        assert demo.get(url).status_code == 423                                # no token: refused
+        r = demo.get(url, params={"visit": note["visit"]})                     # what the <audio> player sends
+        assert r.status_code == 200 and len(r.content) > 16000 * 2 * 40       # about 48 s of 16 kHz audio
+        assert demo.get(url, params={"visit": "guess"}).status_code == 423

@@ -49,10 +49,11 @@ DEMO_OPEN = {"/api/status"}
 @app.middleware("http")
 async def demo_guard(request: Request, call_next):
     """In a public demo only the current visitor's page may use the API, so nobody else can read
-    their sessions or Notice entries, or change the profile while they're trying it."""
+    their sessions or Notice entries, or change the profile while they're trying it. The page sends its
+    token as a header; an <audio> player can't, so a clip's URL carries it as ?visit= instead."""
     path = request.url.path
     if settings.demo_mode and path.startswith("/api/") and path not in DEMO_OPEN:
-        token = request.headers.get("x-visit", "")
+        token = request.headers.get("x-visit", "") or request.query_params.get("visit", "")
         if not VISIT["token"] or not secrets.compare_digest(token, VISIT["token"]):
             return PlainTextResponse("Someone else is trying the demo right now.", status_code=423)
     return await call_next(request)

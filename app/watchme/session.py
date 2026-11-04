@@ -342,6 +342,9 @@ class Session:
                 await self.stop(f"\"Stop watching\" in the owner's voice ({match('stop')})")
                 return {"stop": "accepted"}
             self.stop_refused_at = time.time()
+            # Someone else trying to switch it off is evidence: keep the chunk before, the one with their
+            # voice, and what follows, as for any flagged line.
+            self._keep_audio("stop-refused")
             close = passes("stop", settings.voice_threshold)
             self._event("stop_refused", detail=f"\"stop watching\" refused ({match('stop')}, needs "
                                                f"{settings.voice_strict_threshold:.2f}); still watching")

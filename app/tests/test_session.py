@@ -79,6 +79,17 @@ async def test_unanswered_checkin_alerts_contacts(harness):
     assert any(e["kind"] == "clip" for e in session["events"]) or s.clip   # the flagged audio is being kept
 
 
+async def test_the_clip_of_a_refused_stop_includes_the_strangers_voice(harness):
+    s, send, sent, say = harness
+    await s.attach(send)
+    await say("watch me")
+    await say("stop watching", STRANGER)                 # refused: someone else tried to switch it off
+    await s.stop_with_pin("2468")                        # even if it ends right away...
+    clip = next(r for r in store.read_session(s.log.id)["events"] if r["kind"] == "clip")
+    assert clip["seconds"] >= 8.0                        # ...the chunk before and the stranger's own chunk are kept
+    assert "stop-refused" in clip["segments"]
+
+
 async def test_owner_voice_ok_cancels_the_alert_but_a_stranger_cannot(harness):
     s, send, sent, say = harness
     await s.attach(send)
