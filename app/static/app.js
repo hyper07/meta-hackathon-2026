@@ -607,7 +607,7 @@ async function openSession(id) {
 
 function eventHtml(id, e) {
   switch (e.kind) {
-    case "clip": return `Audio kept (${e.seconds} s, sha256 ${esc(e.sha256.slice(0, 12))}…)<audio controls preload="none" src="/api/sessions/${id}/clips/${encodeURIComponent(e.file)}"></audio>`;
+    case "clip": return `Audio kept (${e.seconds} s, sha256 ${esc(e.sha256.slice(0, 12))}…)<audio controls preload="metadata" src="/api/sessions/${id}/clips/${encodeURIComponent(e.file)}${visitToken ? "?visit=" + encodeURIComponent(visitToken) : ""}"></audio>`;
     case "decision": return decisionText(e);
     case "alert": return `<b>Alert sent</b>: ${esc(e.detail)}<br>${linkMap(e.message)}`;
     case "location_update": return `<b>Location update sent</b><br>${linkMap(e.message)}`;

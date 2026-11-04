@@ -51,7 +51,7 @@ Watch Me handles the most sensitive moments people have, so these rules are buil
 - [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration) · [Deploying](#deploying)
 - [Built with Meta](#built-with-meta): which model does what, and how the agents fit together
 - [Benchmarks](#benchmarks): accuracy, the Notice reviewer, the voice lock, latency
-- [Test cases](#test-cases): 68 automated tests, 22 scenes and 56 written cases
+- [Test cases](#test-cases): 70 automated tests, 22 scenes and 56 written cases
 - [Code layout](#code-layout) · [Technical notes](#technical-notes)
 - [What was built during the hackathon](#what-was-built-during-the-hackathon)
 - [The idea](#the-idea) · [Domestic violence](#domestic-violence) · [What it does](#what-it-does) · [What it must not become](#what-it-must-not-become)
@@ -67,7 +67,7 @@ It runs on [Modal](https://modal.com) ([deploy/modal_app.py](deploy/modal_app.py
 - **Only that visitor's page can use the API.** Each visit gets its own token; without it, every endpoint except the status answers 423.
 - **Alerts are always a dry run and no audio is kept**, whatever else is set. Only the Meta Model API key is sent to Modal, never Twilio or SMTP keys, and the contacts are examples.
 - **Everything is wiped when the visitor leaves:** the voiceprint, sessions, Notice entries and queued work. A closed tab is noticed within 45 s (the page sends a heartbeat), so the next visitor doesn't wait.
-- **Each visit starts with example history** ([app/demo_seed/](app/demo_seed/)), so Review and Notice aren't empty: the three sessions recorded for the video (the party with its alert and map link, a stranger's "stop watching" refused, office hours in Notice mode), and a Notice book where Prof. R appears three times, which makes a pattern, plus one entry from work. The examples are real runs of the app with synthetic voices; the work entry's review came from Muse Wonder.
+- **Each visit starts with example history** ([app/demo_seed/](app/demo_seed/)), so Review and Notice aren't empty: three real sessions (the party with its alert and map link and 48 s of kept audio; a stranger's "stop watching" refused, with 18 s of kept audio that starts with his voice; office hours in Notice mode), and a Notice book where Prof. R appears three times, which makes a pattern, plus one entry from work. The examples are real runs of the app with synthetic voices; the work entry's review came from Muse Wonder.
 
 `deploy/smoke_test.py` makes a whole visit with a test scene instead of a microphone. On the party scene, the voice lock accepted the owner's "Watch me" (match 0.82) and tagged the others as other voices; Muse Spark 1.1 decided to ask, "Are you OK?" came 15.0 s after the first harmful line, and with no answer the dry-run alert went out 9.9 s later (one run, 2026-11-04).
 
@@ -162,7 +162,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 57 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 59 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
@@ -292,16 +292,16 @@ What that means for her:
 
 ## Test cases
 
-**68 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
+**70 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
 
 | File | Tests | What it proves |
 |---|---|---|
-| [app/tests/test_session.py](app/tests/test_session.py) | 14 | only the owner's voice starts and stops it; an unanswered check-in alerts; her "I'm OK" cancels an alert but a stranger's can't; a tap can get help but never say "I'm OK"; the duress phrase looks off but alerts; a phone that drops off alerts; offline audio is kept and analysed later; alerts carry her location and follow her when she moves |
+| [app/tests/test_session.py](app/tests/test_session.py) | 15 | only the owner's voice starts and stops it; a stranger's refused "stop watching" keeps his voice in the evidence clip; an unanswered check-in alerts; her "I'm OK" cancels an alert but a stranger's can't; a tap can get help but never say "I'm OK"; the duress phrase looks off but alerts; a phone that drops off alerts; offline audio is kept and analysed later; alerts carry her location and follow her when she moves |
 | [app/tests/test_parts.py](app/tests/test_parts.py) | 9 | the phrase list scores distress above the trigger and banter below; the Decider asks when unsure and never alerts directly; the evidence chain detects an edit; alerts go to the right contacts; one enrollment line becomes three voiceprint pieces |
 | [app/tests/test_notice.py](app/tests/test_notice.py) | 9 | an account is reviewed, saved and counted toward a pattern; quotes not in the text are dropped; Notice mode notes instead of asking; live Notice needs one-party consent; offline accounts are reviewed later |
 | [app/tests/test_next_steps.py](app/tests/test_next_steps.py) | 8 | similar cases are only real public cases with their official answer; a case about a different basis (race, religion) is never shown for sexual harassment; none when the review found nothing; rescinded guidance is labelled; the hotline numbers are the verified ones; an export about one person leaves everyone else out |
 | [app/tests/test_open_weights.py](app/tests/test_open_weights.py) | 10 | a Meta Model API failure (no network, a timeout, 429, 5xx, an empty answer) goes to Muse Spark Open; a bad request isn't hidden; the Decider records which model decided; without the backup, the rules still ask |
-| [app/tests/test_demo.py](app/tests/test_demo.py) | 7 | the public demo: a second visitor waits; only the visitor's page can use the API; alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
+| [app/tests/test_demo.py](app/tests/test_demo.py) | 8 | the public demo: a second visitor waits; only the visitor's page can use the API (the audio player carries its token in the clip's URL); alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
 | [tests/test_bridge.py](tests/test_bridge.py) | 11 | the Charm board's USB link: CRC-16, frames split across reads, damaged frames dropped, noise never mistaken for a frame, 4-second audio chunks with missing blocks dropped |
 
 **The evaluation set** ([app/scenarios/](app/scenarios/README.md)):
@@ -342,8 +342,8 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    57 server tests (speech is faked)
-  demo_seed/                the live demo's example history: three recorded sessions and a Notice book
+  tests/                    59 server tests (speech is faked)
+  demo_seed/                the live demo's example history: three recorded sessions and a Notice book (README.md says where each came from)
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
   components/               the orb, the check-in sheet, toasts
