@@ -53,6 +53,7 @@ image = (
     .uv_sync(str(ROOT / "app"), frozen=True)            # the same lock as Docker: CPU-only torch on Linux
     .add_local_dir(str(ROOT / "app" / "watchme"), f"{APP_DIR}/watchme", copy=True, ignore=["__pycache__"])
     .add_local_dir(str(ROOT / "app" / "static"), f"{APP_DIR}/static", copy=True)
+    .add_local_dir(str(ROOT / "app" / "demo_seed"), f"{APP_DIR}/demo_seed", copy=True)
     .run_function(bake_models)
     .env({"DEMO_MODE": "1", "DEMO_VISIT_S": "600", "DATA_DIR": "/tmp/watchme-data", "RECORDING_RULE": "all-party"})
 )

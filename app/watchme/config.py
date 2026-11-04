@@ -123,6 +123,9 @@ class Settings:
     # always a dry run and no audio is kept, whatever else is set; everything is wiped when they leave.
     demo_mode: bool = field(default_factory=lambda: _env("DEMO_MODE", default="") == "1")
     demo_visit_s: float = field(default_factory=lambda: _float("DEMO_VISIT_S", 600))
+    # The page sends a heartbeat every 15 s; a visit that goes quiet this long has left (a closed tab
+    # doesn't always close the connection behind a proxy), and the next visitor may come in.
+    demo_idle_s: float = field(default_factory=lambda: _float("DEMO_IDLE_S", 45))
 
     @property
     def muse_ready(self) -> bool:

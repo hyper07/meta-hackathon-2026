@@ -192,6 +192,20 @@
   </div>
 
   <!-- PIN pad -->
+  <div class="overlay" id="welcome" hidden>
+    <div class="sheet welcome">
+      <div class="welcome-icons" aria-hidden="true">🎙️ 🔊</div>
+      <div class="checkin-q small">Turn on your microphone and sound</div>
+      <p class="checkin-why" id="welcomeText">Watch Me listens for your voice, and says “Are you OK?” out loud when it checks on you. Your browser will ask to use the microphone: choose <b>Allow</b>.</p>
+      <ul class="welcome-status" id="welcomeStatus" hidden>
+        <li id="wsMic"></li>
+        <li id="wsSound"></li>
+      </ul>
+      <button class="primary big" id="welcomeGo">Turn on microphone and sound</button>
+      <button class="secondary big" id="welcomeSkip">Just look around</button>
+    </div>
+  </div>
+
   <div class="overlay" id="pinPad" hidden>
     <div class="sheet">
       <div class="checkin-q small" id="pinTitle">PIN</div>

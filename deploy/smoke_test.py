@@ -77,7 +77,8 @@ async def main() -> None:
             await asyncio.sleep(4)
         deadline = time.monotonic() + 75                      # the check-in's 30 s, then the alert
         while time.monotonic() < deadline and not any(m["type"] == "alert" for _, m in events):
-            await asyncio.sleep(1)
+            await ws.send(json.dumps({"type": "ping"}))     # the page's heartbeat: still here
+            await asyncio.sleep(5)
         listener.cancel()
 
     checkin = next((at for at, m in events if m["type"] == "checkin"), None)

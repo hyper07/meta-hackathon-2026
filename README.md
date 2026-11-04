@@ -42,14 +42,15 @@
 
 ## The live demo
 
-**[https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)**: open it in Chrome or Safari, allow the microphone, record your voice in Setup (one line, said once), then go to Watch, tap Start listening and say **"Watch me"**. Talk about a drink someone keeps pushing on you, or say you feel dizzy, and don't answer "Are you OK?": you'll see the alert it would have sent.
+**[https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)**: open it in Chrome or Safari and tap **Turn on microphone and sound** (it asks for the microphone, and plays "Are you OK?" so you know you'll hear it). Record your voice in Setup (one line, said once), then go to Watch, tap Start listening and say **"Watch me"**. Talk about a drink someone keeps pushing on you, or say you feel dizzy, and don't answer "Are you OK?": you'll see the alert it would have sent.
 
 It runs on [Modal](https://modal.com) ([deploy/modal_app.py](deploy/modal_app.py)), on the CPU, with every Muse agent live on the Meta Model API. The server was built for one owner, so the public demo runs it in **demo mode** (`DEMO_MODE=1`, tested in [app/tests/test_demo.py](app/tests/test_demo.py)):
 
 - **One visitor at a time**, for 10 minutes. Anyone else sees "someone is trying the demo right now", and their page connects by itself when it's free.
 - **Only that visitor's page can use the API.** Each visit gets its own token; without it, every endpoint except the status answers 423.
 - **Alerts are always a dry run and no audio is kept**, whatever else is set. Only the Meta Model API key is sent to Modal, never Twilio or SMTP keys, and the contacts are examples.
-- **Everything is wiped when the visitor leaves:** the voiceprint, sessions, Notice entries and queued work.
+- **Everything is wiped when the visitor leaves:** the voiceprint, sessions, Notice entries and queued work. A closed tab is noticed within 45 s (the page sends a heartbeat), so the next visitor doesn't wait.
+- **Each visit starts with example history** ([app/demo_seed/](app/demo_seed/)), so Review and Notice aren't empty: the three sessions recorded for the video (the party with its alert and map link, a stranger's "stop watching" refused, office hours in Notice mode), and a Notice book where Prof. R appears three times, which makes a pattern, plus one entry from work. The examples are real runs of the app with synthetic voices; the work entry's review came from Muse Wonder.
 
 `deploy/smoke_test.py` makes a whole visit with a test scene instead of a microphone. On the party scene, the voice lock accepted the owner's "Watch me" (match 0.82) and tagged the others as other voices; Muse Spark 1.1 decided to ask, "Are you OK?" came 15.0 s after the first harmful line, and with no answer the dry-run alert went out 9.9 s later (one run, 2026-11-04).
 
@@ -100,6 +101,8 @@ Watch Me can be adapted to Meta's AI glasses (Ray-Ban Meta, Oakley Meta, Meta Ra
 - **"Are you OK?" in her ear.** The check-in can be spoken through the open-ear speakers, so only she hears it. On Meta Ray-Ban Display it can also appear privately in the lens, with its countdown.
 - **No new server work.** The server takes 16 kHz audio over `/ws` from any client: the phone app, the web page and the ESP32 board already do. The glasses' microphones would reach it through the phone app, which pairs with them. Meta's Wearables Device Access Toolkit is the way to build on the glasses directly.
 
+- **Later, what she sees too.** The glasses' camera could add sight to sound: with her consent, a frame at the moment of a check-in, read by a Muse vision model (Muse Spark reads images; SAM 3.1 segments them), could tell the Analyst what words miss, such as a drink being handed over or someone blocking a doorway. It would follow the same rules as audio: only while Watch Me is on, only around flagged moments, and only she decides what happened.
+
 Not built or tested yet: this is the next step after the phone, alongside the Charm.
 
 ## Run it
@@ -142,7 +145,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 37 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 39 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
@@ -286,7 +289,8 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    37 server tests (speech is faked)
+  tests/                    39 server tests (speech is faked)
+  demo_seed/                the live demo's example history: three recorded sessions and a Notice book
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
   components/               the orb, the check-in sheet, toasts

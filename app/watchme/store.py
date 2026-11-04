@@ -60,9 +60,14 @@ DEMO_PROFILE = {
 }
 
 
+DEMO_SEED = Path(__file__).resolve().parent.parent / "demo_seed"
+
+
 def reset_demo() -> None:
     """Public demo: delete everything the last visitor left (voiceprint, sessions, Notice entries,
-    queued work) and start again from the demo profile. Contacts are examples; alerts are a dry run."""
+    queued work) and start again from the demo profile. Contacts are examples; alerts are a dry run.
+    Then copy in the example history (demo_seed/): three recorded sessions in Review, and a Notice book
+    with a pattern, so a visitor sees what Watch Me keeps before they try it."""
     import shutil
 
     folder = settings.data_dir
@@ -70,6 +75,8 @@ def reset_demo() -> None:
         for item in folder.iterdir():
             shutil.rmtree(item) if item.is_dir() else item.unlink()
     folder.mkdir(parents=True, exist_ok=True)
+    if DEMO_SEED.is_dir():
+        shutil.copytree(DEMO_SEED, folder, dirs_exist_ok=True)
     save_profile(json.loads(json.dumps(DEMO_PROFILE)))
 
 

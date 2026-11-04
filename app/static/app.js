@@ -262,6 +262,8 @@ function connect() {
 }
 
 const sendJson = (o) => ws?.readyState === 1 && ws.send(JSON.stringify(o));
+// A heartbeat, so the public demo knows this page is still open (and frees it soon after it closes).
+setInterval(() => sendJson({ type: "ping" }), 15000);
 
 function handle(m) {
   switch (m.type) {
@@ -388,7 +390,9 @@ function showDemo(m, busy) {
     visitToken = m.visit;
     b.innerHTML = `<b>Public demo.</b> Alerts are a dry run: nobody is texted or called, and the contacts are examples. ` +
       `Nothing you say or type is kept after you leave. You have ${Math.round(m.seconds / 60)} minutes. ` +
-      `<b>Try it:</b> Setup › record your voice (one line), then Watch › say <b>"Watch me"</b>. PIN for the fallback: ${esc(m.pin)}.`;
+      `<b>Try it:</b> Setup › record your voice (one line), then Watch › say <b>"Watch me"</b>. PIN for the fallback: ${esc(m.pin)}. ` +
+      `<b>Review</b> and <b>Notice</b> already hold example history: three recorded sessions and a pattern of three from one professor.`;
+    showWelcome();
   } else {
     b.textContent = busy;
   }
@@ -471,10 +475,63 @@ function showCheckin(m) {
 
 // The app's spoken prompts are recorded files (static/voice, a natural voice); the browser's own
 // speech is only the fallback when a file can't play.
+// Browsers only play sound after a tap on the page; Safari, only on an element that a tap has played
+// once. unlockSound() runs inside a tap and keeps these elements, so later prompts can play by themselves.
+const voices = {};
 function say(name, fallbackText) {
-  const a = new Audio(`/static/voice/${name}.wav`);
+  const a = voices[name] || new Audio(`/static/voice/${name}.wav`);
+  a.currentTime = 0;
   a.play().catch(() => { try { speechSynthesis.speak(new SpeechSynthesisUtterance(fallbackText)); } catch {} });
 }
+
+function unlockSound() {
+  for (const name of ["are-you-ok", "alerting"]) {
+    if (voices[name]) continue;
+    const a = new Audio(`/static/voice/${name}.wav`);
+    a.muted = true;
+    a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; });
+    voices[name] = a;
+  }
+  try { speechSynthesis.speak(new SpeechSynthesisUtterance("")); } catch {}
+}
+// The owner's own app: the first tap anywhere unlocks sound.
+document.addEventListener("pointerdown", unlockSound, { once: true });
+
+// ── welcome: microphone and sound ────────────────────────────────────────
+
+let welcomed = false;
+async function micAllowed() {
+  try { return (await navigator.permissions.query({ name: "microphone" })).state === "granted"; } catch { return false; }
+}
+
+function showWelcome() {
+  if (welcomed) return;
+  $("welcome").hidden = false;
+}
+
+async function welcomeGo() {
+  const status = $("welcomeStatus"), go = $("welcomeGo");
+  unlockSound();                                   // inside the tap: sound is allowed from now on
+  status.hidden = false;
+  $("wsSound").textContent = "🔊 Sound: on. You should hear the check-in now.";
+  go.disabled = true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((t) => t.stop());   // only the permission; listening starts on Watch
+    $("wsMic").textContent = "🎙️ Microphone: allowed ✓";
+    say("are-you-ok", "Are you OK? Say I'm OK.");
+    welcomed = true;
+    setTimeout(() => { $("welcome").hidden = true; }, 3500);
+  } catch (error) {
+    $("wsMic").innerHTML = "🎙️ Microphone: <b>blocked</b>. Allow it for this site: tap the icon left of the address " +
+      "(the lock or <b>aA</b>), set Microphone to Allow, then reload the page.";
+    go.disabled = false; go.textContent = "Try again";
+  }
+}
+$("welcomeGo").addEventListener("click", welcomeGo);
+$("welcomeSkip").addEventListener("click", () => { welcomed = true; unlockSound(); $("welcome").hidden = true; });
+// Ask on the first visit, or whenever the microphone isn't allowed yet. The public demo asks every visit.
+micAllowed().then((ok) => { if (!ok) showWelcome(); });
 
 function hideCheckin() { $("checkin").hidden = true; clearInterval(countdownTimer); }
 

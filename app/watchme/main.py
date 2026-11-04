@@ -297,10 +297,23 @@ async def websocket(ws: WebSocket):
         VISIT["ws"], VISIT["token"] = ws, secrets.token_urlsafe(24)
     send = ws.send_json
     await SESSION.attach(send)
-    timer = None
+    timer = watchdog = None
+    last_heard = [time.monotonic()]
     if settings.demo_mode:
         await ws.send_json({"type": "demo", "visit": VISIT["token"], "seconds": settings.demo_visit_s,
                             "pin": store.DEMO_PROFILE["pin"]})
+
+        async def watch_idle() -> None:
+            while True:
+                await asyncio.sleep(min(10.0, settings.demo_idle_s / 3))
+                if time.monotonic() - last_heard[0] > settings.demo_idle_s:
+                    try:
+                        await ws.close()
+                    except Exception:
+                        pass
+                    return
+
+        watchdog = asyncio.ensure_future(watch_idle())
 
         async def end_visit() -> None:
             await asyncio.sleep(settings.demo_visit_s)
@@ -314,6 +327,7 @@ async def websocket(ws: WebSocket):
     try:
         while True:
             message = await ws.receive()
+            last_heard[0] = time.monotonic()
             if message.get("type") == "websocket.disconnect":
                 break
             if message.get("bytes"):
@@ -336,7 +350,8 @@ async def websocket(ws: WebSocket):
     finally:
         SESSION.detach(send)
         if settings.demo_mode and VISIT["ws"] is ws:
-            if timer:
-                timer.cancel()
+            for task in (timer, watchdog):
+                if task:
+                    task.cancel()
             await SESSION.reset()
             VISIT["ws"], VISIT["token"] = None, ""
