@@ -1,6 +1,6 @@
 // Setup: the server address, you, the people to alert, and your voice.
 import { useEffect, useState } from 'react';
-import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Card, Field, Hint, SectionLabel, Segmented, SwitchRow } from '../components/ui';
@@ -15,6 +15,17 @@ const RELATIONS = ['mom', 'dad', 'sister', 'brother', 'partner', 'friend', 'room
 const FAMILY = ['mom', 'dad', 'sister', 'brother'];
 const LINE = 'Watch me. This is my voice, and only I can turn this on or off.';   // said once
 const ENROLL_SECONDS = 6;
+
+// Which models the agents may call, for cost (server: config.model_plan). Saved with her profile.
+type Plan = 'auto' | 'open' | 'hosted' | 'local';
+const PLANS: { value: Plan; title: string; note: string }[] = [
+  { value: 'auto', title: 'Recommended',
+    note: 'Muse Spark Open (open weights) runs the live agents, Muse Wonder reviews Notice, each with the other provider as backup.' },
+  { value: 'open', title: 'Open weights only', note: 'Everything on Muse Spark Open (Baseten). No Meta Model API calls.' },
+  { value: 'hosted', title: 'Meta Model API only', note: 'Everything on the hosted Muse models. No Baseten calls.' },
+  { value: 'local', title: 'On this phone only (free)',
+    note: 'No model calls. Whisper, your voiceprint, the phrase list and the fixed rules still ask "Are you OK?" and alert. No Notice reviews.' },
+];
 
 const blank = (): Contact => ({ name: '', phone: '', email: '', relation: '', default: false, call: true });
 
@@ -34,7 +45,7 @@ export default function Setup() {
   const w = useWatchMe();
   const p = w.profile;
   // The form starts from what the server has; when that changes (a new hello, a save), it starts over.
-  const profileKey = JSON.stringify([p.name, p.sos_phrase, p.duress_phrase, p.contacts]);
+  const profileKey = JSON.stringify([p.name, p.sos_phrase, p.duress_phrase, p.contacts, p.model_plan, p.help]);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -85,6 +96,9 @@ function ProfileForm() {
   const [duress, setDuress] = useState<string>(p.duress_phrase ?? '');
   const [contacts, setContacts] = useState<Contact[]>(
     p.contacts?.length ? p.contacts.map((c: Partial<Contact>) => ({ ...blank(), ...c })) : [blank()]);
+  const [plan, setPlan] = useState<Plan>((p.model_plan as Plan) ?? 'auto');
+  const [titleIx, setTitleIx] = useState<string>(p.help?.title_ix ?? '');
+  const [hr, setHr] = useState<string>(p.help?.hr ?? '');
   const [message, setMessage] = useState('');
 
   const update = (i: number, patch: Partial<Contact>) => setContacts((cs) => cs.map((c, j) => (j === i ? { ...c, ...patch } : c)));
@@ -93,7 +107,7 @@ function ProfileForm() {
     setMessage('');
     try {
       const out = await api.post<Record<string, unknown>>(w.serverUrl, '/api/profile',
-        { name, pin, sos_phrase: sos, duress_phrase: duress, contacts });
+        { name, pin, sos_phrase: sos, duress_phrase: duress, contacts, model_plan: plan, help: { title_ix: titleIx, hr } });
       w.setProfile({ type: 'profile', ...out });
       setPin('');
       setMessage('Saved.');
@@ -131,6 +145,32 @@ function ProfileForm() {
       ))}
       <Button kind="link" title="+ Add a contact" onPress={() => setContacts((cs) => [...cs, blank()])} />
       <View style={[styles.route, { backgroundColor: t.tintBlue }]}><Text style={{ color: t.text }}>{route(contacts)}</Text></View>
+
+      <SectionLabel>If you decide to report</SectionLabel>
+      <Hint style={{ marginHorizontal: 6, marginBottom: 8 }}>Who you’d go to at school or work. Notice shows them next to a review; Watch Me never contacts them.</Hint>
+      <Card>
+        <Field label="Title IX coordinator" note="your school's" value={titleIx} onChangeText={setTitleIx}
+          autoCapitalize="none" placeholder="e.g. titleix@yourschool.edu" />
+        <Field label="HR" note="at work" value={hr} onChangeText={setHr} placeholder="e.g. Dana, hr@company.com" />
+      </Card>
+
+      <SectionLabel>Models and cost</SectionLabel>
+      <Hint style={{ marginHorizontal: 6, marginBottom: 8 }}>Which models the agents may call. Every analysis is a paid model call; the check-ins and alerts work in every plan.</Hint>
+      <Card>
+        {PLANS.map((o, i) => {
+          const on = plan === o.value;
+          return (
+            <Pressable key={o.value} onPress={() => setPlan(o.value)} accessibilityRole="radio" accessibilityState={{ selected: on }}
+              style={[styles.plan, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.line }]}>
+              <View style={[styles.radio, { borderColor: on ? t.blue : t.muted }]}>{on && <View style={[styles.radioDot, { backgroundColor: t.blue }]} />}</View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: t.text, fontWeight: '700' }}>{o.title}</Text>
+                <Text style={[styles.planNote, { color: t.muted }]}>{o.note}</Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </Card>
       <Button big title="Save" onPress={save} />
       {!!message && <Hint style={{ textAlign: 'center', marginTop: 8 }}>{message}</Hint>}
     </>
@@ -199,6 +239,10 @@ function VoiceCard() {
 
 const styles = StyleSheet.create({
   page: { padding: 16, paddingBottom: 60 },
+  plan: { flexDirection: 'row', gap: 12, paddingVertical: 10, alignItems: 'flex-start' },
+  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  radioDot: { width: 10, height: 10, borderRadius: 5 },
+  planNote: { fontSize: 13, marginTop: 2, lineHeight: 18 },
   title: { fontSize: 30, fontWeight: '800', marginTop: 6 },
   row: { flexDirection: 'row', gap: 10, marginTop: 12 },
   small: { fontSize: 14, fontWeight: '600', marginTop: 12 },

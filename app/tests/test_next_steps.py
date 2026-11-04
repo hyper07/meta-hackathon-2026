@@ -85,3 +85,12 @@ def test_a_case_about_a_different_basis_is_never_shown():
         for case in notice.similar_cases(record(types), n=40):
             other = set(real[case["id"]]["expect"]) & {"race_origin", "religion", "age", "disability", "lgbtq", "pregnancy"}
             assert not other, (types, case["id"], other)   # sexual harassment never gets a race or religion case
+
+
+def test_a_save_without_her_contacts_keeps_them(monkeypatch, tmp_path):
+    monkeypatch.setattr(settings, "data_dir", tmp_path)
+    monkeypatch.setattr(settings, "demo_mode", False)
+    client = TestClient(main.app)
+    client.post("/api/profile", json={"name": "Alex", "contacts": [], "help": {"title_ix": "titleix@school.edu", "hr": ""}})
+    client.post("/api/profile", json={"name": "Alex", "contacts": []})          # an app build that doesn't send them
+    assert client.get("/api/notice").json()["help"]["title_ix"] == "titleix@school.edu"
