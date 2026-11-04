@@ -164,19 +164,77 @@ SEGMENTS = {
                             "Patterns per person, in a hash-chained record she can export"]),
 }
 
+
+# ── left panels for the problem: the news, and the numbers (instead of the app) ──────────────
+PANEL = (110, 130, 830, 950)                        # left area, where the phone sits on other cards
+CHART_RED, CHART_REST = (0xE6, 0x67, 0x67), (0x6B, 0x72, 0x86)   # validated on the dark surface (dataviz)
+PANEL_BG, PANEL_LINE = (24, 29, 44), (48, 55, 76)
+
+
+def panel_news(img):
+    """The lawsuit as it was reported: a news card, paraphrased, with its source. The school is never named."""
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = PANEL
+    d.rounded_rectangle((x0, y0 + 60, x1, y1 - 60), 24, fill=PANEL_BG, outline=PANEL_LINE, width=2)
+    x, w = x0 + 48, x1 - x0 - 96
+    d.text((x, y0 + 110), "IN THE NEWS · OCTOBER 3, 2026", font=font(24, BOLD), fill=RED)
+    y = text_block(d, (x, y0 + 165), "A former student says she “felt like bait” at a fraternity party, and that "
+                   "she had been drugged, a lawsuit claims", font(46, HEAVY), TEXT, w, 1.18) + 30
+    d.line((x, y, x + 120, y), fill=PANEL_LINE, width=3)
+    y = text_block(d, (x, y + 30), "She went to campus police three weeks later. The accusations are disputed, and "
+                   "investigations are ongoing.", font(30, MED), MUTED, w, 1.3) + 40
+    text_block(d, (x, y), "Reported by the Associated Press (ABC News, NBC New York). Paraphrased; the school isn't "
+               "named here.", font(22, REG), MUTED, w, 1.3)
+
+
+def panel_numbers(img):
+    """Partner violence in the US, from the sources the README cites: a headline number, a part-to-whole bar,
+    and one single-series bar chart. Direct labels and a 2 px gap carry identity, never colour alone."""
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = PANEL
+    d.rounded_rectangle((x0, y0, x1, y1), 24, fill=PANEL_BG, outline=PANEL_LINE, width=2)
+    x, w = x0 + 44, x1 - x0 - 88
+    d.text((x, y0 + 40), "PARTNER VIOLENCE IN THE US", font=font(24, BOLD), fill=MUTED)
+    d.text((x, y0 + 80), "43.5 million", font=font(76, HEAVY), fill=TEXT)
+    text_block(d, (x, y0 + 172), "women, more than 1 in 3, have faced partner violence or stalking (CDC)",
+               font(26, MED), MUTED, w, 1.25)
+
+    # Part to whole: reported vs never reported (BJS 2006-2015).
+    y = y0 + 300
+    d.text((x, y), "Reported to police?", font=font(28, DEMI), fill=TEXT)
+    bar_y, bar_h, gap = y + 50, 54, 2
+    split = x + round(w * 0.56)
+    d.rounded_rectangle((x, bar_y, split - gap, bar_y + bar_h), 4, fill=CHART_REST)
+    d.rounded_rectangle((split + gap, bar_y, x + w, bar_y + bar_h), 4, fill=CHART_RED)
+    d.text((x + 16, bar_y + bar_h / 2), "56% reported", font=font(26, BOLD), fill=TEXT, anchor="lm")
+    d.text((split + 18, bar_y + bar_h / 2), "44% never", font=font(26, BOLD), fill=TEXT, anchor="lm")
+
+    # Single series: why victims didn't report (BJS). One hue, no legend, values in text ink.
+    y = bar_y + bar_h + 60
+    d.text((x, y), "Why they didn't report", font=font(28, DEMI), fill=TEXT)
+    y += 52
+    label_w, scale = 300, (w - 300 - 70) / 32
+    for label, pct in (("Privacy", 32), ("Protecting the offender", 21), ("Fear of retaliation", 19)):
+        d.text((x, y + 17), label, font=font(24, MED), fill=MUTED, anchor="lm")
+        bx = x + label_w
+        d.line((bx, y, bx, y + 34), fill=PANEL_LINE, width=2)                      # recessive baseline
+        d.rounded_rectangle((bx, y + 5, bx + round(pct * scale), y + 29), 4, fill=CHART_RED)
+        d.text((bx + round(pct * scale) + 12, y + 17), f"{pct}%", font=font(24, BOLD), fill=TEXT, anchor="lm")
+        y += 52
+    text_block(d, (x, y1 - 64), "Sources: CDC NISVS 2023/2024 data brief; Bureau of Justice Statistics, 2006–2015.",
+               font(20, REG), MUTED, w, 1.25)
+
 # What the phone shows during each card: a recording and its parts, as in edit.json. The card's phone plays them
 # and then holds the last frame.
 CARD_PHONE = {
     "title": ("party", [["play", 0.3, 9.0]]),          # off, ready, then "Watch me": watching
-    "problem": ("party", [["play", 28.5, 40.5]]),      # "Are you OK?" counting down, unanswered
-    "home": ("lock", [["play", 1.0, 13.0]]),           # started by her voice, locked to it
     "hood": ("services", [["play", 1.6, 4.6]]),        # the app's own list of the models it runs on (Muse Spark Open)
     "close": ("notice", [["play", 33.0, 40.0]]),       # stopped by her voice (100%)
 }
 
 CLIPS = [dict(card=card_title, dur=None, narr=[["title", 0.5]], phone="title"),
-         dict(card=card_problem, dur=None, narr=[["problem", 0.6]], phone="problem"),
-         dict(card=card_home, dur=None, narr=[["home", 0.5]], phone="home")]
+         dict(card=card_problem, dur=None, narr=[["problem", 0.6]], panel=panel_news),
+         dict(card=card_home, dur=None, narr=[["home", 0.5]], panel=panel_numbers)]
 for seg in ("enroll", "party", "lock", "notice"):
     CLIPS.append(dict(rec=seg, seg=seg, **EDIT[seg]))
 CLIPS += [dict(card=card_hood, dur=None, narr=[["hood", 0.5]], phone="hood"),
@@ -292,7 +350,10 @@ def segment_layer(seg):
 @lru_cache(maxsize=16)
 def card_layer(i):
     img = BG.copy()
-    phone_body(img)
+    if CLIPS[i].get("panel"):
+        CLIPS[i]["panel"](img)        # the problem's own picture: the news, the numbers
+    else:
+        phone_body(img)
     CLIPS[i]["card"](img)
     return img
 
@@ -318,9 +379,10 @@ def render(t):
     local = t - c["start"]
     if "card" in c:
         img = card_layer(CLIPS.index(c)).copy()
-        rec, parts = CARD_PHONE[c["phone"]]
-        im, mask = phone(rec, frame_file(rec, out_to_rec(parts, local)))
-        img.paste(im, (PHONE_X, PHONE_Y), mask)
+        if c.get("phone"):
+            rec, parts = CARD_PHONE[c["phone"]]
+            im, mask = phone(rec, frame_file(rec, out_to_rec(parts, local)))
+            img.paste(im, (PHONE_X, PHONE_Y), mask)
         fade = min(1.0, local / 0.4, (c["dur"] - local) / 0.4)
     else:
         img = segment_layer(c["seg"]).copy()
