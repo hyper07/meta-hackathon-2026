@@ -97,6 +97,22 @@ def scan(text: str) -> list[Hit]:
     return hits
 
 
+# Possible drugging, across lines: a drink pushed on her, then feeling dizzy or unable to move, within the
+# same minute. Each alone stays below the trigger (0.4); together they are the case Watch Me was built for,
+# and with no model to read the context (offline, or the "on this device only" plan) only this rule sees it.
+_DRINK = re.compile(r"finish (your|the) drink|drink this", re.IGNORECASE)
+_UNWELL = re.compile(r"i feel (really |so )?(dizzy|weird|sick)|i can'?t (feel my|move|stand)", re.IGNORECASE)
+DRUGGING = "a drink pushed on her, then feeling unwell"
+
+
+def drugging_pattern(minute: list[str]) -> Hit | None:
+    """The drink-then-unwell pattern in the last minute's lines, or None."""
+    text = " ".join(minute)
+    if _DRINK.search(text) and _UNWELL.search(text):
+        return Hit(DRUGGING, "incapacitation", 0.75)
+    return None
+
+
 def score(hits: list[Hit], loud: bool = False) -> float:
     """The strongest hit, plus a little for each further one and for a loud sound. 0 to 1."""
     if not hits and not loud:

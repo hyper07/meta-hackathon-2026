@@ -458,6 +458,10 @@ class Session:
         speaker = "owner" if is_owner else ("other" if is_owner is False else "unknown")
         clean = commands.strip_commands(text, self.profile.get("sos_phrase"), self.profile.get("duress_phrase"))
         hits = lexicon.scan(clean)
+        if any(h.category == "incapacitation" for h in hits):
+            pattern = lexicon.drugging_pattern([t for _, _, t in self.recent] + [clean])
+            if pattern:
+                hits.append(pattern)
         score = lexicon.score(hits, loud)
         record = self._event(
             "segment", seg=seg, speaker=speaker, similarity=similarity, text=text or "(loud sound, no words)",
