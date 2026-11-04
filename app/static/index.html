@@ -116,7 +116,7 @@
       <div class="label">Your record</div>
       <div id="ntHistory"></div>
       <div class="row-between">
-        <a class="link" href="/api/notice/export" download>Export the record</a>
+        <a class="link" href="/api/notice/export" id="ntExportAll" download>Export the record</a>
         <span class="hint" id="ntChain"></span>
       </div>
     </section>
@@ -141,6 +141,13 @@
           <button type="button" class="link" id="pickContacts" hidden>+ From phone contacts</button>
         </div>
         <div class="route" id="alertRoute"></div>
+
+        <div class="label">If you decide to report</div>
+        <p class="hint">Who you'd go to at your school or work. Notice shows them next to a review; Watch Me never contacts them.</p>
+        <div class="card">
+          <label>Title IX coordinator <span class="muted">(your school's: name, email or phone)</span><input name="help_title_ix" placeholder="e.g. titleix@yourschool.edu"></label>
+          <label>HR <span class="muted">(at work: name, email or phone)</span><input name="help_hr" placeholder="e.g. Dana, HR, hr@company.com"></label>
+        </div>
         <button class="primary big" type="submit">Save</button>
         <div class="hint center" id="profileMsg"></div>
       </form>

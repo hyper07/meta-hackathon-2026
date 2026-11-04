@@ -296,3 +296,9 @@ button:active:not(:disabled) { transform: scale(.97); opacity: .85; }
 .welcome .welcome-icons { font-size: 34px; margin-bottom: 6px; }
 .welcome-status { list-style: none; padding: 0; margin: 0 0 8px; text-align: left; font-size: 14px; line-height: 1.5; }
 .welcome-status li { padding: 6px 0; border-top: 1px solid var(--line); }
+
+/* Notice: similar public cases */
+.nt-cases { margin: 14px 0 4px; }
+.nt-case { border-left: 3px solid var(--line); padding: 4px 0 4px 12px; margin: 10px 0; }
+.nt-case p { margin: 6px 0; }
+.nt-export { margin-top: 8px; display: inline-block; }
