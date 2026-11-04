@@ -31,13 +31,28 @@
 | **Stack** | Python 3.11+, FastAPI, faster-whisper, SpeechBrain ECAPA, PyTorch (CPU) · Expo SDK 58, React Native 0.88, TypeScript · ESP32-C6 (Arduino) · Docker · GitHub Actions · the live demo hosted on [Modal](https://modal.com) |
 | **License** | [Apache-2.0](LICENSE) |
 
+## Safety, privacy and the law
+
+Watch Me handles the most sensitive moments people have, so these rules are built into the code, not just written here ([SAFETY_AND_LAW.md](SAFETY_AND_LAW.md) has the full reasoning):
+
+- **Legal information, never legal advice.** Notice shows which exact words match how the EEOC and the Department of Education describe harassment, with links to the definitions. It never says "you have a case" and never gives a verdict: only she decides what happened. Every review ends with that sentence.
+- **Similar cases are real, and labelled.** Next to a review, Notice can show up to three real public cases (EEOC and New York State training examples) whose official answer named the same kinds of conduct, each with its source. They are picked by rule, not written by a model, so none can be invented: a case must share the kinds of conduct her review found and be about the same basis (a race or religion case never appears next to sexual harassment), and rare, specific conduct such as "strings attached" counts most. Cases from the EEOC's 2024 harassment guidance say that it was rescinded in January 2026 and is not current law.
+- **Where to turn, with verified numbers only:** the EEOC (1-800-669-4000), the Department of Education's Office for Civil Rights (1-800-421-3481), RAINN (800-656-4673), the National Domestic Violence Hotline (1-800-799-7233, or text START to 88788), the Cyber Civil Rights Initiative (844-878-2274), and the American Bar Association's Find Legal Help for a lawyer. Her own Title IX coordinator or HR contact is what she enters in Setup; the app never guesses who that is.
+- **She shares the evidence, the app doesn't.** "Export everything about Prof. R" makes a dated record with its hash chain, to bring to a meeting. Watch Me never sends it to anyone.
+- **Opt-in, on her own device, only conversations she's part of.** Nothing is kept in standby. Audio is kept only around flagged moments, and never where `RECORDING_RULE=all-party` (states where everyone must consent to a recording); then only text notes are kept.
+- **No alert because a model judged the scene.** Watch Me asks "Are you OK?" first; it alerts only when she doesn't answer, says "no" in her voice, presses "Get help", or says her SOS or duress phrase.
+- **Only her voice turns it off.** That also protects her from a partner who monitors or controls: anyone else's "stop watching" is refused.
+- **The public demo keeps nothing:** one visitor at a time, alerts always a dry run, and everything wiped when they leave ([the live demo](#the-live-demo)).
+
 ## Contents
 
 - [The live demo](#the-live-demo) · [The demo video](#the-demo) · [Next: Meta's Muse Charm](#next-metas-muse-charm) · [Meta's AI glasses](#also-metas-ai-glasses)
-- [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration)
+- [Safety, privacy and the law](#safety-privacy-and-the-law)
+- [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration) · [Deploying](#deploying)
 - [Built with Meta](#built-with-meta): which model does what, and how the agents fit together
 - [Benchmarks](#benchmarks): accuracy, the Notice reviewer, the voice lock, latency
-- [Code layout](#code-layout)
+- [Test cases](#test-cases): 68 automated tests, 22 scenes and 56 written cases
+- [Code layout](#code-layout) · [Technical notes](#technical-notes)
 - [What was built during the hackathon](#what-was-built-during-the-hackathon)
 - [The idea](#the-idea) · [Domestic violence](#domestic-violence) · [What it does](#what-it-does) · [What it must not become](#what-it-must-not-become)
 - [Documents](#documents) · [License](#license)
@@ -147,7 +162,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 39 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 57 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
@@ -179,7 +194,8 @@ Everything is in [.env.example](.env.example), and all of it is optional. The ma
 | `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `TWILIO_FROM` | empty | real SMS and calls; empty: dry run |
 | `SMTP_HOST` · `SMTP_PORT` · `SMTP_USER` · `SMTP_PASSWORD` | empty · `587` | real email; empty: dry run |
 | `DATA_DIR` | `app/data` | the profile, logs and clips (`/data` in Docker) |
-| `DEMO_MODE` · `DEMO_VISIT_S` | off · `600` | a public demo: one visitor at a time, alerts always a dry run, no audio kept, everything wiped after each visit |
+| `DEMO_MODE` · `DEMO_VISIT_S` · `DEMO_IDLE_S` | off · `600` · `45` | a public demo: one visitor at a time for 10 minutes, ended after 45 s without a heartbeat; alerts always a dry run, no audio kept, everything wiped after each visit |
+| `OPEN_WEIGHTS_MODEL` · `MODAL_PROXY_TOKEN` (or `OPEN_WEIGHTS_API_KEY`) · `OPEN_WEIGHTS_BASE` | empty · empty · `https://inference.us-west.modal.direct/v1` | Muse Spark Open, the open-weight model, on a Modal shared endpoint: the backup when a Meta Model API call fails. Set an agent's model to `open` to run it there directly |
 
 `.env` is git-ignored and never copied into the Docker image; compose reads it at run time.
 
@@ -195,6 +211,7 @@ Every model agent runs on the **Meta Model API** (`api.meta.ai`, with `MODEL_API
 | Notice reviewer | `muse-wonder-1.0` | which exact words match how the EEOC describes harassment, and which description |
 | The last minute, again | `muse-voice-transcribe-1.0` | re-transcribes the last minute before each analysis (far fewer errors than Whisper in noise); audio kept while offline, once the connection is back; spoken Notice accounts, with speaker turns |
 | Concept art | `muse-image-1.0` | the Muse Charm concept images |
+| Backup | **Muse Spark Open** (`meta-models/Muse-Spark-Open-816B-A42B`, open weights, on a Modal shared endpoint) | when a Meta Model API call fails (no network, a timeout, the service busy or down, or an empty answer), the same request goes to Muse Spark Open before any fixed rule takes over; the log records which model answered. Any agent can also run on it directly (`ANALYST_MODEL=open`). Tested in [app/tests/test_open_weights.py](app/tests/test_open_weights.py) |
 | Listener, on the device | Whisper base and SpeechBrain ECAPA (open source, not Meta) | the live 4-second chunks, and the voiceprint that locks start, stop and "I'm OK" to her voice |
 
 **Why each model.** Each agent got the model that measured best for its job ([app/scenarios/README.md](app/scenarios/README.md#which-model-for-which-agent)): Muse Wonder was right on 40 of 40 public harassment cases, against 38 for Spark 1.3 and 36 for Spark 1.1; as the Decider, Spark 1.1 made the same decisions as Spark 1.3 in a fraction of the time; Muse Voice Transcribe made far fewer errors than Whisper on whole stretches in noise (8% against 57% of words in the noisiest party scene), while Whisper's word timings keep the voice lock tight on 4-second chunks.
@@ -273,6 +290,40 @@ What that means for her:
 - **End to end, on the live demo:** in a whole visit with the party scene, the check-in came 15.0 s after the first harmful line, which matches the sum above ([the live demo](#the-live-demo)).
 - **The API's speed varies by time of day.** On 2026-10-31 the Analyst took 2.6–4.1 s and the Decider about 2 s ([app/README.md](app/README.md)); on 2026-11-03, 7.4 s and 3.1 s. The table shows the later, fuller measurement.
 
+## Test cases
+
+**68 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
+
+| File | Tests | What it proves |
+|---|---|---|
+| [app/tests/test_session.py](app/tests/test_session.py) | 14 | only the owner's voice starts and stops it; an unanswered check-in alerts; her "I'm OK" cancels an alert but a stranger's can't; a tap can get help but never say "I'm OK"; the duress phrase looks off but alerts; a phone that drops off alerts; offline audio is kept and analysed later; alerts carry her location and follow her when she moves |
+| [app/tests/test_parts.py](app/tests/test_parts.py) | 9 | the phrase list scores distress above the trigger and banter below; the Decider asks when unsure and never alerts directly; the evidence chain detects an edit; alerts go to the right contacts; one enrollment line becomes three voiceprint pieces |
+| [app/tests/test_notice.py](app/tests/test_notice.py) | 9 | an account is reviewed, saved and counted toward a pattern; quotes not in the text are dropped; Notice mode notes instead of asking; live Notice needs one-party consent; offline accounts are reviewed later |
+| [app/tests/test_next_steps.py](app/tests/test_next_steps.py) | 8 | similar cases are only real public cases with their official answer; a case about a different basis (race, religion) is never shown for sexual harassment; none when the review found nothing; rescinded guidance is labelled; the hotline numbers are the verified ones; an export about one person leaves everyone else out |
+| [app/tests/test_open_weights.py](app/tests/test_open_weights.py) | 10 | a Meta Model API failure (no network, a timeout, 429, 5xx, an empty answer) goes to Muse Spark Open; a bad request isn't hidden; the Decider records which model decided; without the backup, the rules still ask |
+| [app/tests/test_demo.py](app/tests/test_demo.py) | 7 | the public demo: a second visitor waits; only the visitor's page can use the API; alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
+| [tests/test_bridge.py](tests/test_bridge.py) | 11 | the Charm board's USB link: CRC-16, frames split across reads, damaged frames dropped, noise never mistaken for a frame, 4-second audio chunks with missing blocks dropped |
+
+**The evaluation set** ([app/scenarios/](app/scenarios/README.md)):
+
+- **22 scenes, streamed through the real agents in 4-second chunks.** 11 harmful: drink pressure then "I feel dizzy", unwanted touching, "don't tell anyone", followed on the way home, others talking about her while she can't respond, quiet pressure on a date, street harassment, a stranger saying "stop watching", a rideshare driver going the wrong way, a former partner's threat, drugging symptoms. 9 harmless hard cases: banter ("stop it, that's hilarious"), flirting, a horror film retold ("I'll kill you"), a crime report on TV, someone else's story retold, board-game trash talk, a gym trainer ("don't stop"), ordering food, walking home with a friend. 2 Notice scenes: office hours, a meeting joke.
+- **56 written Notice cases:** 40 public training examples with an official answer (EEOC, New York State, StopBullying.gov), 32 that should match and 8 that should not, and 16 of our own.
+- **Voice-lock calibration:** 61 of the owner's sentences against 70 from 15 other voices.
+
+## Deploying
+
+**Docker, anywhere with a CPU.** `cp -n .env.example .env`, set `MODEL_API_KEY`, then `docker compose up --build` and open http://localhost:8000. [compose.yaml](compose.yaml) binds to this computer only; for the phone app on the same Wi-Fi, change the port line to `"8000:8000"`. `.env` is read when it runs and never copied into the image, and the profile, logs and models live in two volumes (`watchme-data`, `watchme-models`).
+
+**The public live demo, on Modal** ([deploy/modal_app.py](deploy/modal_app.py)):
+
+1. Put `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` (modal.com, Settings, API tokens) and `MODEL_API_KEY` in `.env`.
+2. Deploy: `MODAL_IMAGE_BUILDER_VERSION=2025.06 uvx modal deploy deploy/modal_app.py`. The image installs the same lock as Docker (CPU-only torch), bakes Whisper and the voiceprint model in, and sets `DEMO_MODE=1`. Only the model keys are sent to Modal as the app's secret; Twilio and SMTP keys never are, so the demo can't text or call anyone.
+3. It runs one container (`max_containers=1`, because the demo keeps its one visit in memory), kept warm (`min_containers=1`, about $3 a day on 2 CPUs). Set `min_containers=0` to start it on demand instead.
+4. Check it with a whole visit: `uvx --with websockets --with httpx --with soundfile --with numpy python deploy/smoke_test.py <url>`.
+5. Optional, the open-weight backup: `modal endpoint create --shared --model meta-models/Muse-Spark-Open-816B-A42B`, create a proxy token, and put `OPEN_WEIGHTS_MODEL` (the endpoint's hostname) and `MODAL_PROXY_TOKEN` (`id.secret`) in `.env` before deploying.
+
+**The phone app:** a development build with `npx expo run:ios` or `run:android`, or in the cloud with EAS ([mobile/README.md](mobile/README.md)). **The Charm board:** `arduino-cli compile` and `upload` ([device/README.md](device/README.md)).
+
 ## Code layout
 
 ```
@@ -291,7 +342,7 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    39 server tests (speech is faked)
+  tests/                    57 server tests (speech is faked)
   demo_seed/                the live demo's example history: three recorded sessions and a Notice book
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
@@ -308,6 +359,18 @@ Dockerfile, compose.yaml    the server in a container
 .github/workflows/ci.yml    server tests, bridge tests, phone app type-check and lint, Docker build
 DESIGN.md, MODELS.md, SAFETY_AND_LAW.md, PLAN.md   the design notes
 ```
+
+## Technical notes
+
+- **Model output is checked, never trusted.** Every agent answers in JSON. A quote the Analyst or the Notice reviewer can't point to in the transcript is dropped. The Decider's probabilities are normalised and judged by fixed rules ("ask when unsure"), so a model alone can never discard a real risk or send an alert. The alert's map link is added by the app, so a model can't drop it.
+- **The voice lock.** ECAPA voiceprints, compared per sentence on Whisper's word timings: 0.20 to start, 0.36 to stop or say "I'm OK" (no other voice of 70 passed 0.33). The screen shows them as 70% and 90%.
+- **Two providers for the agents.** The Meta Model API first; if a call fails, Muse Spark Open on a Modal shared endpoint; if both fail, the fixed rules on the phrase-list score. The check-in loop never waits on a model.
+- **Offline.** Whisper, the voiceprint, the phrase list and the rules all run on the device. What needs a model is queued with its transcript and time, all audio is kept meanwhile, and when the network is back Muse Voice Transcribe re-hears the kept audio and the queued analyses run, appending to the same hash-chained logs.
+- **One model thread.** Whisper (CTranslate2) and ECAPA (torch) each bring their own OpenMP pool, and called from different threads they deadlocked twice; every local model call goes through one worker thread.
+- **The record can't be edited quietly.** Each session log and the Notice book is a hash chain: each line carries the hash of the one before, so a change or a deletion shows, and exports print the chain's head.
+- **Location.** A fix older than 60 s is labelled "last known"; before an alert the app asks the phone for a fresh one (4 s at most). After an alert, her people get a new link each time she moves 150 m (at most every 2 minutes, for an hour).
+- **The browser.** A tap on the welcome screen asks for the microphone and unlocks sound, and the sound elements are kept, so later prompts play on Safari too. The public demo's page sends a heartbeat every 15 s, because behind a proxy a closed tab doesn't always close the connection.
+- **Linux images are CPU-only.** `app/pyproject.toml` points torch at PyTorch's CPU index on Linux, so Docker, CI and Modal skip the multi-GB CUDA libraries; macOS is unchanged.
 
 ## What was built during the hackathon
 
@@ -368,7 +431,7 @@ Partners who abuse also use technology to monitor and control. That is why Watch
    - A team of agents works on it. Muse Spark analyses and quotes the exact words. Muse Spark, as the Decider, gives a probability for discard, ask or alert in about 3 s ([latency](#latency)), and fixed rules make it ask when unsure.
    - It first asks the owner "Are you OK?". If there is no answer, or they say the SOS phrase, it texts, calls and emails the people they chose. A duress phrase makes it look switched off while it keeps listening and sends the alert.
    - The alert carries her location as a map link, with its accuracy and, if the phone hasn't reported in a while, the time of the last known fix. The app adds the link itself, so the model can never drop it. The email also lists her earlier positions. While Watch Me is still on after an alert, her people get a new link each time she moves 150 m or more (at most every 2 minutes, for an hour).
-7. **Notice**, for school and work, built in [app/](app/README.md). Harassment there is often a "joke" or a comment people only recognise later. She tells the app what happened (or records a class or meeting where one-party consent applies). Muse Spark shows which exact words match how the EEOC and the Department of Education describe harassment, and links each definition. Every entry goes into a dated, hash-chained record, with patterns counted per person ("3 times from Prof. R since Oct 14"). No alerts, no verdicts: only she decides what it was.
+7. **Notice**, for school and work, built in [app/](app/README.md). Harassment there is often a "joke" or a comment people only recognise later. She tells the app what happened (or records a class or meeting where one-party consent applies). Muse Spark shows which exact words match how the EEOC and the Department of Education describe harassment, and links each definition. Every entry goes into a dated, hash-chained record, with patterns counted per person ("3 times from Prof. R since Oct 14"). No alerts, no verdicts: only she decides what it was. After a review, it shows up to three similar real public cases with their official answer, where to turn (verified numbers, and her own Title IX coordinator or HR contact), and an export about one person she can bring to a meeting. Legal information, never legal advice.
 
 ## What it must not become
 
