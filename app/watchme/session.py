@@ -84,9 +84,20 @@ def location_line(fix: dict | None, now: float | None = None) -> str | None:
     return f"Location ({when}{accuracy}): {map_link(fix)}"
 
 
+PLANS = ("auto", "open", "hosted", "local")
+DEFAULT_PLAN = settings.model_plan if settings.model_plan in PLANS else "auto"
+
+
+def apply_plan(profile: dict) -> None:
+    """The model plan she chose in Setup (for cost), or the server's default."""
+    plan = profile.get("model_plan")
+    settings.model_plan = plan if plan in PLANS else DEFAULT_PLAN
+
+
 class Session:
     def __init__(self) -> None:
         self.profile = store.load_profile()
+        apply_plan(self.profile)
         self.state = "standby"          # standby | watching
         self.mode = "watch"             # watch (emergency) | notice (school, work: no check-ins, no alerts)
         self.covert = False             # watching, while the screen shows standby (duress phrase)
@@ -128,6 +139,7 @@ class Session:
     async def attach(self, send: Send) -> None:
         self._send = send
         self.profile = store.load_profile()
+        apply_plan(self.profile)
         if self.lost_task:
             self.lost_task.cancel()
             self.lost_task = None
@@ -487,7 +499,7 @@ class Session:
         name = f"{time.strftime('%Y%m%d-%H%M%S')}-{self.clip_segments[0] if self.clip_segments else 'clip'}.wav"
         saved = self.log.save_clip(name, np.concatenate(self.clip))
         self._event("clip", segments=self.clip_segments, started_t=round(self.clip_started, 3), **saved)
-        if self.clip_offline and settings.voice_api_key:
+        if self.clip_offline and settings.voice_ready:
             store.queue_pending(kind="transcribe", session=self.log.id, file=saved["file"],
                                 started_t=round(self.clip_started, 3), seconds=saved["seconds"])
         self.clip, self.clip_segments, self.clip_offline = [], [], False
@@ -501,7 +513,7 @@ class Session:
         hears overlapping, noisy speech far better than Whisper does on 4-second chunks (scenarios/README.md).
         None when it isn't set up or can't be reached; the Analyst then reads Whisper's lines.
         """
-        if not (settings.analyst_stt == "muse" and settings.voice_api_key and settings.keep_audio and self.minute):
+        if not (settings.analyst_stt == "muse" and settings.voice_ready and settings.keep_audio and self.minute):
             return None
         audio = np.concatenate([chunk for _, chunk in self.minute])
         started = self.minute[-1][0] - audio.size / speech.SAMPLE_RATE

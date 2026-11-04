@@ -28,7 +28,7 @@ cd app
 uv sync                 # once
 ./run.sh                # http://127.0.0.1:8000 on this computer
 ./run.sh --https        # https://<Wi-Fi IP>:8443 for a phone on the same Wi-Fi
-uv run python -m pytest # 65 tests; speech is faked, so no microphone needed
+uv run python -m pytest # 73 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # 22 realistic scenes, see scenarios/
 ```
 

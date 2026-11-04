@@ -139,6 +139,14 @@ class Settings:
     # "all-party": never keep audio; keep only the text notes.
     recording_rule: str = field(default_factory=lambda: _env("RECORDING_RULE", default="one-party"))
 
+    # Which models the agents may call, for cost. Chosen in Setup (the owner's profile) or here:
+    #   auto    as configured: Muse Spark Open for the live agents, Muse Wonder for Notice, each with the
+    #           other provider as backup (the default)
+    #   open    Muse Spark Open only (open weights, Baseten): no Meta Model API calls
+    #   hosted  the Meta Model API only: no Baseten calls
+    #   local   no model calls at all: Whisper, the voiceprint, the phrase list and the fixed rules
+    model_plan: str = field(default_factory=lambda: _env("MODEL_PLAN", default="auto"))
+
     # A public demo (the hosted live app): one visitor at a time, for DEMO_VISIT_S at most; alerts are
     # always a dry run and no audio is kept, whatever else is set; everything is wiped when they leave.
     demo_mode: bool = field(default_factory=lambda: _env("DEMO_MODE", default="") == "1")
@@ -149,7 +157,30 @@ class Settings:
 
     @property
     def muse_ready(self) -> bool:
+        """Can the agents call a model under the chosen plan?"""
+        plan = self.model_plan
+        if plan == "local":
+            return False
+        if plan == "open":
+            return self.open_ready
+        if plan == "hosted":
+            return bool(self.meta_api_key)
         return bool(self.meta_api_key) or self.open_ready
+
+    @property
+    def voice_ready(self) -> bool:
+        """Muse Voice Transcribe is on the Meta Model API: only in the plans that use it."""
+        return bool(self.voice_api_key) and self.model_plan in ("auto", "hosted")
+
+    def agent_model(self, model: str) -> str:
+        """What an agent set to model actually runs on under the chosen plan, for the screen."""
+        if not self.muse_ready:
+            return "off"
+        if self.model_plan == "open":
+            return "muse-spark-open (open weights)"
+        if self.model_plan == "hosted" and model == "open":
+            return self.meta_model
+        return _shown(model)
 
     @property
     def open_ready(self) -> bool:
@@ -168,19 +199,20 @@ class Settings:
         return not self.demo_mode and self.recording_rule != "all-party"
 
     def describe(self) -> dict:
+        both = bool(self.meta_api_key) and self.open_ready and self.model_plan == "auto"
         return {
-            "muse_spark": _shown(self.analyst_model or self.meta_model) if self.muse_ready else "not configured (phrase list only)",
-            "reviewer": _shown(self.reviewer_model or self.meta_model) if self.muse_ready else "not configured",
-            "writer": _shown(self.writer_model or self.meta_model) if self.muse_ready else "templates",
-            "debrief_speech": "Muse Voice Transcribe" if self.voice_api_key else f"Whisper {self.whisper_model}",
-            "decider": _shown(self.decider_model) if self.muse_ready else "not configured (fixed rules)",
-            "backup": ("the hosted Muse models" if "open" in (self.analyst_model, self.decider_model)
-                       else "Muse Spark Open (open weights)") if self.open_ready else "fixed rules",
+            "plan": self.model_plan,
+            "muse_spark": self.agent_model(self.analyst_model or self.meta_model) if self.muse_ready else "off (phrase list only)",
+            "reviewer": (self.agent_model(self.reviewer_model or self.meta_model) if self.muse_ready else "off"),
+            "writer": self.agent_model(self.writer_model or self.meta_model) if self.muse_ready else "templates",
+            "debrief_speech": "Muse Voice Transcribe" if self.voice_ready else f"Whisper {self.whisper_model}",
+            "decider": self.agent_model(self.decider_model) if self.muse_ready else "off (fixed rules)",
+            "backup": ("the other provider, then the fixed rules" if both else "the fixed rules"),
             "sms_and_calls": "Twilio" if self.sms_ready else "dry run",
             "email": self.smtp_host if self.email_ready else "dry run",
             "whisper": (f"Muse Voice Transcribe (Whisper {self.whisper_model} as fallback)"
-                        if self.stt_engine == "muse" and self.voice_api_key else f"Whisper {self.whisper_model}"),
-            "analyst_speech": ("Muse Voice Transcribe, the last minute" if self.analyst_stt == "muse" and self.voice_api_key
+                        if self.stt_engine == "muse" and self.voice_ready else f"Whisper {self.whisper_model}"),
+            "analyst_speech": ("Muse Voice Transcribe, the last minute" if self.analyst_stt == "muse" and self.voice_ready
                                else "the live lines"),
             "recording_rule": self.recording_rule,
         }

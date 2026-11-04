@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import messenger, muse, notice, speech, store
 from .config import settings
+from . import session as session_module
 from .session import SESSION
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
@@ -95,13 +96,18 @@ async def save_profile(body: dict):
             raise HTTPException(400, f"{phrase!r} overlaps a command. Pick words you wouldn't say by accident.")
     # Who she'd go to if she decides to report: her own school's Title IX coordinator, her HR. Only she knows.
     help_contacts = {k: str((body.get("help") or {}).get(k) or "").strip()[:160] for k in ("title_ix", "hr")}
+    plan = str(body.get("model_plan") or profile.get("model_plan") or "auto")
+    if plan not in session_module.PLANS:
+        raise HTTPException(400, f"Unknown model plan {plan!r}.")
+    profile["model_plan"] = plan
     profile.update({"name": str(body.get("name") or "").strip(), "contacts": contacts,
                     "sos_phrase": sos, "duress_phrase": duress, "help": help_contacts})
     if pin:
         profile["pin"] = pin
     store.save_profile(profile)
     SESSION.profile = profile
-    return store.public_profile(profile)
+    session_module.apply_plan(profile)
+    return {**store.public_profile(profile), "services": settings.describe()}
 
 
 @app.post("/api/enroll")
@@ -226,7 +232,7 @@ async def notice_debrief(body: dict):
         audio = speech.pcm16_to_float(base64.b64decode(body["audio"]))
         # A whole account, no voice lock involved: Muse Voice Transcribe when there's a Meta key
         # (live listening stays on Whisper, whose word timings keep the voice lock tight).
-        transcribe = speech.transcribe_muse if settings.voice_api_key else speech.transcribe
+        transcribe = speech.transcribe_muse if settings.voice_ready else speech.transcribe
         try:
             spoken = " ".join(p.text for p in await speech.run(transcribe, audio))
         except Exception:

@@ -51,7 +51,7 @@ Watch Me handles the most sensitive moments people have, so these rules are buil
 - [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration) · [Deploying](#deploying)
 - [Built with Meta](#built-with-meta): which model does what, and how the agents fit together
 - [Benchmarks](#benchmarks): accuracy, the Notice reviewer, the voice lock, latency
-- [Test cases](#test-cases): 76 automated tests, 22 scenes and 56 written cases
+- [Test cases](#test-cases): 84 automated tests, 22 scenes and 56 written cases
 - [Code layout](#code-layout) · [Technical notes](#technical-notes)
 - [What was built during the hackathon](#what-was-built-during-the-hackathon)
 - [The idea](#the-idea) · [Domestic violence](#domestic-violence) · [What it does](#what-it-does) · [What it must not become](#what-it-must-not-become)
@@ -143,7 +143,7 @@ uv sync                       # once: installs the server, Whisper and the voice
 
 Or with Docker, without installing Python or uv: `docker compose up --build`, then open http://localhost:8000. It reads `.env` from step 1 and runs on the CPU. The first start downloads Whisper and the voiceprint model into a volume.
 
-Open Setup, enter your name, PIN and contacts, and record your voice: one line, said once. Then go to Watch, turn on listening and say "Watch me".
+Open Setup, enter your name, PIN and contacts, pick a model plan (Models and cost), and record your voice: one line, said once. Then go to Watch, turn on listening and say "Watch me".
 
 **3. Build and run the iPhone or Android app.** It uses native modules, so it needs a development build; Expo Go won't work.
 
@@ -162,7 +162,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 65 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 73 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
@@ -197,6 +197,7 @@ Everything is in [.env.example](.env.example), and all of it is optional. The ma
 | `DEMO_MODE` · `DEMO_VISIT_S` · `DEMO_IDLE_S` | off · `600` · `45` | a public demo: one visitor at a time for 10 minutes, ended after 45 s without a heartbeat; alerts always a dry run, no audio kept, everything wiped after each visit |
 | `BASETEN_API_KEY` (or `OPEN_WEIGHTS_API_KEY`, `MODAL_PROXY_TOKEN`) · `OPEN_WEIGHTS_BASE` · `OPEN_WEIGHTS_MODEL` | empty · `https://inference.baseten.co/v1` · `meta-models/muse-spark-open` | Muse Spark Open, the open-weight model. With a key, it runs the Analyst, the Decider and the writer, and the hosted models are their backup; without one, everything runs on the Meta Model API. Any endpoint that serves it works, such as a Modal shared endpoint |
 | `DECIDER_HOSTED_MODEL` | `muse-spark-1.1` | the Decider's hosted backup when it runs on Muse Spark Open |
+| `MODEL_PLAN` | `auto` | which models the agents may call, for cost; she can change it in Setup › Models and cost: `auto` (Muse Spark Open for the live agents, Muse Wonder for Notice, each with the other provider as backup), `open` (Muse Spark Open only, no Meta Model API calls), `hosted` (the Meta Model API only, no Baseten calls), `local` (no model calls at all: Whisper, the voiceprint, the phrase list and the fixed rules still ask and alert; no Notice reviews) |
 
 `.env` is git-ignored and never copied into the Docker image; compose reads it at run time.
 
@@ -315,7 +316,7 @@ What that means for her:
 
 ## Test cases
 
-**76 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
+**84 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
 
 | File | Tests | What it proves |
 |---|---|---|
@@ -324,6 +325,7 @@ What that means for her:
 | [app/tests/test_notice.py](app/tests/test_notice.py) | 9 | an account is reviewed, saved and counted toward a pattern; quotes not in the text are dropped; Notice mode notes instead of asking; live Notice needs one-party consent; offline accounts are reviewed later |
 | [app/tests/test_next_steps.py](app/tests/test_next_steps.py) | 8 | similar cases are only real public cases with their official answer; a case about a different basis (race, religion) is never shown for sexual harassment; none when the review found nothing; rescinded guidance is labelled; the hotline numbers are the verified ones; an export about one person leaves everyone else out |
 | [app/tests/test_open_weights.py](app/tests/test_open_weights.py) | 16 | Muse Spark Open answers first when set up, and a failure (down, a timeout, a cut-off answer) goes to that agent's hosted model; with hosted first, a failure (no network, a timeout, 429, 5xx, an empty answer) goes to Muse Spark Open; a bad request isn't hidden; the Decider records which model decided; without either, the rules still ask; the agents run on open weights only when a key is set |
+| [app/tests/test_model_plan.py](app/tests/test_model_plan.py) | 8 | each plan in Setup › Models and cost calls only the provider it names; a single-provider plan never calls (or bills) the other; on the device only, no model is called and the rules still ask; Muse Voice Transcribe runs only in plans with the Meta Model API |
 | [app/tests/test_demo.py](app/tests/test_demo.py) | 8 | the public demo: a second visitor waits; only the visitor's page can use the API (the audio player carries its token in the clip's URL); alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
 | [tests/test_bridge.py](tests/test_bridge.py) | 11 | the Charm board's USB link: CRC-16, frames split across reads, damaged frames dropped, noise never mistaken for a frame, 4-second audio chunks with missing blocks dropped |
 
@@ -365,7 +367,7 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    65 server tests (speech is faked)
+  tests/                    73 server tests (speech is faked)
   demo_seed/                the live demo's example history: three recorded sessions and a Notice book (README.md says where each came from)
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
@@ -387,6 +389,7 @@ DESIGN.md, MODELS.md, SAFETY_AND_LAW.md, PLAN.md   the design notes
 
 - **Model output is checked, never trusted.** Every agent answers in JSON. A quote the Analyst or the Notice reviewer can't point to in the transcript is dropped. The Decider's probabilities are normalised and judged by fixed rules ("ask when unsure"), so a model alone can never discard a real risk or send an alert. The alert's map link is added by the app, so a model can't drop it.
 - **The voice lock.** ECAPA voiceprints, compared per sentence on Whisper's word timings: 0.20 to start, 0.36 to stop or say "I'm OK" (no other voice of 70 passed 0.33). The screen shows them as 70% and 90%.
+- **She chooses what it costs.** Setup › Models and cost picks the plan: the recommended mix, open weights only, the Meta Model API only, or on the device only (free: the check-ins and alerts still work on Whisper, the voiceprint, the phrase list and the fixed rules). A single-provider plan never calls the other provider, so it is never billed for it.
 - **Two providers for the agents.** Muse Spark Open on Baseten first; if a call fails or its answer is cut off, the same request goes to the agent's hosted Muse model; if both fail, the fixed rules on the phrase-list score. The check-in loop never waits on a model.
 - **Offline.** Whisper, the voiceprint, the phrase list and the rules all run on the device. What needs a model is queued with its transcript and time, all audio is kept meanwhile, and when the network is back Muse Voice Transcribe re-hears the kept audio and the queued analyses run, appending to the same hash-chained logs.
 - **One model thread.** Whisper (CTranslate2) and ECAPA (torch) each bring their own OpenMP pool, and called from different threads they deadlocked twice; every local model call goes through one worker thread.
