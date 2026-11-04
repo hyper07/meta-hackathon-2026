@@ -119,21 +119,26 @@ class Settings:
     # "all-party": never keep audio; keep only the text notes.
     recording_rule: str = field(default_factory=lambda: _env("RECORDING_RULE", default="one-party"))
 
+    # A public demo (the hosted live app): one visitor at a time, for DEMO_VISIT_S at most; alerts are
+    # always a dry run and no audio is kept, whatever else is set; everything is wiped when they leave.
+    demo_mode: bool = field(default_factory=lambda: _env("DEMO_MODE", default="") == "1")
+    demo_visit_s: float = field(default_factory=lambda: _float("DEMO_VISIT_S", 600))
+
     @property
     def muse_ready(self) -> bool:
         return bool(self.meta_api_key)
 
     @property
     def sms_ready(self) -> bool:
-        return bool(self.twilio_sid and self.twilio_token and self.twilio_from)
+        return not self.demo_mode and bool(self.twilio_sid and self.twilio_token and self.twilio_from)
 
     @property
     def email_ready(self) -> bool:
-        return bool(self.smtp_host and self.smtp_user and self.smtp_password)
+        return not self.demo_mode and bool(self.smtp_host and self.smtp_user and self.smtp_password)
 
     @property
     def keep_audio(self) -> bool:
-        return self.recording_rule != "all-party"
+        return not self.demo_mode and self.recording_rule != "all-party"
 
     def describe(self) -> dict:
         return {

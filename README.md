@@ -2,6 +2,7 @@
 
 **A voice-locked safety assistant for a party, a date, the walk home, and home itself.** She says "Watch me". A team of Muse agents listens for threats, coercion and signs of drugging, and asks "Are you OK?" when something is wrong. If she can't answer, the people she chose get a text, a call and an email, with what it heard and a map of where she is. Only her voice can turn it off, and only she decides what happened. It is a multi-model pipeline with deterministic checks, not a prompt: an ECAPA voiceprint and Whisper on the device gate every command; Muse Voice Transcribe re-hears the last minute; Muse Spark 1.3 analyses it and may only quote words that are in the transcript; Muse Spark 1.1 gives probabilities that fixed rules turn into discard, ask or alert, so a model alone can never discard a real risk or send an alert; Muse Wonder reviews Notice accounts; and the app itself, not a model, adds the map link and keeps the hash-chained record. Every model runs on the Meta Model API; the voice lock and live speech-to-text run locally.
 
+[![Try it live](https://img.shields.io/badge/try%20it-live%20demo-2ea44f)](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)
 [![Demo video](https://img.shields.io/badge/demo-video%202%3A55-red?logo=youtube)](https://www.youtube.com/watch?v=sOSY4PXw9Gg)
 [![CI](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
@@ -18,6 +19,7 @@
 | **Track · problem statement** | Indie Developer · Build for Your World |
 | **Hackathon provenance** (Oct 26 – Nov 4, 2026) | Built from scratch during the hackathon window: work began Oct 27, and the repository was first committed and published on Oct 31 (38 commits since). Before it: idea notes only, no code ([what was built when](#what-was-built-during-the-hackathon)) |
 | **Meta AI runtime models** (Meta Model API) | `muse-spark-1.3`: the Analyst and the alert writer · `muse-spark-1.1`: the Decider · `muse-wonder-1.0`: the Notice reviewer · `muse-voice-transcribe-1.0`: re-hears the last minute, transcribes audio kept offline and spoken accounts · `muse-image-1.0`: the Charm concept images ([Built with Meta](#built-with-meta)). No open weights, no fine-tuning |
+| **Try it live** | **https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run**: no install, no account, no key. Record your voice in Setup (one line), then say "Watch me" on the Watch tab. One visitor at a time for 10 minutes; alerts are a dry run with example contacts, and nothing you say or type is kept after you leave ([how the live demo works](#the-live-demo)) |
 | **3-minute demo video** | https://www.youtube.com/watch?v=sOSY4PXw9Gg (2:55; the provenance line is spoken and on screen at 0:00) |
 | **Quickstart & keyless mode** | `cp -n .env.example .env`, set `MODEL_API_KEY`, then `docker compose up --build` (http://localhost:8000) or `cd app && uv sync && ./run.sh` ([Run it](#run-it)). With no key, the whole check-in loop still runs on the device: Whisper, the voiceprint, the phrase list and the fixed rules. Alerts are a dry run until Twilio or SMTP keys are set. Recorded runs of the real models, scene by scene, are in [app/scenarios/results/](app/scenarios/results/) ([keyless mode and recorded traces](#without-a-key-and-recorded-traces)) |
 | **Measured** | Accuracy: 9 of 11 harmful scenes asked "Are you OK?", 0 of 9 needless check-ins; 11 of 11 given a perfect transcript; 40 of 40 public training cases from the EEOC and NY State. Latency: Whisper hears a 4 s chunk in 0.34 s and the voiceprint takes 27 ms on the device; the Decider answers in 3.1 s (median of 20) ([Benchmarks](#benchmarks)) |
@@ -29,7 +31,7 @@
 
 ## Contents
 
-- [The demo](#the-demo) · [Next: Meta's Muse Charm](#next-metas-muse-charm) · [Meta's AI glasses](#also-metas-ai-glasses)
+- [The live demo](#the-live-demo) · [The demo video](#the-demo) · [Next: Meta's Muse Charm](#next-metas-muse-charm) · [Meta's AI glasses](#also-metas-ai-glasses)
 - [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration)
 - [Built with Meta](#built-with-meta): which model does what, and how the agents fit together
 - [Benchmarks](#benchmarks): accuracy, the Notice reviewer, the voice lock, latency
@@ -37,6 +39,19 @@
 - [What was built during the hackathon](#what-was-built-during-the-hackathon)
 - [The idea](#the-idea) · [Domestic violence](#domestic-violence) · [What it does](#what-it-does) · [What it must not become](#what-it-must-not-become)
 - [Documents](#documents) · [License](#license)
+
+## The live demo
+
+**[https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)**: open it in Chrome or Safari, allow the microphone, record your voice in Setup (one line, said once), then go to Watch, tap Start listening and say **"Watch me"**. Talk about a drink someone keeps pushing on you, or say you feel dizzy, and don't answer "Are you OK?": you'll see the alert it would have sent.
+
+It runs on [Modal](https://modal.com) ([deploy/modal_app.py](deploy/modal_app.py)), on the CPU, with every Muse agent live on the Meta Model API. The server was built for one owner, so the public demo runs it in **demo mode** (`DEMO_MODE=1`, tested in [app/tests/test_demo.py](app/tests/test_demo.py)):
+
+- **One visitor at a time**, for 10 minutes. Anyone else sees "someone is trying the demo right now", and their page connects by itself when it's free.
+- **Only that visitor's page can use the API.** Each visit gets its own token; without it, every endpoint except the status answers 423.
+- **Alerts are always a dry run and no audio is kept**, whatever else is set. Only the Meta Model API key is sent to Modal, never Twilio or SMTP keys, and the contacts are examples.
+- **Everything is wiped when the visitor leaves:** the voiceprint, sessions, Notice entries and queued work.
+
+`deploy/smoke_test.py` makes a whole visit with a test scene instead of a microphone. On the party scene, the voice lock accepted the owner's "Watch me" (match 0.82) and tagged the others as other voices; Muse Spark 1.1 decided to ask, "Are you OK?" came 15.0 s after the first harmful line, and with no answer the dry-run alert went out 9.9 s later (one run, 2026-11-04).
 
 ## The demo
 
@@ -127,7 +142,7 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 32 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 37 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
@@ -159,6 +174,7 @@ Everything is in [.env.example](.env.example), and all of it is optional. The ma
 | `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `TWILIO_FROM` | empty | real SMS and calls; empty: dry run |
 | `SMTP_HOST` · `SMTP_PORT` · `SMTP_USER` · `SMTP_PASSWORD` | empty · `587` | real email; empty: dry run |
 | `DATA_DIR` | `app/data` | the profile, logs and clips (`/data` in Docker) |
+| `DEMO_MODE` · `DEMO_VISIT_S` | off · `600` | a public demo: one visitor at a time, alerts always a dry run, no audio kept, everything wiped after each visit |
 
 `.env` is git-ignored and never copied into the Docker image; compose reads it at run time.
 
@@ -249,6 +265,7 @@ What that means for her:
 - **On the device, the loop is fast enough to be invisible.** A 4-second chunk is transcribed in 0.34 s and the voiceprint checked in 27 ms, so "Watch me", "stop watching" and "I'm OK" are answered within the chunk they're said in, online or offline.
 - **The Muse path adds about 14 s of model time** before a check-in that needed the agents: transcribe 3.8 s, Analyst 7.4 s, Decider 3.1 s, one after the other (median 14.3 s, p90 16.3 s), on top of the 4-second chunk. The phrase list scores each line instantly and marks it for the Analyst; if the API is off or fails, the fixed rules ask on that score alone. On the scenes' own clock, with model time not added, the check-in came a median 5.4 s after the first harmful line.
 - **The alert never waits on a model.** The writer has a 10 s limit; 2 of 20 calls fell back to the template, and the alert still went out at once with the map link, which the app adds itself.
+- **End to end, on the live demo:** in a whole visit with the party scene, the check-in came 15.0 s after the first harmful line, which matches the sum above ([the live demo](#the-live-demo)).
 - **The API's speed varies by time of day.** On 2026-10-31 the Analyst took 2.6–4.1 s and the Decider about 2 s ([app/README.md](app/README.md)); on 2026-11-03, 7.4 s and 3.1 s. The table shows the later, fuller measurement.
 
 ## Code layout
@@ -269,7 +286,7 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    32 server tests (speech is faked)
+  tests/                    37 server tests (speech is faked)
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
   components/               the orb, the check-in sheet, toasts
@@ -277,6 +294,7 @@ mobile/src/                 the iPhone and Android app (Expo SDK 58, React Nativ
 device/                     a Charm stand-in on an ESP32-C6 board
   watchme-charm/            the firmware (Arduino): Momo on screen, the microphone and speaker, Wi-Fi or USB
   bridge.py, momo_demo.py   the USB link to the server; the demo scenes played at the board
+deploy/                     the live demo on Modal (modal_app.py), and smoke_test.py: a whole visit with a test scene
 demo/                       the video, its captions, the preview GIF, screenshots, Charm images; make/ builds them
 benchmarks/                 the measured results, latency.py, run.sh, and results/
 tests/                      11 tests of the board's USB link
