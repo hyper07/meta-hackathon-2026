@@ -395,7 +395,7 @@ device/                     a Charm stand-in on an ESP32-C6 board
   bridge.py, momo_demo.py   the USB link to the server; the demo scenes played at the board
 deploy/                     the live demo on Modal (modal_app.py), and smoke_test.py: a whole visit with a test scene
 demo/                       the video, its captions, the preview GIF, screenshots, Charm images; make/ builds them
-benchmarks/                 the measured results, latency.py, run.sh, and results/
+benchmarks/                 the measured results, latency.py, run.sh, open_weights.sh, publish_dataset.py (the Hugging Face dataset), and results/
 tests/                      11 tests of the board's USB link
 Dockerfile, compose.yaml    the server in a container
 .github/workflows/ci.yml    server tests, bridge tests, phone app type-check and lint, Docker build
@@ -471,7 +471,7 @@ Partners who abuse also use technology to monitor and control. That is why Watch
 6. **Watch Me**, the safety mode, built in [app/](app/README.md) (phone now, Meta's **Muse Charm** pendant once it ships):
    - The owner says "Watch me" for a party, a date or a walk home. Only their voice, checked against a voiceprint, can start or stop it. Setting up the voiceprint takes one line, said once.
    - It transcribes what it hears, telling the owner apart from other voices. The lines are scored as they come in, colour-coded for later review, and the audio around flagged moments is kept.
-   - A team of agents works on it. Muse Spark analyses and quotes the exact words. Muse Spark, as the Decider, gives a probability for discard, ask or alert in about 3 s ([latency](#latency)), and fixed rules make it ask when unsure.
+   - A team of agents works on it. Muse Spark Open, Meta's open-weight model, analyses and quotes the exact words; as the Decider it gives a probability for discard, ask or alert in about 1.6 s ([latency](#open-weights-against-the-hosted-models)), and fixed rules make it ask when unsure. The hosted Muse models are their backup.
    - It first asks the owner "Are you OK?". If there is no answer, or they say the SOS phrase, it texts, calls and emails the people they chose. A duress phrase makes it look switched off while it keeps listening and sends the alert.
    - The alert carries her location as a map link, with its accuracy and, if the phone hasn't reported in a while, the time of the last known fix. The app adds the link itself, so the model can never drop it. The email also lists her earlier positions. While Watch Me is still on after an alert, her people get a new link each time she moves 150 m or more (at most every 2 minutes, for an hour).
 7. **Notice**, for school and work, built in [app/](app/README.md). Harassment there is often a "joke" or a comment people only recognise later. She tells the app what happened (or records a class or meeting where one-party consent applies). Muse Spark shows which exact words match how the EEOC and the Department of Education describe harassment, and links each definition. Every entry goes into a dated, hash-chained record, with patterns counted per person ("3 times from Prof. R since Oct 14"). No alerts, no verdicts: only she decides what it was. After a review, it shows up to three similar real public cases with their official answer, where to turn (verified numbers, and her own Title IX coordinator or HR contact), and an export about one person she can bring to a meeting. Legal information, never legal advice.
