@@ -150,6 +150,20 @@ class Session:
             self._event("disconnected", detail=f"phone dropped off; alert in {settings.checkin_timeout_s:.0f} s unless it returns")
             self.lost_task = self._spawn(self._lost_timer())
 
+    async def reset(self) -> None:
+        """Public demo: forget the visitor who just left. Ends a session without a review or an alert,
+        cancels every timer, and starts over as a fresh Session with the demo profile."""
+        self.transcript_all = []                 # no Notice review for a visit that has ended
+        for task in [self.checkin_task, self.lost_task, self.catch_up_task, *self._tasks]:
+            if task and not task.done():
+                task.cancel()
+        if self.state == "watching":
+            self._send = None
+            self.checkin_task = self.lost_task = None
+            await self.stop("demo visit ended")
+        store.reset_demo()
+        self.__init__()
+
     async def _lost_timer(self) -> None:
         await asyncio.sleep(settings.checkin_timeout_s)
         await self.escalate(f"the phone stopped sending while Watch Me was on, and did not come back within {settings.checkin_timeout_s:.0f} s")

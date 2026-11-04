@@ -53,6 +53,26 @@ def load_profile() -> dict:
     return profile
 
 
+DEMO_PROFILE = {
+    "name": "Alex", "pin": "2468", "sos_phrase": "purple elephant", "duress_phrase": "", "voiceprint": None,
+    "contacts": [{"name": "Sam", "phone": "+12125550100", "email": "sam@example.com", "call": True,
+                  "relation": "friend", "default": True}],
+}
+
+
+def reset_demo() -> None:
+    """Public demo: delete everything the last visitor left (voiceprint, sessions, Notice entries,
+    queued work) and start again from the demo profile. Contacts are examples; alerts are a dry run."""
+    import shutil
+
+    folder = settings.data_dir
+    if folder.exists():
+        for item in folder.iterdir():
+            shutil.rmtree(item) if item.is_dir() else item.unlink()
+    folder.mkdir(parents=True, exist_ok=True)
+    save_profile(json.loads(json.dumps(DEMO_PROFILE)))
+
+
 def save_profile(profile: dict) -> None:
     profile_path().write_text(json.dumps(profile, indent=2))
 

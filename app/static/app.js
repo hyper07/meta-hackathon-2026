@@ -7,6 +7,13 @@ const TARGET_RATE = 16000;
 const $ = (id) => document.getElementById(id);
 
 let ws = null, wsBackoff = 500;
+// Public demo: the server gives this visit a token; every API call carries it.
+let visitToken = "";
+const plainFetch = window.fetch.bind(window);
+window.fetch = (url, opts = {}) => {
+  if (visitToken && String(url).startsWith("/api/")) opts = { ...opts, headers: { ...(opts.headers || {}), "X-Visit": visitToken } };
+  return plainFetch(url, opts);
+};
 let mic = null;              // the standby/watching stream
 let profile = {};
 let state = "standby";
@@ -282,6 +289,8 @@ function handle(m) {
       if (m.state === "watching") { $("live").innerHTML = ""; $("alertCard").hidden = true; }
       break;
     case "notice": notice(m.text); break;
+    case "demo": showDemo(m); break;
+    case "busy": visitToken = ""; showDemo(null, m.text); break;
     case "level":
       $("orb").style.setProperty("--level", Math.max(0, Math.min(1, (m.dbfs + 55) / 40)).toFixed(2));
       $("recBadge").hidden = !m.recording; break;
@@ -371,6 +380,19 @@ async function retryPending() {
     showOffline(out.offline || out.pending > 0, out.pending);
     if (!out.done) notice(out.pending ? "Still no connection. It will keep trying." : "Nothing waiting.");
   } finally { $("retryPending").disabled = false; }
+}
+
+function showDemo(m, busy) {
+  const b = $("demoBanner");
+  if (m) {
+    visitToken = m.visit;
+    b.innerHTML = `<b>Public demo.</b> Alerts are a dry run: nobody is texted or called, and the contacts are examples. ` +
+      `Nothing you say or type is kept after you leave. You have ${Math.round(m.seconds / 60)} minutes. ` +
+      `<b>Try it:</b> Setup › record your voice (one line), then Watch › say <b>"Watch me"</b>. PIN for the fallback: ${esc(m.pin)}.`;
+  } else {
+    b.textContent = busy;
+  }
+  b.hidden = false;
 }
 
 function notice(text) {

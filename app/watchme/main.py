@@ -10,12 +10,13 @@ import asyncio
 import base64
 import json
 import re
+import secrets
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import numpy as np
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -30,12 +31,31 @@ STATIC = Path(__file__).resolve().parent.parent / "static"
 async def lifespan(_: FastAPI):
     # Load Whisper and the voiceprint model now, not on the first "Watch me".
     asyncio.ensure_future(speech.run(speech.warm_up))
+    if settings.demo_mode:            # a public demo starts clean, from the demo profile
+        store.reset_demo()
+        SESSION.profile = store.load_profile()
     if store.read_pending():          # work left from an offline stretch finishes once the network allows
         SESSION.start_catch_up()
     yield
 
 
 app = FastAPI(title="Watch Me", lifespan=lifespan)
+
+# Public demo: the visitor who holds the WebSocket, and the token their page sends with every API call.
+VISIT: dict = {"ws": None, "token": ""}
+DEMO_OPEN = {"/api/status"}
+
+
+@app.middleware("http")
+async def demo_guard(request: Request, call_next):
+    """In a public demo only the current visitor's page may use the API, so nobody else can read
+    their sessions or Notice entries, or change the profile while they're trying it."""
+    path = request.url.path
+    if settings.demo_mode and path.startswith("/api/") and path not in DEMO_OPEN:
+        token = request.headers.get("x-visit", "")
+        if not VISIT["token"] or not secrets.compare_digest(token, VISIT["token"]):
+            return PlainTextResponse("Someone else is trying the demo right now.", status_code=423)
+    return await call_next(request)
 
 
 @app.get("/")
@@ -268,8 +288,29 @@ async def notice_export():
 @app.websocket("/ws")
 async def websocket(ws: WebSocket):
     await ws.accept()
+    if settings.demo_mode:
+        if VISIT["ws"] is not None:
+            await ws.send_json({"type": "busy", "text": "Someone is trying the demo right now. "
+                                "This page will connect by itself when it's free (at most 10 minutes)."})
+            await ws.close()
+            return
+        VISIT["ws"], VISIT["token"] = ws, secrets.token_urlsafe(24)
     send = ws.send_json
     await SESSION.attach(send)
+    timer = None
+    if settings.demo_mode:
+        await ws.send_json({"type": "demo", "visit": VISIT["token"], "seconds": settings.demo_visit_s,
+                            "pin": store.DEMO_PROFILE["pin"]})
+
+        async def end_visit() -> None:
+            await asyncio.sleep(settings.demo_visit_s)
+            try:
+                await ws.send_json({"type": "notice", "text": "Your demo time is up. Thanks for trying Watch Me!"})
+                await ws.close()
+            except Exception:
+                pass                      # already gone
+
+        timer = asyncio.ensure_future(end_visit())
     try:
         while True:
             message = await ws.receive()
@@ -294,3 +335,8 @@ async def websocket(ws: WebSocket):
         pass
     finally:
         SESSION.detach(send)
+        if settings.demo_mode and VISIT["ws"] is ws:
+            if timer:
+                timer.cancel()
+            await SESSION.reset()
+            VISIT["ws"], VISIT["token"] = None, ""
