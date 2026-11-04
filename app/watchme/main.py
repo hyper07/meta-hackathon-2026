@@ -92,8 +92,10 @@ async def save_profile(body: dict):
     for phrase in (sos, duress):
         if phrase and re.search(r"watch me|stop watching|i'?m (ok|okay|fine)", phrase, re.IGNORECASE):
             raise HTTPException(400, f"{phrase!r} overlaps a command. Pick words you wouldn't say by accident.")
+    # Who she'd go to if she decides to report: her own school's Title IX coordinator, her HR. Only she knows.
+    help_contacts = {k: str((body.get("help") or {}).get(k) or "").strip()[:160] for k in ("title_ix", "hr")}
     profile.update({"name": str(body.get("name") or "").strip(), "contacts": contacts,
-                    "sos_phrase": sos, "duress_phrase": duress})
+                    "sos_phrase": sos, "duress_phrase": duress, "help": help_contacts})
     if pin:
         profile["pin"] = pin
     store.save_profile(profile)
@@ -204,6 +206,8 @@ def _notice_page() -> dict:
                       for k, (label, plain, src, group) in notice.TYPES.items()},
             "groups": notice.GROUPS,
             "resources": notice.RESOURCES, "frequency": notice.FREQUENCY, "disclaimer": notice.DISCLAIMER,
+            "similar": {r["id"]: notice.similar_cases(r) for r in data["records"]},
+            "help": SESSION.profile.get("help") or {},
             "ai": settings.muse_ready, "pending": len(store.read_pending())}
 
 
@@ -280,9 +284,10 @@ async def pending_retry():
 
 
 @app.get("/api/notice/export")
-async def notice_export():
-    return PlainTextResponse(notice.export(notice.read()), media_type="text/markdown",
-                             headers={"Content-Disposition": "attachment; filename=notice-record.md"})
+async def notice_export(who: str = ""):
+    name = re.sub(r"[^a-z0-9]+", "-", who.lower()).strip("-")
+    return PlainTextResponse(notice.export(notice.read(), who), media_type="text/markdown",
+                             headers={"Content-Disposition": f"attachment; filename=notice-record{'-' + name if name else ''}.md"})
 
 
 @app.websocket("/ws")

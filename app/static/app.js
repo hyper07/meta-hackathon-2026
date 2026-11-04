@@ -660,9 +660,21 @@ function reviewHtml(rec) {
         <label>Setting<select data-k="setting"><option value="school">School</option><option value="work">Work</option><option value="online">Online</option><option value="other">Somewhere else</option></select></label>
         <label>Where<input data-k="where" placeholder="e.g. office hours"></label></div>
       <button class="secondary" type="button">Save</button></div>` : "";
+  // Real public cases whose official answer named the same kinds of conduct: examples, never a prediction.
+  const similar = noticePage?.similar?.[rec.id] || [];
+  const cases = similar.length ? `<div class="nt-cases"><b>Similar public cases</b> <span class="small">(examples of how an agency or a state answered; not a prediction about yours)</span>
+    ${similar.map((c) => `<div class="nt-case"><div>${c.shared.map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div>
+      <p>${esc(c.official)}</p><div class="small"><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.source)}</a>${c.note ? `<br><i>${esc(c.note)}</i>` : ""}</div></div>`).join("")}</div>` : "";
+  // Her own people to go to, if she decides to: only what she entered in Setup.
+  const help = noticePage?.help || {};
+  const mine = rec.setting === "school" ? ["Your Title IX coordinator", help.title_ix] : rec.setting === "work" ? ["Your HR", help.hr] : null;
+  const own = r.match === "none" || !mine ? "" : mine[1] ? `<li><b>${mine[0]}:</b> ${esc(mine[1])}</li>`
+    : `<li class="small">Add your ${rec.setting === "school" ? "school's Title IX coordinator" : "HR contact"} in Setup to see them here.</li>`;
+  const exportFor = r.match !== "none" && rec.who ? `<button type="button" class="link nt-export" data-who="${esc(rec.who)}">Export everything about ${esc(rec.who)}</button>
+    <span class="small">a dated record with the hash chain, to bring to a meeting. You choose who sees it; Watch Me never sends it.</span>` : "";
   return `<div class="card nt-result ${r.match}">${head}<div class="nt-head">${MATCH_HEAD[r.match]}</div>${ask}
-    ${r.summary ? `<p>${esc(r.summary)}</p>` : ""}${moments}
-    ${res.length ? `<div class="nt-note"><b>If you want to do something about it</b> (only if you want to):<ul class="nt-res">${res.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${r.summary ? `<p>${esc(r.summary)}</p>` : ""}${moments}${cases}
+    ${res.length || own ? `<div class="nt-note"><b>Where to turn</b> (only if you want to):<ul class="nt-res">${own}${res.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${exportFor}</div>` : ""}
     <div class="nt-note">${esc(noticePage?.disclaimer || "")}</div></div>`;
 }
 
@@ -805,9 +817,24 @@ async function pickContacts() {
   } catch (e) { $("profileMsg").textContent = "Couldn't open your contacts: " + e.message; }
 }
 
+// The export goes through fetch so it carries the demo's visit token, then downloads as a file.
+async function downloadExport(who = "") {
+  const r = await fetch(`/api/notice/export${who ? "?who=" + encodeURIComponent(who) : ""}`);
+  if (!r.ok) { notice("Couldn't export the record."); return; }
+  const name = (r.headers.get("Content-Disposition") || "").match(/filename=([^;]+)/)?.[1] || "notice-record.md";
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(await r.blob()), download: name });
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".nt-export, #ntExportAll");
+  if (b) { e.preventDefault(); downloadExport(b.dataset.who || ""); }
+});
+
 function fillProfile() {
   const f = $("profileForm");
   for (const k of ["name", "sos_phrase", "duress_phrase"]) f.elements[k].value = profile[k] || "";
+  f.elements.help_title_ix.value = profile.help?.title_ix || "";
+  f.elements.help_hr.value = profile.help?.hr || "";
   $("contacts").innerHTML = "";
   (profile.contacts?.length ? profile.contacts : [{}]).forEach(contactRow);
   showEnrollState();
@@ -834,7 +861,8 @@ async function saveProfile(e) {
   const f = $("profileForm");
   const contacts = readContacts();
   const body = { name: f.elements.name.value, pin: f.elements.pin.value, sos_phrase: f.elements.sos_phrase.value,
-                 duress_phrase: f.elements.duress_phrase.value, contacts };
+                 duress_phrase: f.elements.duress_phrase.value, contacts,
+                 help: { title_ix: f.elements.help_title_ix.value, hr: f.elements.help_hr.value } };
   const r = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const out = await r.json();
   if (!r.ok) { $("profileMsg").textContent = out.detail; return; }

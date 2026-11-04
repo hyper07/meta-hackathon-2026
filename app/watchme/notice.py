@@ -29,6 +29,7 @@ import re
 import time
 import uuid
 from collections import Counter, defaultdict
+from pathlib import Path
 
 from . import muse, store
 from .config import settings
@@ -108,19 +109,73 @@ RESOURCES = {
         "Your school's Title IX coordinator for sex-based harassment: every school that receives federal funding has one, "
         "and you can ask about supportive measures without filing anything. For race, national origin or disability, ask "
         "the dean of students or the disability services office.",
-        "The Department of Education's Office for Civil Rights generally takes complaints within 180 days of the last incident.",
+        "The Department of Education's Office for Civil Rights: 1-800-421-3481 (TTY 800-877-8339), OCR@ed.gov. It generally "
+        "takes complaints within 180 days of the last incident.",
     ],
     "work": [
         "HR, or a manager outside the person's reporting line. Complaining about harassment is protected from retaliation.",
-        "The EEOC: in general, 180 days to file a charge (longer where state law extends it).",
+        "The EEOC: 1-800-669-4000, or eeoc.gov/filing-charge-discrimination. In general, 180 days to file a charge (longer "
+        "where state law extends it).",
     ],
     "online": [
         "Report it on the platform and keep screenshots with the date and the account name before blocking.",
         "Intimate images shared without consent: platforms must remove them within 48 hours of your request; if they "
         "don't, report it at TakeItDown.ftc.gov. StopNCII.org can help block copies on participating platforms.",
+        "The Cyber Civil Rights Initiative helpline, for intimate images shared without consent, sextortion or a recorded "
+        "assault: 844-878-2274, 24/7.",
     ],
-    "any": ["RAINN, free and confidential, 24/7: 800-656-4673, or chat at rainn.org (for sexual harassment and assault)."],
+    "any": [
+        "RAINN, free and confidential, 24/7: 800-656-4673, or chat at rainn.org (for sexual harassment and assault).",
+        "The National Domestic Violence Hotline, 24/7: 1-800-799-7233, or text START to 88788 (when it's a partner or family).",
+        "To talk to a lawyer: the American Bar Association's Find Legal Help (americanbar.org/groups/legal_services/flh-home) "
+        "lists free legal aid and lawyer referral services in your state.",
+    ],
 }
+
+# Real cases with an official answer (scenarios/training_cases.py), to show next to her review as examples of how
+# an agency or state reasoned. Never invented, never a prediction: picked by the kinds of conduct they share.
+PUBLIC_CASES = json.loads((Path(__file__).resolve().parent / "public_cases.json").read_text())
+RESCINDED = ("This example comes from EEOC guidance that was rescinded in January 2026. It shows how the agency "
+             "reasoned then, not current law.")
+
+
+def _basis(types: set[str]) -> set[str]:
+    """What the harassment is about: "sexual", or who she is (her sex, race, religion, ...). Strings attached
+    counts as sexual: a benefit tied to going along with someone's advances."""
+    basis = {t for t in types if TYPES[t][3] == "identity"}
+    if any(TYPES[t][3] == "sexual" for t in types) or "conditions" in types:
+        basis.add("sexual")
+    return basis
+
+
+def similar_cases(record: dict, n: int = 3) -> list[dict]:
+    """Up to n public cases whose official answer named the same kinds of conduct her review found.
+    A case about a different basis (race when hers is sexual harassment, say) is never shown. Shared conduct
+    that's rare in the set counts most, and conduct the case has but hers doesn't counts against it; her
+    setting (school, work, online) breaks ties. None when the review found nothing."""
+    import math
+
+    review_ = record.get("review") or {}
+    found = {m["type"] for m in review_.get("moments") or [] if m.get("type") in TYPES}
+    if not found or review_.get("match") == "none":
+        return []
+    df = Counter(t for c in PUBLIC_CASES for t in c["expect"])
+    weight = {t: math.log(1 + len(PUBLIC_CASES) / df[t]) for t in df}
+    mine = _basis(found)
+    scored = []
+    for case in PUBLIC_CASES:
+        expect = set(case["expect"])
+        shared = found & expect
+        if not shared or not _basis(expect) <= mine:
+            continue
+        score = sum(weight[t] for t in shared) - 0.5 * sum(weight[t] for t in expect - found)
+        if score > 0:
+            scored.append((score, case["setting"] == record.get("setting"), case, sorted(shared)))
+    scored.sort(key=lambda x: (-x[0], not x[1], x[2]["id"]))
+    return [{"id": c["id"], "setting": c["setting"], "shared": [TYPES[t][0] for t in shared], "official": c["official"],
+             "source": c["source"], "url": c["url"],
+             "note": RESCINDED if "Enforcement Guidance on Harassment in the Workplace" in c["source"] else ""}
+            for _, _, c, shared in scored[:n]]
 
 DISCLAIMER = "Only you decide what this was. This explains what the words match; it isn't legal advice."
 
@@ -233,9 +288,12 @@ def patterns(records: list[dict]) -> list[dict]:
     return sorted(out, key=lambda p: (-p["times"], p["who"]))
 
 
-def export(data: dict) -> str:
-    """A dated, plain-text record she can keep, print or hand to a Title IX office or HR."""
-    lines = ["# Notice record", "",
+def export(data: dict, who: str = "") -> str:
+    """A dated, plain-text record she can keep, print or hand to a Title IX office, HR or a lawyer. With who,
+    only the entries about that person: what she'd bring to a meeting about them."""
+    if who:
+        data = {**data, "records": [r for r in data["records"] if (r.get("who") or "").strip().lower() == who.strip().lower()]}
+    lines = ["# Notice record" + (f": {who}" if who else ""), "",
              f"Exported {time.strftime('%Y-%m-%d %H:%M')}. {len(data['records'])} entries.",
              f"Integrity: {'unaltered' if data['chain']['ok'] else 'ALTERED at line ' + str(data['chain'].get('broken_at'))}"
              + (f", hash chain head {data['chain']['head']}" if data['chain'].get('head') else "") + ".", ""]
