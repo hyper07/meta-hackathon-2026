@@ -20,7 +20,7 @@ jobs:
           cache-dependency-glob: app/uv.lock
       - name: Install (CPU-only torch on Linux, from the lock)
         run: uv sync --frozen
-      - name: Run the 39 tests (speech is faked; no keys, no network calls)
+      - name: Run the 57 tests (speech is faked; no keys, no network calls)
         run: uv run python -m pytest -q
 
   device:
