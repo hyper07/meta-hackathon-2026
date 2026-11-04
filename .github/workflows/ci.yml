@@ -23,6 +23,15 @@ jobs:
       - name: Run the 32 tests (speech is faked; no keys, no network calls)
         run: uv run python -m pytest -q
 
+  device:
+    name: Charm bridge tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Framing, CRC and audio chunks of the USB link (device/bridge.py)
+        run: uvx pytest -q tests
+
   docker:
     name: Docker image builds
     runs-on: ubuntu-latest

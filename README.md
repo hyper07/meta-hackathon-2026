@@ -84,9 +84,10 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 cd app
 uv run python -m pytest       # 32 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
+cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
 
-GitHub Actions runs the tests and builds the Docker image on every push. The measured results, and a script that runs them again, are in [benchmarks/](benchmarks/README.md).
+GitHub Actions runs both test suites and builds the Docker image on every push. The measured results, and a script that runs them again, are in [benchmarks/](benchmarks/README.md).
 
 ## What was built during the hackathon
 

@@ -22,7 +22,7 @@ To film it without speaking, [momo_demo.py](momo_demo.py) plays the demo's scene
 | `0` | Wi-Fi, a WebSocket straight to the server's `/ws`, exactly like the phone app | the board can join a 2.4 GHz network |
 | `1` | the USB cable, through [bridge.py](bridge.py) on the Mac | no Wi-Fi, or to keep it tethered for a demo |
 
-The USB link frames everything as `A5 5A, type, length (2 bytes LE), payload`. Frames from the board end with a CRC-16, so the bridge drops any frame the link damaged instead of passing scrambled audio to the voiceprint. Audio is 16 kHz PCM16, sent in 0.25 s blocks; the bridge joins each 4-second chunk and sends it to the server as one message, and only whole chunks (all 16 blocks, in order) go through.
+The USB link frames everything as `A5 5A, type, length (2 bytes LE), payload`. Frames from the board end with a CRC-16, so the bridge drops any frame the link damaged instead of passing scrambled audio to the voiceprint. Audio is 16 kHz PCM16, sent in 0.25 s blocks; the bridge joins each 4-second chunk and sends it to the server as one message, and only whole chunks (all 16 blocks, in order) go through. [tests/test_bridge.py](../tests/test_bridge.py) checks the framing, the CRC and the chunks.
 
 ## Build and run
 

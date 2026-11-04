@@ -25,9 +25,6 @@ import urllib.request
 import wave
 from pathlib import Path
 
-import serial
-import websockets
-
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
 PORT = ARGS[0] if ARGS else "/dev/cu.usbmodem1101"
 SERVER = ARGS[1] if len(ARGS) > 1 else "ws://127.0.0.1:8000/ws"
@@ -61,11 +58,68 @@ def crc16(data: bytes, crc: int = 0xFFFF) -> int:
     return crc
 
 
+class Frames:
+    """Splits the board's byte stream into frames (kind, payload) and the lines of its plain-text log.
+    A frame whose CRC doesn't match is counted in .bad and skipped; the search resumes after its start."""
+    def __init__(self) -> None:
+        self.buf, self.log, self.bad = bytearray(), bytearray(), 0
+
+    def feed(self, data: bytes) -> tuple[list[tuple[str, bytes]], list[str]]:
+        buf, log, frames, lines = self.buf, self.log, [], []
+        buf += data
+        while True:
+            start = buf.find(b"\xa5\x5a")
+            if start < 0:
+                log += buf[:-1] if buf.endswith(b"\xa5") else buf
+                del buf[:len(buf) - 1 if buf.endswith(b"\xa5") else len(buf)]
+                break
+            log += buf[:start]
+            del buf[:start]
+            if len(buf) < 5:
+                break
+            length = buf[3] | buf[4] << 8
+            if length > 8200:                 # no real frame is this long: a false start
+                del buf[:2]
+                continue
+            if len(buf) < 7 + length:
+                break
+            if crc16(bytes(buf[2:5 + length])) != (buf[5 + length] | buf[6 + length] << 8):
+                self.bad += 1
+                del buf[:2]               # not a real frame start, or damaged: look for the next one
+                continue
+            frames.append((chr(buf[2]), bytes(buf[5:5 + length])))
+            del buf[:7 + length]
+        while b"\n" in log:
+            line, _, rest = bytes(log).partition(b"\n")
+            lines.append(line.decode("utf-8", "replace").rstrip())
+            log[:] = rest
+        return frames, lines
+
+
+class Chunks:
+    """Joins the board's 0.25 s audio blocks into whole 4-second chunks. Block flags: bit 0 first,
+    bit 1 last, bits 4-7 the block's index. A chunk with a block missing or out of order is dropped."""
+    def __init__(self) -> None:
+        self.chunk, self.blocks = bytearray(), -1
+
+    def add(self, payload: bytes) -> bytes | None:
+        flags, audio = payload[0], payload[1:]
+        if flags & 1:
+            self.chunk, self.blocks = bytearray(), 0
+        if flags >> 4 != self.blocks:         # a block went missing: wait for the next chunk
+            self.blocks = -1
+            return None
+        self.chunk += audio
+        self.blocks += 1
+        return bytes(self.chunk) if flags & 2 else None
+
+
 class Board:
     def __init__(self, port: str) -> None:
+        import serial
         self.serial = serial.Serial(port, 115200, timeout=0.05)
         self.lock = threading.Lock()
-        self.bad = 0
+        self.frames = Frames()
 
     def send(self, kind: str, payload: bytes) -> None:
         head = bytes([0xA5, 0x5A, ord(kind), len(payload) & 0xFF, len(payload) >> 8])
@@ -74,59 +128,27 @@ class Board:
 
     def read_frames(self, on_frame) -> None:
         """Runs in a thread: frames go to on_frame; anything else is the board's log, printed."""
-        buf, log = bytearray(), bytearray()
         while True:
-            buf += self.serial.read(8192)
-            while True:
-                start = buf.find(b"\xa5\x5a")
-                if start < 0:
-                    log += buf[:-1] if buf.endswith(b"\xa5") else buf
-                    del buf[:len(buf) - 1 if buf.endswith(b"\xa5") else len(buf)]
-                    break
-                log += buf[:start]
-                del buf[:start]
-                if len(buf) < 5:
-                    break
-                length = buf[3] | buf[4] << 8
-                if length > 8200:                 # no real frame is this long: a false start
-                    del buf[:2]
-                    continue
-                if len(buf) < 7 + length:
-                    break
-                if crc16(bytes(buf[2:5 + length])) != (buf[5 + length] | buf[6 + length] << 8):
-                    self.bad += 1
-                    del buf[:2]               # not a real frame start, or damaged: look for the next one
-                    continue
-                on_frame(chr(buf[2]), bytes(buf[5:5 + length]))
-                del buf[:7 + length]
-            while b"\n" in log:
-                line, _, rest = bytes(log).partition(b"\n")
-                print("board:", line.decode("utf-8", "replace").rstrip(), flush=True)
-                log = bytearray(rest)
+            frames, lines = self.frames.feed(self.serial.read(8192))
+            for kind, payload in frames:
+                on_frame(kind, payload)
+            for line in lines:
+                print("board:", line, flush=True)
 
 
 async def main() -> None:
+    import websockets
     board = Board(PORT)
     pcm = prompt_pcm()
     loop = asyncio.get_running_loop()
     outbox: asyncio.Queue = asyncio.Queue()
-    chunk = bytearray()
-
-    blocks = -1
+    chunks = Chunks()
 
     def on_frame(kind: str, payload: bytes) -> None:
-        nonlocal chunk, blocks
         if kind == "A":
-            flags, audio = payload[0], payload[1:]
-            if flags & 1:
-                chunk, blocks = bytearray(), 0
-            if flags >> 4 != blocks:          # a block went missing: wait for the next chunk
-                blocks = -1
-                return
-            chunk += audio
-            blocks += 1
-            if flags & 2:
-                samples = array.array("h", bytes(chunk))
+            chunk = chunks.add(payload)
+            if chunk is not None:
+                samples = array.array("h", chunk)
                 rms = (sum(x * x for x in samples) / max(1, len(samples))) ** 0.5
                 level = 20 * math.log10(rms / 32768 + 1e-9)
                 if SAVE and level > -50:
@@ -134,7 +156,7 @@ async def main() -> None:
                     with wave.open(str(Path(SAVE) / f"{time.strftime('%H%M%S')}{'-enroll' if enrolling else ''}.wav"), "wb") as w:
                         w.setnchannels(1); w.setsampwidth(2); w.setframerate(16000); w.writeframes(bytes(chunk))
                 print(f"audio: {len(samples) / 16000:.2f} s chunk, {level:.0f} dBFS"
-                      + (f" ({board.bad} damaged frames dropped so far)" if board.bad else ""), flush=True)
+                      + (f" ({board.frames.bad} damaged frames dropped so far)" if board.frames.bad else ""), flush=True)
                 if enrolling:
                     enroll_chunk(bytes(chunk), level)
                 else:
