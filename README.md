@@ -2,6 +2,8 @@
 
 **A voice-locked safety assistant for a party, a date, the walk home, and home itself.** She says "Watch me". A team of Muse agents listens for threats, coercion and signs of drugging, and asks "Are you OK?" when something is wrong. If she can't answer, the people she chose get a text, a call and an email, with what it heard and a map of where she is. Only her voice can turn it off, and only she decides what happened. It is a multi-model pipeline with deterministic checks, not a prompt: an ECAPA voiceprint and Whisper on the device gate every command; Muse Voice Transcribe re-hears the last minute; Muse Spark 1.3 analyses it and may only quote words that are in the transcript; Muse Spark 1.1 gives probabilities that fixed rules turn into discard, ask or alert, so a model alone can never discard a real risk or send an alert; Muse Wonder reviews Notice accounts; and the app itself, not a model, adds the map link and keeps the hash-chained record. Every model runs on the Meta Model API; the voice lock and live speech-to-text run locally.
 
+**▶ Try it live, no install or key: [kibaek-kim2018--watch-me-demo-web.us-east.modal.run](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)** · [3-minute video](https://www.youtube.com/watch?v=sOSY4PXw9Gg) · [benchmarks](#benchmarks) · `docker compose up --build` to run it yourself
+
 [![Try it live](https://img.shields.io/badge/try%20it-live%20demo-2ea44f)](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)
 [![Demo video](https://img.shields.io/badge/demo-video%202%3A55-red?logo=youtube)](https://www.youtube.com/watch?v=sOSY4PXw9Gg)
 [![CI](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml)
@@ -26,7 +28,7 @@
 | **Bonus prize category targeted** | Best Agentic Use-Case: five agents on Muse models (Analyst, Decider, Writer, Notice reviewer, and Muse Voice Transcribe re-hearing the last minute), with fixed rules that decide to discard, ask or alert |
 | **Next devices** | Meta's Muse Charm pendant (a stealth design, already prototyped on an ESP32-C6 board) · Meta's AI glasses (hands-free, with the check-in in her ear) |
 | **Where things are** | [app/](app/README.md): the server, agents and web page · [mobile/](mobile/README.md): the iPhone and Android app · [device/](device/README.md): a Charm stand-in on an ESP32-C6 board · [demo/](demo/): the video and how it's made |
-| **Stack** | Python 3.11+, FastAPI, faster-whisper, SpeechBrain ECAPA, PyTorch (CPU) · Expo SDK 58, React Native 0.88, TypeScript · ESP32-C6 (Arduino) · Docker · GitHub Actions |
+| **Stack** | Python 3.11+, FastAPI, faster-whisper, SpeechBrain ECAPA, PyTorch (CPU) · Expo SDK 58, React Native 0.88, TypeScript · ESP32-C6 (Arduino) · Docker · GitHub Actions · the live demo hosted on [Modal](https://modal.com) |
 | **License** | [Apache-2.0](LICENSE) |
 
 ## Contents
