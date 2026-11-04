@@ -1,8 +1,29 @@
 # Watch Me
 
-[![CI](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml)
+**A voice-locked safety assistant for a party, a date, the walk home, and home itself.** She says "Watch me". A team of Muse agents listens for threats, coercion and signs of drugging, and asks "Are you OK?" when something is wrong. If she can't answer, the people she chose get a text, a call and an email, with what it heard and a map of where she is. Only her voice can turn it off, and only she decides what happened. Built on Meta's Muse models through the Meta Model API. The voice lock and live speech-to-text run locally on the Watch Me server, not in the cloud.
 
-A harassment and assault safety assistant, built for the Meta Global AI Developer Hackathon (2026). You say "Watch me"; only your voice can turn it off; and only you decide what happened. The server and web page are in [app/](app/README.md), the iPhone and Android app in [mobile/](mobile/README.md), and the demo video in [demo/](demo/).
+[![Demo video](https://img.shields.io/badge/demo-video%202%3A55-red?logo=youtube)](https://www.youtube.com/watch?v=sOSY4PXw9Gg)
+[![CI](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Version 0.1.0](https://img.shields.io/badge/version-0.1.0-informational)](app/pyproject.toml)
+[![Meta Model API](https://img.shields.io/badge/Meta%20Model%20API-Muse%20Spark%20%C2%B7%20Wonder%20%C2%B7%20Voice-0866FF?logo=meta&logoColor=white)](#meta-global-ai-developer-hackathon-2026-submission-overview)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](app/pyproject.toml)
+[![Expo SDK 58](https://img.shields.io/badge/Expo%20SDK%2058-React%20Native%200.88-000020?logo=expo)](mobile/package.json)
+[![Docker](https://img.shields.io/badge/docker-compose%20up-2496ED?logo=docker&logoColor=white)](compose.yaml)
+
+## Meta Global AI Developer Hackathon 2026: submission overview
+
+| | |
+|---|---|
+| **Track · problem statement** | Indie · Build for Your World |
+| **Built** | From scratch during the hackathon window, Oct 27 – Nov 4, 2026. Before it: idea notes only, no code ([what was built when](#what-was-built-during-the-hackathon)) |
+| **Meta models** (Meta Model API) | Muse Spark 1.3 (Analyst, alert writer) · Muse Spark 1.1 (Decider) · Muse Wonder 1.0 (Notice reviewer) · Muse Voice Transcribe 1.0 (re-hears the last minute) · Muse Image 1.0 (Charm concept art) |
+| **Demo** | [3-minute video](https://www.youtube.com/watch?v=sOSY4PXw9Gg) · `docker compose up --build`, then http://localhost:8000; with no keys it runs on the phrase list and fixed rules, and alerts are always a dry run until Twilio or SMTP keys are set |
+| **Measured** | 9 of 11 harmful scenes asked "Are you OK?", 0 of 9 needless check-ins; 11 of 11 given a perfect transcript; 40 of 40 public training cases from the EEOC and NY State ([benchmarks/](benchmarks/README.md)) |
+| **Bonus prize in scope** | Best Agentic Use Case |
+| **Where things are** | [app/](app/README.md): the server, agents and web page · [mobile/](mobile/README.md): the iPhone and Android app · [device/](device/README.md): a Charm stand-in on an ESP32-C6 board · [demo/](demo/): the video and how it's made |
+| **Stack** | Python 3.11+, FastAPI, faster-whisper, SpeechBrain ECAPA, PyTorch (CPU) · Expo SDK 58, React Native 0.88, TypeScript · ESP32-C6 (Arduino) · Docker · GitHub Actions |
+| **License** | [Apache-2.0](LICENSE) |
 
 <a href="https://github.com/hyper07/meta-hackathon-2026/raw/main/demo/watch-me-demo.mp4">
   <img src="demo/watch-me-preview.gif" width="720" alt="Watch Me demo preview: the title, built during the hackathon, then Are you OK? with only a Get help button, the alert with a map link, a stranger's stop watching refused, and the Notice review with patterns">
@@ -215,3 +236,9 @@ A tool that reads other people's private conversations to find victims without t
 - [MODELS.md](MODELS.md): which models, how to train them, and the JEPA question
 - [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md): consent, privacy, recording laws, legal information versus legal advice
 - [PLAN.md](PLAN.md): the nine-day build plan and the demo
+
+## License
+
+Copyright 2026 Kibaek Kim. Licensed under the [Apache License 2.0](LICENSE).
+
+Parts written by others keep their own licenses: Espressif's ES8311 codec driver in [device/watchme-charm/](device/watchme-charm/) (Apache-2.0) and the Expo template parts of [mobile/](mobile/LICENSE) (MIT). The app uses Whisper through faster-whisper (MIT) and SpeechBrain's ECAPA voiceprint model (Apache-2.0); the demo's synthetic voices come from Kokoro (Apache-2.0) and Chatterbox (MIT). Using the Meta Model API is subject to Meta's terms.
