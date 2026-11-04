@@ -109,14 +109,14 @@ def card_hood(img):
     d = ImageDraw.Draw(img)
     d.text((CX, 90), "UNDER THE HOOD", font=font(28, BOLD), fill=ACCENT)
     d.text((CX, 130), "Every agent has its own model", font=font(56, HEAVY), fill=TEXT)
-    d.text((CX, 212), "Measured on 22 scripted scenes, synthetic voices over party and street noise · results in benchmarks/",
+    d.text((CX, 212), "Open weights on Baseten, hosted Muse Spark as backup · 22 scenes · results in benchmarks/",
            font=font(21, REG), fill=MUTED)
     rows = [
         ("Listener", "Whisper + ECAPA voiceprint, on the device", ACCENT),
         ("Last minute, again", "Muse Voice Transcribe 1.0", ACCENT),
-        ("Analyst", "Muse Spark 1.3", ACCENT),
-        ("Decider", "Muse Spark 1.1: discard · ask · alert", ACCENT),
-        ("Messenger", "Muse Spark writes · SMS, call, email", RED),
+        ("Analyst", "Muse Spark Open (open weights)", ACCENT),
+        ("Decider", "Muse Spark Open: discard · ask · alert", ACCENT),
+        ("Messenger", "Muse Spark Open writes · SMS, call", RED),
         ("Notice reviewer", "Muse Wonder 1.0", PURPLE),
     ]
     y = 255
@@ -127,9 +127,9 @@ def card_hood(img):
         d.text((CX + 290, y + 28), model, font=font(29, BOLD), fill=TEXT, anchor="lm")
         y += 64
     y += 20
-    stats = [("9 / 11", "harmful scenes asked “Are you OK?”"), ("0 / 9", "needless check-ins"),
-             ("11 / 11", "given a perfect transcript (a phrase list: 2 false alarms)"),
-             ("40 / 40", "public harassment cases, EEOC and NY State")]
+    stats = [("11 / 11", "harmful asked given a perfect transcript, as hosted"), ("0 / 9", "needless check-ins"),
+             ("9.6 s", "to “Are you OK?” live (hosted: 15.0 s)"),
+             ("40 / 40", "public harassment cases, Muse Wonder")]
     for i, (big, small) in enumerate(stats):
         x, yy = CX + (i % 2) * 460, y + (i // 2) * 125
         d.text((x, yy), big, font=font(58, HEAVY), fill=GREEN)
@@ -170,7 +170,7 @@ CARD_PHONE = {
     "title": ("party", [["play", 0.3, 9.0]]),          # off, ready, then "Watch me": watching
     "problem": ("party", [["play", 28.5, 40.5]]),      # "Are you OK?" counting down, unanswered
     "home": ("lock", [["play", 1.0, 13.0]]),           # started by her voice, locked to it
-    "hood": ("services", [["play", 0.5, 2.8]]),        # the app's own list of the models it runs on
+    "hood": ("services", [["play", 1.6, 4.6]]),        # the app's own list of the models it runs on (Muse Spark Open)
     "close": ("notice", [["play", 33.0, 40.0]]),       # stopped by her voice (100%)
 }
 

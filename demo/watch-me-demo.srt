@@ -111,38 +111,38 @@ And it counts patterns.
 This is the third time from the same professor, kept in a dated record that shows if anyone changes it.
 
 29
-00:02:29,159 --> 00:02:32,261
+00:02:29,159 --> 00:02:32,271
 Under the hood: Whisper and a voiceprint on the device.
 
 30
-00:02:32,261 --> 00:02:37,336
-Muse Voice Transcribe hears the last minute again, and Muse Spark analyses it and decides.
+00:02:32,271 --> 00:02:35,100
+Muse Voice Transcribe hears the last minute again.
 
 31
-00:02:37,336 --> 00:02:38,464
-Muse Wonder reviews.
+00:02:35,100 --> 00:02:40,361
+Muse Spark Open, Meta's open weight model, analyses and decides, backed by the hosted models.
 
 32
-00:02:38,464 --> 00:02:44,103
-On 22 realistic scenes, it asked in nine of eleven harmful ones, with no needless check-ins.
+00:02:40,361 --> 00:02:46,188
+Given a perfect transcript, it caught all eleven harmful scenes, and live, it asked six seconds sooner.
 
 33
-00:02:44,103 --> 00:02:46,979
-Given a perfect transcript, Muse caught all eleven.
+00:02:46,188 --> 00:02:47,319
+Muse Wonder reviews.
 
 34
-00:02:48,680 --> 00:02:49,172
+00:02:49,019 --> 00:02:49,512
 Watch Me.
 
 35
-00:02:49,172 --> 00:02:49,993
+00:02:49,512 --> 00:02:50,333
 You turn it on.
 
 36
-00:02:49,993 --> 00:02:51,579
+00:02:50,333 --> 00:02:51,919
 Only your voice turns it off.
 
 37
-00:02:51,579 --> 00:02:53,439
+00:02:51,919 --> 00:02:53,779
 And only you decide what happened.
 

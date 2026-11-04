@@ -62,7 +62,10 @@ try:
                      "fix that. Come by my office after hours on Friday when it is quiet. Do not mention this to the TA."})
 
     def record(name, wav, steps):
-        subprocess.run([sys.executable, str(HERE / "recorder.py"), str(work), name, str(work / "audio" / wav), json.dumps(steps)], check=True)
+        # The page opens on the microphone-and-sound welcome; a take dismisses it first, as a visitor would.
+        skip = [["wait", 0.6], ["js", '(document.getElementById("welcomeSkip") || {click() {}}).click()']]
+        subprocess.run([sys.executable, str(HERE / "recorder.py"), str(work), name, str(work / "audio" / wav),
+                        json.dumps(skip + steps)], check=True)
 
     def sessions():
         folder = data / "sessions"
