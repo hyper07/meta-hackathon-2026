@@ -13,10 +13,8 @@ services:
       - path: .env
         required: false
     volumes:
-      - watchme-data:/data        # voiceprint, settings, session logs
-      - watchme-models:/models    # Whisper and ECAPA, downloaded on the first start
+      - watchme-data:/data        # voiceprint, settings, session logs (Whisper and ECAPA are in the image)
     restart: unless-stopped
 
 volumes:
   watchme-data:
-  watchme-models:

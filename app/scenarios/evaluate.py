@@ -230,7 +230,9 @@ async def main(args: list[str]) -> None:
         raise SystemExit("--hearing=muse-whole needs MODEL_API_KEY (or META_API_KEY)")
     only = [a for a in args if not a.startswith("--")]
     if phrases_only:
+        # No model at all: neither the Meta Model API nor Muse Spark Open (the "on this device only" plan).
         settings.meta_api_key = None
+        settings.model_plan = session_module.DEFAULT_PLAN = "local"   # every new session starts on it too
     settings.checkin_timeout_s = settings.urgent_checkin_timeout_s = 10**6   # measure the ask, not the alert
     messenger.alert_all = _dry_run
     clock = SimTime()

@@ -48,10 +48,10 @@ Watch Me handles the most sensitive moments people have, so these rules are buil
 
 - [The live demo](#the-live-demo) · [The demo video](#the-demo) · [Next: Meta's Muse Charm](#next-metas-muse-charm) · [Meta's AI glasses](#also-metas-ai-glasses)
 - [Safety, privacy and the law](#safety-privacy-and-the-law)
-- [Run it](#run-it) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration) · [Deploying](#deploying)
+- [Run it](#run-it) · [No internet](#no-internet) · [Without a key, and recorded traces](#without-a-key-and-recorded-traces) · [Configuration](#configuration) · [Deploying](#deploying)
 - [Built with Meta](#built-with-meta): which model does what, and how the agents fit together
 - [Benchmarks](#benchmarks): accuracy, the Notice reviewer, the voice lock, latency
-- [Test cases](#test-cases): 84 automated tests, 22 scenes and 56 written cases
+- [Test cases](#test-cases): 88 automated tests, 22 scenes and 56 written cases
 - [Code layout](#code-layout) · [Technical notes](#technical-notes)
 - [What was built during the hackathon](#what-was-built-during-the-hackathon)
 - [The idea](#the-idea) · [Domestic violence](#domestic-violence) · [What it does](#what-it-does) · [What it must not become](#what-it-must-not-become)
@@ -141,7 +141,7 @@ uv sync                       # once: installs the server, Whisper and the voice
 ./run.sh --https              # https://<Wi-Fi IP>:8443, for a phone's browser on the same Wi-Fi (needs mkcert; see app/README.md)
 ```
 
-Or with Docker, without installing Python or uv: `docker compose up --build`, then open http://localhost:8000. It reads `.env` from step 1 and runs on the CPU. The first start downloads Whisper and the voiceprint model into a volume.
+Or with Docker, without installing Python or uv: `docker compose up --build`, then open http://localhost:8000. It reads `.env` from step 1 and runs on the CPU. Whisper and the voiceprint model are in the image, so it also runs with no internet ([No internet](#no-internet)).
 
 Open Setup, enter your name, PIN and contacts, pick a model plan (Models and cost), and record your voice: one line, said once. Then go to Watch, turn on listening and say "Watch me".
 
@@ -162,12 +162,26 @@ In the app, open Setup › Server, enter the address `run.sh --lan` printed, and
 
 ```bash
 cd app
-uv run python -m pytest       # 73 tests; speech is faked, so no microphone needed
+uv run python -m pytest       # 77 tests; speech is faked, so no microphone needed
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 cd .. && uvx pytest tests     # 11 tests of the Charm board's USB link: framing, CRC, audio chunks
 ```
 
 GitHub Actions runs both test suites, type-checks and lints the phone app, and builds the Docker image on every push. The measured results, and the scripts that run them again, are in [benchmarks/](benchmarks/README.md).
+
+### No internet
+
+Watch Me runs with no network at all. Choose **On this device only** in Setup › Models and cost (or set `MODEL_PLAN=local`), and nothing leaves the machine:
+
+```bash
+docker build -t watchme .
+docker run --network none -e MODEL_PLAN=local -p 127.0.0.1:8000:8000 watchme    # no network inside the container
+```
+
+- **The Docker image carries the speech models.** Whisper and the ECAPA voiceprint model are baked in at build time, and `HF_HUB_OFFLINE=1` stops the libraries from looking online. In a container started with `--network none` (checked: no DNS, no route out), the models loaded in 1.8 s, Whisper heard "Are you okay? Say I'm okay." correctly, and the voiceprint was computed.
+- **The page needs nothing from the internet:** no fonts, scripts or styles from elsewhere.
+- **What still works:** "Watch me", "stop watching" and "I'm OK" by her voice; the phrase list scores every line; the fixed rules ask "Are you OK?"; the hash-chained record. For the case Watch Me was built for, a rule catches a drink pushed on her and then "I feel dizzy" (or unable to move or stand) within the same minute, which each line alone doesn't reach. With it, the phrase list and rules asked in **11 of 11** harmful scenes given the scripts (10 of 11 before), with the same 2 needless check-ins in 9 harmless ones ([result](app/scenarios/results/20261104-1541-phrases-script.md)).
+- **What needs a network:** the Muse agents (they read context: no needless check-ins, against 2 for the rules), Notice reviews, and delivering an alert. With no network an alert is logged and shown as failed, so for real use she needs a connection when it matters. If the network is only down for a while (the Recommended plan), the audio and the analysis are kept and finished when it's back.
 
 ### Without a key, and recorded traces
 
@@ -251,7 +265,7 @@ Measured with the app's own code on 22 scripted scenes (11 harmful, 9 harmless i
 | **Whisper, 4 s chunks (the app today)** | **Muse agents, reading Muse Voice Transcribe's last minute** | **20 of 22** | **9 of 11** | **0 of 9** | **5.4 s** |
 | Muse Voice Transcribe's transcript of the whole recording | Muse agents | 19 of 22 | 10 of 11 | 0 of 9 | 9.5 s |
 | The script, word for word (perfect hearing) | Muse agents | 22 of 22 | **11 of 11** | **0 of 9** | 6.2 s |
-| The script, word for word | phrase list and fixed rules | 22 of 22 | 10 of 11 | 2 of 9 | 9.1 s |
+| The script, word for word | phrase list and fixed rules (no model) | 22 of 22 | 11 of 11 (10 of 11 before the drink-then-unwell rule) | 2 of 9 | 6.2 s |
 
 - **Given a perfect transcript, the Muse agents get every scene right:** 11 of 11 harmful scenes asked "Are you OK?" and no needless check-ins. The app's remaining misses come from hearing in noise and the voice lock, not from the agents' judgment.
 - **On the same transcript, a phrase list** missed one harmful scene and raised two false alarms: "I'll kill you" quoted from a film, and someone else's story retold. The Muse agents read the context and discarded both.
@@ -316,15 +330,16 @@ What that means for her:
 
 ## Test cases
 
-**84 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
+**88 automated tests** run on every push and pull request (GitHub Actions, [ci.yml](.github/workflows/ci.yml)), along with the phone app's type-check and lint and the Docker build. Speech is faked in the tests, so they need no microphone, no key and no network.
 
 | File | Tests | What it proves |
 |---|---|---|
 | [app/tests/test_session.py](app/tests/test_session.py) | 15 | only the owner's voice starts and stops it; a stranger's refused "stop watching" keeps his voice in the evidence clip; an unanswered check-in alerts; her "I'm OK" cancels an alert but a stranger's can't; a tap can get help but never say "I'm OK"; the duress phrase looks off but alerts; a phone that drops off alerts; offline audio is kept and analysed later; alerts carry her location and follow her when she moves |
 | [app/tests/test_parts.py](app/tests/test_parts.py) | 9 | the phrase list scores distress above the trigger and banter below; the Decider asks when unsure and never alerts directly; the evidence chain detects an edit; alerts go to the right contacts; one enrollment line becomes three voiceprint pieces |
 | [app/tests/test_notice.py](app/tests/test_notice.py) | 9 | an account is reviewed, saved and counted toward a pattern; quotes not in the text are dropped; Notice mode notes instead of asking; live Notice needs one-party consent; offline accounts are reviewed later |
-| [app/tests/test_next_steps.py](app/tests/test_next_steps.py) | 8 | similar cases are only real public cases with their official answer; a case about a different basis (race, religion) is never shown for sexual harassment; none when the review found nothing; rescinded guidance is labelled; the hotline numbers are the verified ones; an export about one person leaves everyone else out |
+| [app/tests/test_next_steps.py](app/tests/test_next_steps.py) | 9 | similar cases are only real public cases with their official answer; a case about a different basis (race, religion) is never shown for sexual harassment; none when the review found nothing; rescinded guidance is labelled; the hotline numbers are the verified ones; an export about one person leaves everyone else out |
 | [app/tests/test_open_weights.py](app/tests/test_open_weights.py) | 16 | Muse Spark Open answers first when set up, and a failure (down, a timeout, a cut-off answer) goes to that agent's hosted model; with hosted first, a failure (no network, a timeout, 429, 5xx, an empty answer) goes to Muse Spark Open; a bad request isn't hidden; the Decider records which model decided; without either, the rules still ask; the agents run on open weights only when a key is set |
+| [app/tests/test_offline.py](app/tests/test_offline.py) | 3 | with no model, a drink pushed on her then "I feel really dizzy" asks "Are you OK?"; either line alone doesn't |
 | [app/tests/test_model_plan.py](app/tests/test_model_plan.py) | 8 | each plan in Setup › Models and cost calls only the provider it names; a single-provider plan never calls (or bills) the other; on the device only, no model is called and the rules still ask; Muse Voice Transcribe runs only in plans with the Meta Model API |
 | [app/tests/test_demo.py](app/tests/test_demo.py) | 8 | the public demo: a second visitor waits; only the visitor's page can use the API (the audio player carries its token in the clip's URL); alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
 | [tests/test_bridge.py](tests/test_bridge.py) | 11 | the Charm board's USB link: CRC-16, frames split across reads, damaged frames dropped, noise never mistaken for a frame, 4-second audio chunks with missing blocks dropped |
@@ -347,7 +362,7 @@ What that means for her:
 4. Check it with a whole visit: `uvx --with websockets --with httpx --with soundfile --with numpy python deploy/smoke_test.py <url>`.
 5. Muse Spark Open: put `BASETEN_API_KEY` in `.env` before deploying, and the live agents run on it, with the hosted models as their backup; only that key is sent along. To serve it from a Modal shared endpoint instead: `modal endpoint create --shared --model meta-models/Muse-Spark-Open-816B-A42B`, a proxy token, and `OPEN_WEIGHTS_BASE`, `OPEN_WEIGHTS_MODEL` (the endpoint's hostname) and `MODAL_PROXY_TOKEN` (`id.secret`).
 
-**The phone app:** a development build with `npx expo run:ios` or `run:android`, or in the cloud with EAS ([mobile/README.md](mobile/README.md)). **The Charm board:** `arduino-cli compile` and `upload` ([device/README.md](device/README.md)).
+**The phone app:** Setup has the same Models and cost choice and Title IX or HR contacts as the web page. A development build with `npx expo run:ios` or `run:android`, or in the cloud with EAS ([mobile/README.md](mobile/README.md)). **The Charm board:** `arduino-cli compile` and `upload` ([device/README.md](device/README.md)).
 
 ## Code layout
 
@@ -367,7 +382,7 @@ app/                        the Watch Me server (Python 3.11+, FastAPI)
     config.py               settings, from .env
   static/                   the phone web page (index.html, app.js, app.css) and its spoken prompts
   scenarios/                the 22 test scenes, 56 written Notice cases, the evaluator, and results/
-  tests/                    73 server tests (speech is faked)
+  tests/                    77 server tests (speech is faked)
   demo_seed/                the live demo's example history: three recorded sessions and a Notice book (README.md says where each came from)
 mobile/src/                 the iPhone and Android app (Expo SDK 58, React Native 0.88, TypeScript)
   app/                      the Watch, Review, Notice and Setup screens (expo-router)
@@ -389,9 +404,9 @@ DESIGN.md, MODELS.md, SAFETY_AND_LAW.md, PLAN.md   the design notes
 
 - **Model output is checked, never trusted.** Every agent answers in JSON. A quote the Analyst or the Notice reviewer can't point to in the transcript is dropped. The Decider's probabilities are normalised and judged by fixed rules ("ask when unsure"), so a model alone can never discard a real risk or send an alert. The alert's map link is added by the app, so a model can't drop it.
 - **The voice lock.** ECAPA voiceprints, compared per sentence on Whisper's word timings: 0.20 to start, 0.36 to stop or say "I'm OK" (no other voice of 70 passed 0.33). The screen shows them as 70% and 90%.
-- **She chooses what it costs.** Setup › Models and cost picks the plan: the recommended mix, open weights only, the Meta Model API only, or on the device only (free: the check-ins and alerts still work on Whisper, the voiceprint, the phrase list and the fixed rules). A single-provider plan never calls the other provider, so it is never billed for it.
+- **She chooses what it costs.** Setup › Models and cost, on the web and in the phone app, picks the plan: the recommended mix, open weights only, the Meta Model API only, or on the device only (free: the check-ins and alerts still work on Whisper, the voiceprint, the phrase list and the fixed rules). A single-provider plan never calls the other provider, so it is never billed for it.
 - **Two providers for the agents.** Muse Spark Open on Baseten first; if a call fails or its answer is cut off, the same request goes to the agent's hosted Muse model; if both fail, the fixed rules on the phrase-list score. The check-in loop never waits on a model.
-- **Offline.** Whisper, the voiceprint, the phrase list and the rules all run on the device. What needs a model is queued with its transcript and time, all audio is kept meanwhile, and when the network is back Muse Voice Transcribe re-hears the kept audio and the queued analyses run, appending to the same hash-chained logs.
+- **Offline.** Whisper, the voiceprint, the phrase list and the rules all run on the device, and the Docker image carries the speech models, so it runs with no network at all. The phrase list also looks across the last minute for a drink pushed on her and then feeling unwell, which each line alone doesn't reach. What needs a model is queued with its transcript and time, all audio is kept meanwhile, and when the network is back Muse Voice Transcribe re-hears the kept audio and the queued analyses run, appending to the same hash-chained logs.
 - **One model thread.** Whisper (CTranslate2) and ECAPA (torch) each bring their own OpenMP pool, and called from different threads they deadlocked twice; every local model call goes through one worker thread.
 - **The record can't be edited quietly.** Each session log and the Notice book is a hash chain: each line carries the hash of the one before, so a change or a deletion shows, and exports print the chain's head.
 - **Location.** A fix older than 60 s is labelled "last known"; before an alert the app asks the phone for a fresh one (4 s at most). After an alert, her people get a new link each time she moves 150 m (at most every 2 minutes, for an hour).

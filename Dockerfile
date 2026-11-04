@@ -3,7 +3,8 @@
 #   docker compose up --build        then open http://localhost:8000
 #
 # Keys come from .env at run time (compose.yaml); they are never copied into the image.
-# Without keys it still runs: phrase list, fixed rules and dry-run alerts.
+# Without keys it still runs: phrase list, fixed rules and dry-run alerts. With no internet at all:
+#   docker run --network none -e MODEL_PLAN=local -p 127.0.0.1:8000:8000 watchme
 FROM python:3.12-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.5 /uv /usr/local/bin/uv
@@ -14,7 +15,7 @@ ENV UV_COMPILE_BYTECODE=1 \
     PATH=/opt/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     DATA_DIR=/data \
-    HF_HOME=/models/huggingface
+    HF_HOME=/opt/models/huggingface
 
 WORKDIR /srv/app
 
@@ -26,8 +27,11 @@ COPY app/watchme ./watchme
 COPY app/static ./static
 COPY app/demo_seed ./demo_seed
 
-# The voiceprint model is saved next to the app (.models/ecapa); keep it with Whisper on one volume.
-RUN mkdir -p /data /models/ecapa && ln -s /models .models
+# Whisper and the voiceprint model are baked into the image, so the server starts and runs with no
+# internet at all (with MODEL_PLAN=local, or when the network is down: the rules take over).
+RUN mkdir -p /data /opt/models/ecapa && ln -s /opt/models .models \
+ && python -c "from watchme import speech; speech.warm_up()"
+ENV HF_HUB_OFFLINE=1
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
