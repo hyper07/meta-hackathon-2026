@@ -72,31 +72,52 @@ async def _post(base: str, key: str, model: str, system: str, user: str, max_tok
         response = await client.post(base.rstrip("/") + "/chat/completions",
                                      headers={"Authorization": f"Bearer {key}"}, json=body)
         response.raise_for_status()
-        content = response.json()["choices"][0]["message"].get("content")
+        choice = response.json()["choices"][0]
+        content = choice["message"].get("content")
         if not content:
             raise ValueError("the model used its whole budget reasoning and gave no answer")
+        if choice.get("finish_reason") == "length":
+            raise ValueError("the answer was cut off at the token budget")
         return content.strip()
 
 
 async def _open(system: str, user: str, max_tokens: int, timeout: float) -> str:
     answered_by.set("muse-spark-open")
+    # Muse Spark Open reasons before it answers, and at a small budget it can run out mid-answer (3 of 40
+    # Notice reviews did at 4000 tokens): it gets twice the budget, and the same low reasoning effort.
     return await _post(settings.open_weights_base, settings.open_weights_key or "", settings.open_weights_model,
-                       system, user, max(max_tokens, 3000), timeout, reasoning=False)
+                       system, user, max(2 * max_tokens, 4000), timeout, reasoning=True)
 
 
-async def _chat(system: str, user: str, max_tokens: int = 1500, timeout: float = 20, model: str = "") -> str:
-    """One call to a Muse model. On the Meta Model API by default; when that call fails (no network,
-    a timeout, the service busy or down, or an empty answer), the same request goes to Muse Spark Open,
-    the open-weight model, if it's configured. Only if both fail does the caller fall back to its rules."""
+def _fails_over(error: Exception) -> bool:
+    return retryable(error) or isinstance(error, (ValueError, json.JSONDecodeError))
+
+
+async def _chat(system: str, user: str, max_tokens: int = 1500, timeout: float = 20, model: str = "",
+                hosted: str = "") -> str:
+    """One call to a Muse model, with the other provider as its backup.
+
+    model "open": Muse Spark Open first; if that call fails (no network, a timeout, busy or down, an empty
+    or cut-off answer), the same request goes to the hosted model (hosted, or the default Muse Spark).
+    Any other model: the Meta Model API first, then Muse Spark Open. Only if both fail does the caller
+    fall back to its fixed rules."""
     name = model or settings.meta_model
     if name == OPEN or not settings.meta_api_key:
-        return await _open(system, user, max_tokens, timeout)
+        try:
+            return await _open(system, user, max_tokens, timeout)
+        except Exception as error:
+            if not (settings.meta_api_key and _fails_over(error)):
+                raise
+            name = hosted or settings.meta_model
+            answered_by.set(name)
+            return await _post(settings.meta_api_base, settings.meta_api_key, name, system, user, max_tokens,
+                               timeout, reasoning=True)
     answered_by.set(name)
     try:
         return await _post(settings.meta_api_base, settings.meta_api_key, name, system, user, max_tokens, timeout,
                            reasoning=True)
     except Exception as error:
-        if settings.open_ready and (retryable(error) or isinstance(error, ValueError)):
+        if settings.open_ready and _fails_over(error):
             return await _open(system, user, max_tokens, timeout)
         raise
 
@@ -141,7 +162,7 @@ async def analyse(transcript: str) -> dict | None:
     if not settings.muse_ready:
         return None
     try:
-        answer = _first_json(await _chat(ANALYST_PROMPT, transcript, model=settings.analyst_model))
+        answer = _first_json(await _chat(ANALYST_PROMPT, transcript, model=settings.analyst_model, hosted=settings.meta_model))
     except Exception as error:
         return {"error": f"{type(error).__name__}: {error}", "retry": retryable(error)}
     plain = re.sub(r"^\[\w+\]\s*", "", transcript, flags=re.MULTILINE).lower()
@@ -166,7 +187,8 @@ async def write_alert(facts: dict) -> str:
     if not settings.muse_ready:
         return _alert_fallback(facts)
     try:
-        text = await _chat(ALERT_PROMPT, json.dumps(facts), max_tokens=1200, timeout=10, model=settings.writer_model)
+        text = await _chat(ALERT_PROMPT, json.dumps(facts), max_tokens=1200, timeout=10, model=settings.writer_model,
+                           hosted=settings.meta_model)
         return text[:480] or _alert_fallback(facts)
     except Exception:
         return _alert_fallback(facts)

@@ -8,7 +8,7 @@ visitor's page may use the API; alerts are always a dry run and no audio is kept
 set; everything the visitor left is wiped when they go.
 
 Only the model keys leave this machine: the Meta Model API key (MODEL_API_KEY or META_API_KEY), and, if
-set, the Muse Spark Open backup's endpoint and proxy token (OPEN_WEIGHTS_MODEL, MODAL_PROXY_TOKEN). They're
+set, the Muse Spark Open backup's key (BASETEN_API_KEY, or OPEN_WEIGHTS_API_KEY / MODAL_PROXY_TOKEN). They're
 read from the environment or .env and sent to Modal as this app's secret. Twilio, SMTP and any other keys
 in .env are never sent, so the demo couldn't text or call anyone even by mistake.
 
@@ -75,12 +75,14 @@ image = (
 
 app = modal.App("watch-me-demo")
 def secrets_for_the_demo() -> dict:
-    """The Meta Model API key, and the Muse Spark Open backup's endpoint and proxy token if they're set.
+    """The Meta Model API key, and the Muse Spark Open backup's key (Baseten by default) if it's set.
     Nothing else from .env is sent."""
     values = {"MODEL_API_KEY": meta_key()}
-    open_key, open_model = env_value("OPEN_WEIGHTS_API_KEY", "MODAL_PROXY_TOKEN"), env_value("OPEN_WEIGHTS_MODEL")
-    if open_key and open_model:
-        values.update(OPEN_WEIGHTS_API_KEY=open_key, OPEN_WEIGHTS_MODEL=open_model)
+    open_key = env_value("OPEN_WEIGHTS_API_KEY", "BASETEN_API_KEY", "MODAL_PROXY_TOKEN")
+    if open_key:
+        values.update(OPEN_WEIGHTS_API_KEY=open_key,
+                      OPEN_WEIGHTS_BASE=env_value("OPEN_WEIGHTS_BASE") or "https://inference.baseten.co/v1",
+                      OPEN_WEIGHTS_MODEL=env_value("OPEN_WEIGHTS_MODEL") or "meta-models/muse-spark-open")
     return values
 
 

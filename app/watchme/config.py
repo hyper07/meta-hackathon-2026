@@ -33,6 +33,15 @@ def _float(name: str, default: float) -> float:
     return float(_env(name, default=str(default)))
 
 
+def _shown(model: str) -> str:
+    return "muse-spark-open (open weights)" if model == "open" else model
+
+
+def _open_first(hosted: str) -> str:
+    """The live agents run on Muse Spark Open when it's set up (a key for it), else on the hosted model."""
+    return "open" if _env("OPEN_WEIGHTS_API_KEY", "BASETEN_API_KEY", "MODAL_PROXY_TOKEN") else hosted
+
+
 @dataclass
 class Settings:
     data_dir: Path = field(default_factory=lambda: Path(_env("DATA_DIR", default=str(APP_DIR / "data"))))
@@ -40,12 +49,15 @@ class Settings:
     # Every model agent runs on the Meta Model API (variable names as in Meta's legal-agent-workshop;
     # OpenAI-compatible Chat Completions).
     meta_api_key: str | None = field(default_factory=lambda: _env("MODEL_API_KEY", "META_API_KEY"))
-    # Muse Spark Open: Meta's open-weight model, on a Modal shared endpoint (OpenAI-compatible).
-    # It's the backup: when a Meta Model API call fails, the same request goes here before the fixed
-    # rules take over. An agent set to "open" (ANALYST_MODEL=open, ...) uses it directly.
-    open_weights_base: str = field(default_factory=lambda: _env("OPEN_WEIGHTS_BASE", default="https://inference.us-west.modal.direct/v1"))
-    open_weights_key: str | None = field(default_factory=lambda: _env("OPEN_WEIGHTS_API_KEY", "MODAL_PROXY_TOKEN"))
-    open_weights_model: str = field(default_factory=lambda: _env("OPEN_WEIGHTS_MODEL", default="") or "")
+    # Muse Spark Open: Meta's open-weight model, served by Baseten Model APIs (OpenAI-compatible), or by any
+    # endpoint that serves it (a Modal shared endpoint: OPEN_WEIGHTS_BASE=https://inference.us-west.modal.direct/v1,
+    # OPEN_WEIGHTS_MODEL=<its hostname>, MODAL_PROXY_TOKEN). When it's set up, it runs the live agents (the
+    # Analyst, the Decider, the alert writer) and the hosted Muse models are their backup: on the 22 scenes it
+    # decided exactly as they did, and reached "Are you OK?" about 6 s sooner (benchmarks/README.md). When an
+    # agent runs on the hosted API instead, Muse Spark Open is its backup. "open" as a model name means it.
+    open_weights_base: str = field(default_factory=lambda: _env("OPEN_WEIGHTS_BASE", default="https://inference.baseten.co/v1"))
+    open_weights_key: str | None = field(default_factory=lambda: _env("OPEN_WEIGHTS_API_KEY", "BASETEN_API_KEY", "MODAL_PROXY_TOKEN"))
+    open_weights_model: str = field(default_factory=lambda: _env("OPEN_WEIGHTS_MODEL", default="meta-models/muse-spark-open") or "")
     meta_api_base: str = field(default_factory=lambda: _env("MODEL_API_BASE_URL", "META_API_BASE", default="https://api.meta.ai/v1"))
     meta_model: str = field(default_factory=lambda: _env("MODEL_API_MODEL", "META_MODEL", default="muse-spark-1.3"))
     # Muse Spark reasons before it answers. "low" keeps an analysis near 3 s; the default effort
@@ -54,16 +66,18 @@ class Settings:
 
     # One model per agent role, all on the same API. The live Analyst needs speed; the Notice
     # reviewer runs afterwards and can take longer; the writer drafts alerts and summaries.
-    analyst_model: str = field(default_factory=lambda: _env("ANALYST_MODEL", default="") or "")
+    analyst_model: str = field(default_factory=lambda: _env("ANALYST_MODEL", default="") or _open_first(""))
     # Muse Wonder was the best Notice reviewer: 40 of 40 public training cases and 16 of 16 of ours,
     # median 4.5 s, against 38 and 36 of 40 for Spark 1.3 and 1.1 (scenarios/README.md).
     reviewer_model: str = field(default_factory=lambda: _env(
         "REVIEWER_MODEL", default="muse-wonder-1.0"))
-    writer_model: str = field(default_factory=lambda: _env("WRITER_MODEL", default="") or "")
+    writer_model: str = field(default_factory=lambda: _env("WRITER_MODEL", default="") or _open_first(""))
 
     # The Decider: Muse Spark gives a probability for discard, ask and alert; the rules in decider.py
     # pick the action. Spark 1.1 decides as well as 1.3 on the test moments and answers in ~2 s against 4-10 s.
-    decider_model: str = field(default_factory=lambda: _env("DECIDER_MODEL", default="muse-spark-1.1"))
+    decider_model: str = field(default_factory=lambda: _env("DECIDER_MODEL", default="") or _open_first("muse-spark-1.1"))
+    # The hosted model each live agent falls back to when Muse Spark Open fails (or runs on without it).
+    decider_hosted_model: str = field(default_factory=lambda: _env("DECIDER_HOSTED_MODEL", default="muse-spark-1.1"))
     decider_min_lift: float = field(default_factory=lambda: _float("DECIDER_MIN_LIFT", 2.5))
     decider_timeout: float = field(default_factory=lambda: _float("DECIDER_TIMEOUT", 12))
 
@@ -155,12 +169,13 @@ class Settings:
 
     def describe(self) -> dict:
         return {
-            "muse_spark": (self.analyst_model or self.meta_model) if self.muse_ready else "not configured (phrase list only)",
-            "reviewer": (self.reviewer_model or self.meta_model) if self.muse_ready else "not configured",
-            "writer": (self.writer_model or self.meta_model) if self.muse_ready else "templates",
+            "muse_spark": _shown(self.analyst_model or self.meta_model) if self.muse_ready else "not configured (phrase list only)",
+            "reviewer": _shown(self.reviewer_model or self.meta_model) if self.muse_ready else "not configured",
+            "writer": _shown(self.writer_model or self.meta_model) if self.muse_ready else "templates",
             "debrief_speech": "Muse Voice Transcribe" if self.voice_api_key else f"Whisper {self.whisper_model}",
-            "decider": self.decider_model if self.muse_ready else "not configured (fixed rules)",
-            "backup": "Muse Spark Open (open weights, Modal)" if self.open_ready else "fixed rules",
+            "decider": _shown(self.decider_model) if self.muse_ready else "not configured (fixed rules)",
+            "backup": ("the hosted Muse models" if "open" in (self.analyst_model, self.decider_model)
+                       else "Muse Spark Open (open weights)") if self.open_ready else "fixed rules",
             "sms_and_calls": "Twilio" if self.sms_ready else "dry run",
             "email": self.smtp_host if self.email_ready else "dry run",
             "whisper": (f"Muse Voice Transcribe (Whisper {self.whisper_model} as fallback)"

@@ -78,7 +78,8 @@ async def decide_with_muse(transcript: str, analysis: dict, context: dict, start
     state = build_state(transcript, analysis, context)
     answer = muse._first_json(await muse._chat(
         PROMPT, "\n\n".join(f"{k}:\n{v}" for k, v in state.items()),
-        max_tokens=1200, timeout=settings.decider_timeout, model=settings.decider_model))
+        max_tokens=1200, timeout=settings.decider_timeout, model=settings.decider_model,
+        hosted=settings.decider_hosted_model))
     raw = {o: max(0.0, float(answer.get(o, 0) or 0)) for o in OPTIONS}
     total = sum(raw.values())
     if total <= 0:

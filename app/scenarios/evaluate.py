@@ -110,7 +110,7 @@ def transcript_lines(entry: dict, audio, hearing: str, reference) -> list[Heard]
     return [Heard(t["start"], t["end"], t["text"], t["similarity"]) for t in turns]
 
 
-async def _dry_run(contacts, owner, body):
+async def _dry_run(contacts, owner, body, **_):   # same signature as messenger.alert_all; never sends
     return [{"to": c.get("name"), "channel": "dry run", "result": "dry run"} for c in contacts]
 
 
