@@ -124,7 +124,7 @@ The user switches it on for a specific situation: a party, a date, walking home.
               ▼ trigger
    speech-to-text of the buffer (on device)
               ▼
-   decision: Muse Spark (a probability for each option on a fixed menu; about 2 s)
+   decision: Muse Spark (a probability for each option on a fixed menu; about 3 s, see benchmarks/)
      reads the transcript and context (time, place type, the user's own settings) as its state,
      scores the menu, and the rules below turn the scores into one action:
        discard   → discard the buffer

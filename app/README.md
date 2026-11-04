@@ -118,6 +118,8 @@ Each agent can use its own model (`ANALYST_MODEL`, `DECIDER_MODEL`, `REVIEWER_MO
 | Decider (Muse Spark 1.1 on the Meta Model API; 2026-10-31) | ~2 s | on the 22 scenes: 9 of 11 harmful asked, 0 of 9 needless check-ins |
 | Alert text (Muse Spark 1.3) | a few seconds, 10 s timeout | template fallback is instant |
 
+Measured again on 2026-11-03, 20 runs of each Meta Model API stage ([benchmarks/results/latency-20261103-2336.md](../benchmarks/results/latency-20261103-2336.md)): Muse Voice Transcribe on the last minute 3.8 s, Analyst 7.4 s, Decider 3.1 s, alert text 6.3 s (2 of 20 fell back to the template), Notice review 4.8 s (medians); Whisper on a 4 s chunk 0.34 s and the voiceprint 27 ms (50 runs). The API's speed varies by time of day; `uv run python ../benchmarks/latency.py` measures it again.
+
 Detection and voice-lock results on the 20 test scenes are in [scenarios/README.md](scenarios/README.md). The scenes are synthetic and n is small: calibrate with real people before relying on them.
 
 ## Rules that keep it on the owner's side

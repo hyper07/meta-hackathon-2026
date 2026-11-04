@@ -21,6 +21,7 @@ if [[ "${1:-}" == "--agents" ]]; then
   uv run python -m scenarios.evaluate --hearing=script
   uv run python -m scenarios.notice_eval --training
   uv run python -m scenarios.notice_eval
+  uv run python ../benchmarks/latency.py
 fi
 
-echo "Results: app/scenarios/results/ (newest files)"
+echo "Results: app/scenarios/results/ and benchmarks/results/ (newest files)"
