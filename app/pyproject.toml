@@ -14,6 +14,7 @@ dependencies = [
     "torch>=2.3",
     "soundfile>=0.12",
     "speechbrain>=1.0",
+    "torchaudio>=2.3",
 ]
 
 [dependency-groups]
@@ -26,3 +27,14 @@ scenarios = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+# On Linux (Docker, CI) torch comes from PyTorch's CPU-only index: no GPU needed, and no
+# multi-GB CUDA libraries. macOS keeps the normal PyPI wheels.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchaudio = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

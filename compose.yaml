@@ -1,0 +1,22 @@
+# docker compose up --build    then open http://localhost:8000 (a browser allows the microphone on localhost)
+#
+# Fill in .env first (cp -n .env.example .env); every key is optional. Alerts are a dry run
+# unless Twilio or SMTP keys are set.
+services:
+  watchme:
+    build: .
+    image: watchme
+    ports:
+      # Only this computer. For the phone app on the same Wi-Fi, use "8000:8000".
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - watchme-data:/data        # voiceprint, settings, session logs
+      - watchme-models:/models    # Whisper and ECAPA, downloaded on the first start
+    restart: unless-stopped
+
+volumes:
+  watchme-data:
+  watchme-models:

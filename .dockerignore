@@ -1,0 +1,8 @@
+# Only app/pyproject.toml, app/uv.lock, app/watchme and app/static go into the image.
+*
+!app/pyproject.toml
+!app/uv.lock
+!app/watchme/
+!app/static/
+**/__pycache__
+**/.env

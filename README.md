@@ -1,5 +1,7 @@
 # Watch Me
 
+[![CI](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml)
+
 A harassment and assault safety assistant, built for the Meta Global AI Developer Hackathon (2026). You say "Watch me"; only your voice can turn it off; and only you decide what happened. The server and web page are in [app/](app/README.md), the iPhone and Android app in [mobile/](mobile/README.md), and the demo video in [demo/](demo/).
 
 <a href="https://github.com/hyper07/meta-hackathon-2026/raw/main/demo/watch-me-demo.mp4">
@@ -59,6 +61,8 @@ uv sync                       # once: installs the server, Whisper and the voice
 ./run.sh --https              # https://<Wi-Fi IP>:8443, for a phone's browser on the same Wi-Fi (needs mkcert; see app/README.md)
 ```
 
+Or with Docker, without installing Python or uv: `docker compose up --build`, then open http://localhost:8000. It reads `.env` from step 1 and runs on the CPU. The first start downloads Whisper and the voiceprint model into a volume.
+
 Open Setup, enter your name, PIN and contacts, and record your voice: one line, said once. Then go to Watch, turn on listening and say "Watch me".
 
 **3. Build and run the iPhone or Android app.** It uses native modules, so it needs a development build; Expo Go won't work.
@@ -82,6 +86,8 @@ uv run python -m pytest       # 32 tests; speech is faked, so no microphone need
 uv run python -m scenarios.build && uv run python -m scenarios.evaluate   # the 22 realistic scenes (app/scenarios/)
 ```
 
+GitHub Actions runs the tests and builds the Docker image on every push. The measured results, and a script that runs them again, are in [benchmarks/](benchmarks/README.md).
+
 ## What was built during the hackathon
 
 The building period was Oct 27 – Nov 4, 2026. Everything that runs was written during it.
@@ -89,11 +95,11 @@ The building period was Oct 27 – Nov 4, 2026. Everything that runs was written
 - **Before the event (Oct 18), no code.** The idea and planning notes only: [MODELS.md](MODELS.md), [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md), and early drafts of this README and [DESIGN.md](DESIGN.md), which then described a "harassment and assault safety assistant" concept.
 - **Built during the hackathon:**
   - [app/](app/README.md): the server and its agents, the voice lock, Emergency and Notice modes, offline catch-up, and the web page;
-  - [app/scenarios/](app/scenarios/README.md): the 22 test scenes, 56 written cases and the evaluator;
+  - [app/scenarios/](app/scenarios/README.md): the 22 test scenes, 56 written cases and the evaluator, summarised in [benchmarks/](benchmarks/README.md);
   - [mobile/](mobile/README.md): the iPhone and Android app;
   - [demo/](demo/): the video, screenshots, Charm concept images and the scripts that make them;
   - [device/](device/README.md): a Charm stand-in on an ESP32-C6 board, with Momo the cat on its screen, and its USB bridge;
-  - the tests, and the measurements in the docs.
+  - the tests, CI and the Docker image, and the measurements in the docs.
 - **Open-source parts used, not written by us:** Whisper (faster-whisper, the offline fallback) and SpeechBrain's ECAPA voiceprint model; FastAPI; Expo and React Native; the Kokoro and Chatterbox voices, used only for the demo and test scenes.
 
 **Meta models in the project** (problem statement: *Build for Your World*):
@@ -183,6 +189,7 @@ A tool that reads other people's private conversations to find victims without t
 - [app/README.md](app/README.md): the Watch Me app: how to run it, its agents, and measured timings
 - [mobile/README.md](mobile/README.md): the iPhone and Android app (React Native, Expo): listens with the screen locked
 - [device/README.md](device/README.md): the Charm prototype on an ESP32-C6 board
+- [benchmarks/README.md](benchmarks/README.md): what was measured, the results, and how to run them again
 - [DESIGN.md](DESIGN.md): the system, its components and how data flows
 - [MODELS.md](MODELS.md): which models, how to train them, and the JEPA question
 - [SAFETY_AND_LAW.md](SAFETY_AND_LAW.md): consent, privacy, recording laws, legal information versus legal advice
