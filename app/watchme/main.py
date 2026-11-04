@@ -95,7 +95,8 @@ async def save_profile(body: dict):
         if phrase and re.search(r"watch me|stop watching|i'?m (ok|okay|fine)", phrase, re.IGNORECASE):
             raise HTTPException(400, f"{phrase!r} overlaps a command. Pick words you wouldn't say by accident.")
     # Who she'd go to if she decides to report: her own school's Title IX coordinator, her HR. Only she knows.
-    help_contacts = {k: str((body.get("help") or {}).get(k) or "").strip()[:160] for k in ("title_ix", "hr")}
+    help_contacts = ({k: str((body.get("help") or {}).get(k) or "").strip()[:160] for k in ("title_ix", "hr")}
+                     if "help" in body else profile.get("help") or {})   # a client that doesn't send it keeps hers
     plan = str(body.get("model_plan") or profile.get("model_plan") or "auto")
     if plan not in session_module.PLANS:
         raise HTTPException(400, f"Unknown model plan {plan!r}.")
