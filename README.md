@@ -16,7 +16,7 @@
 | | |
 |---|---|
 | **Track · problem statement** | Indie Developer · Build for Your World |
-| **Hackathon provenance** (Oct 26 – Nov 4, 2026) | Built from scratch during the hackathon window; first commit Oct 27. Before it: idea notes only, no code ([what was built when](#what-was-built-during-the-hackathon)) |
+| **Hackathon provenance** (Oct 26 – Nov 4, 2026) | Built from scratch during the hackathon window: work began Oct 27, and the repository was first committed and published on Oct 31 (38 commits since). Before it: idea notes only, no code ([what was built when](#what-was-built-during-the-hackathon)) |
 | **Meta AI runtime models** (Meta Model API) | `muse-spark-1.3`: the Analyst and the alert writer · `muse-spark-1.1`: the Decider · `muse-wonder-1.0`: the Notice reviewer · `muse-voice-transcribe-1.0`: re-hears the last minute, transcribes audio kept offline and spoken accounts · `muse-image-1.0`: the Charm concept images ([Built with Meta](#built-with-meta)). No open weights, no fine-tuning |
 | **3-minute demo video** | https://www.youtube.com/watch?v=sOSY4PXw9Gg (2:55; the provenance line is spoken and on screen at 0:00) |
 | **Quickstart & keyless mode** | `cp -n .env.example .env`, set `MODEL_API_KEY`, then `docker compose up --build` (http://localhost:8000) or `cd app && uv sync && ./run.sh` ([Run it](#run-it)). With no key, the whole check-in loop still runs on the device: Whisper, the voiceprint, the phrase list and the fixed rules. Alerts are a dry run until Twilio or SMTP keys are set. Recorded runs of the real models, scene by scene, are in [app/scenarios/results/](app/scenarios/results/) ([keyless mode and recorded traces](#without-a-key-and-recorded-traces)) |
