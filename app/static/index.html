@@ -148,6 +148,15 @@
           <label>Title IX coordinator <span class="muted">(your school's: name, email or phone)</span><input name="help_title_ix" placeholder="e.g. titleix@yourschool.edu"></label>
           <label>HR <span class="muted">(at work: name, email or phone)</span><input name="help_hr" placeholder="e.g. Dana, HR, hr@company.com"></label>
         </div>
+
+        <div class="label">Models and cost</div>
+        <p class="hint">Which models the agents may call. Every analysis is a paid model call; the check-ins and alerts work in every plan.</p>
+        <div class="card plans">
+          <label class="plan"><input type="radio" name="model_plan" value="auto"><span><b>Recommended</b><br><span class="small">Muse Spark Open (open weights) runs the live agents, Muse Wonder reviews Notice, each with the other provider as backup. Fastest and most accurate.</span></span></label>
+          <label class="plan"><input type="radio" name="model_plan" value="open"><span><b>Open weights only</b><br><span class="small">Everything on Muse Spark Open (Baseten). No Meta Model API calls; the Analyst reads Whisper's lines.</span></span></label>
+          <label class="plan"><input type="radio" name="model_plan" value="hosted"><span><b>Meta Model API only</b><br><span class="small">Everything on the hosted Muse models. No Baseten calls.</span></span></label>
+          <label class="plan"><input type="radio" name="model_plan" value="local"><span><b>On this device only (free)</b><br><span class="small">No model calls at all. Whisper, your voiceprint, the phrase list and the fixed rules still ask "Are you OK?" and alert. No Notice reviews.</span></span></label>
+        </div>
         <button class="primary big" type="submit">Save</button>
         <div class="hint center" id="profileMsg"></div>
       </form>

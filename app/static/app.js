@@ -637,7 +637,7 @@ function reviewHtml(rec) {
   const r = rec.review, types = noticePage?.types || {};
   const head = `<div class="small">${esc(prettyDate(rec.when))}${rec.who ? " · " + esc(rec.who) : ""}${rec.where ? " · " + esc(rec.where) : ""}</div>`;
   if (!r && rec.pending) return `<div class="card nt-result">${head}<div class="nt-head">Saved to your record.</div><p class="small">No connection right now. It will be checked automatically when you're back online.</p></div>`;
-  if (!r) return `<div class="card nt-result">${head}<div class="nt-head">Saved to your record.</div><p class="small">Checking it needs Muse Spark, which isn't set up on this server.</p></div>`;
+  if (!r) return `<div class="card nt-result">${head}<div class="nt-head">Saved to your record.</div><p class="small">${noticePage?.ai === false && profile.model_plan === "local" ? "Model calls are off (Setup › Models and cost), so it wasn't reviewed." : "Checking it needs Muse Spark, which isn't set up on this server."}</p></div>`;
   if (r.error) return `<div class="card nt-result">${head}<div class="nt-head">Saved to your record.</div><p class="small">The check didn't finish (${esc(r.error)}). Try again later.</p></div>`;
   // One quote can match several types: show it once, with a label for each.
   const byQuote = new Map();
@@ -833,6 +833,8 @@ document.addEventListener("click", (e) => {
 function fillProfile() {
   const f = $("profileForm");
   for (const k of ["name", "sos_phrase", "duress_phrase"]) f.elements[k].value = profile[k] || "";
+  const plan = f.querySelector(`input[name=model_plan][value="${profile.model_plan || "auto"}"]`);
+  if (plan) plan.checked = true;
   f.elements.help_title_ix.value = profile.help?.title_ix || "";
   f.elements.help_hr.value = profile.help?.hr || "";
   $("contacts").innerHTML = "";
@@ -862,10 +864,12 @@ async function saveProfile(e) {
   const contacts = readContacts();
   const body = { name: f.elements.name.value, pin: f.elements.pin.value, sos_phrase: f.elements.sos_phrase.value,
                  duress_phrase: f.elements.duress_phrase.value, contacts,
-                 help: { title_ix: f.elements.help_title_ix.value, hr: f.elements.help_hr.value } };
+                 help: { title_ix: f.elements.help_title_ix.value, hr: f.elements.help_hr.value },
+                 model_plan: f.querySelector("input[name=model_plan]:checked")?.value || "auto" };
   const r = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const out = await r.json();
   if (!r.ok) { $("profileMsg").textContent = out.detail; return; }
+  if (out.services) renderServices(out.services);
   profile = out; f.elements.pin.value = ""; $("profileMsg").textContent = "Saved.";
 }
 
@@ -931,7 +935,7 @@ async function testVoice() {
 function renderServices(s) {
   const names = { muse_spark: "Analyst (live)", reviewer: "Notice reviewer", writer: "Alerts and summaries", decider: "Decider",
                   sms_and_calls: "SMS and calls", email: "Email", whisper: "Speech-to-text (live)", analyst_speech: "What the Analyst reads", debrief_speech: "Speech-to-text (your account)",
-                  recording_rule: "Recording rule" };
+                  recording_rule: "Recording rule", plan: "Model plan", backup: "If a model fails" };
   const short = (v) => String(v).replace(/^https?:\/\//, "");
   $("services").innerHTML = Object.entries(s).map(([k, v]) => `<dt>${names[k] || k}</dt><dd>${esc(short(v))}</dd>`).join("");
 }

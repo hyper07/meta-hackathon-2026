@@ -122,7 +122,7 @@ def transcribe(audio: np.ndarray, watching: bool = True) -> list[Piece]:
     import time
 
     last_error = None
-    use_muse = watching and settings.stt_engine == "muse" and settings.voice_api_key
+    use_muse = watching and settings.stt_engine == "muse" and settings.voice_ready
     if use_muse and time.time() >= _muse_paused_until:
         try:
             pieces = transcribe_muse(audio, timeout=settings.stt_timeout)

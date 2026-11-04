@@ -102,24 +102,30 @@ async def _chat(system: str, user: str, max_tokens: int = 1500, timeout: float =
     Any other model: the Meta Model API first, then Muse Spark Open. Only if both fail does the caller
     fall back to its fixed rules."""
     name = model or settings.meta_model
-    if name == OPEN or not settings.meta_api_key:
+    hosted_name = hosted or (name if name != OPEN else settings.meta_model)
+    plan = settings.model_plan
+    if plan == "local":
+        raise RuntimeError("the model plan is on the device only: no model calls")
+    if plan == "open":
+        order = [OPEN]
+    elif plan == "hosted":
+        order = [hosted_name]
+    else:
+        order = [OPEN, hosted_name] if name == OPEN else [name, OPEN]
+    order = [m for m in order if (settings.open_ready if m == OPEN else bool(settings.meta_api_key))]
+    if not order:
+        raise RuntimeError("no model is set up for this plan")
+    for i, choice in enumerate(order):
         try:
-            return await _open(system, user, max_tokens, timeout)
-        except Exception as error:
-            if not (settings.meta_api_key and _fails_over(error)):
-                raise
-            name = hosted or settings.meta_model
-            answered_by.set(name)
-            return await _post(settings.meta_api_base, settings.meta_api_key, name, system, user, max_tokens,
+            if choice == OPEN:
+                return await _open(system, user, max_tokens, timeout)
+            answered_by.set(choice)
+            return await _post(settings.meta_api_base, settings.meta_api_key, choice, system, user, max_tokens,
                                timeout, reasoning=True)
-    answered_by.set(name)
-    try:
-        return await _post(settings.meta_api_base, settings.meta_api_key, name, system, user, max_tokens, timeout,
-                           reasoning=True)
-    except Exception as error:
-        if settings.open_ready and _fails_over(error):
-            return await _open(system, user, max_tokens, timeout)
-        raise
+        except Exception as error:
+            if i == len(order) - 1 or not _fails_over(error):
+                raise
+    raise RuntimeError("unreachable")
 
 
 def retryable(error: Exception) -> bool:
