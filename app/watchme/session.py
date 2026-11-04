@@ -12,7 +12,7 @@ One owner, one Watch Me session, and the agents that share it.
                                    ▼ score ≥ trigger
                                Decider (Muse Spark + rules) ── discard / ask / urgent ask
                                    ▼ ask
-                               Check-in ── "Are you OK?" ── owner's voice, PIN tap, or nothing
+                               Check-in ── "Are you OK?" ── "I'm OK" in her voice, "Get help", or nothing
                                    ▼ no answer, "not OK", SOS or duress phrase, phone gone
                                Messenger (Muse Spark writes, Twilio + SMTP send)
 

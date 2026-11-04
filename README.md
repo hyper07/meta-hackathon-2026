@@ -113,6 +113,26 @@ The building period was Oct 27 – Nov 4, 2026. Everything that runs was written
 | Muse Voice Transcribe 1.0 (Meta Model API) | what the Analyst reads: the last minute, transcribed again before each analysis (in noisy scenes it made far fewer errors than Whisper on whole stretches); audio kept while offline, once the connection is back; spoken Notice accounts; checking the demo's synthetic voices. Whisper on the device does the fast 4-second live chunks |
 | Muse Image 1.0 (Meta Model API) | the Muse Charm concept images |
 
+**How the agents fit together** (Emergency mode; [DESIGN.md](DESIGN.md) has the details):
+
+```mermaid
+flowchart TD
+    mic["Phone, web page or Charm board<br/>microphone in 4 s chunks over /ws"] --> listener["Listener, on the device<br/>Whisper + ECAPA voiceprint"]
+    listener -->|"Watch me, stop, I'm OK: her voice only"| gate["Gatekeeper<br/>start, stop, answer"]
+    listener -->|while watching| scribe["Scribe<br/>every line, hash-chained"]
+    scribe --> phrases["Phrase list<br/>instant score"]
+    phrases -->|"flagged, loud, or every 30 s"| stt["Muse Voice Transcribe 1.0<br/>hears the last minute again"]
+    stt --> analyst["Analyst<br/>Muse Spark 1.3: categories, exact quotes"]
+    analyst --> decider["Decider<br/>Muse Spark 1.1 + fixed rules"]
+    decider -->|discard| scribe
+    decider -->|ask| checkin["Check-in: Are you OK?"]
+    checkin -->|"I'm OK, in her voice"| scribe
+    checkin -->|"no answer, not OK, SOS or duress phrase"| writer["Writer<br/>Muse Spark 1.3"]
+    writer --> messenger["Messenger<br/>SMS, call, email, with her map link"]
+    scribe -.->|"Notice mode: when she stops"| reviewer["Notice reviewer<br/>Muse Wonder 1.0"]
+    reviewer --> book["Notice book<br/>patterns per person"]
+```
+
 **Measured on the 22 test scenes** (11 harmful, 9 harmless, 2 school and work; synthetic voices over party, bar, street and TV noise; details in [app/scenarios/](app/scenarios/README.md#speech-to-text-whisper-on-this-machine-or-muse-voice-transcribe)):
 
 | What's heard | Who judges it | Started | Harmful asked | Needless | Check-in (median) |
