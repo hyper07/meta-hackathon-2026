@@ -1,148 +1,148 @@
 1
-00:00:00,500 --> 00:00:01,430
-This is Watch Me.
+00:00:00,500 --> 00:00:03,452
+This is Watch Me, built during the Meta AI hackathon.
 
 2
-00:00:01,430 --> 00:00:05,259
+00:00:03,452 --> 00:00:07,280
 It listens only when you ask it to, and it only answers to your voice.
 
 3
-00:00:06,599 --> 00:00:11,647
+00:00:09,080 --> 00:00:14,127
 In a recent lawsuit, a student said she felt like bait at a fraternity party, and that she had been drugged.
 
 4
-00:00:11,647 --> 00:00:12,629
+00:00:14,127 --> 00:00:15,109
 The case is disputed.
 
 5
-00:00:12,629 --> 00:00:15,059
+00:00:15,109 --> 00:00:17,539
 Someone who's been drugged can't say they're not OK.
 
 6
-00:00:16,759 --> 00:00:20,804
+00:00:19,240 --> 00:00:23,284
 And at home, more than one in three women has faced violence from a partner.
 
 7
-00:00:20,804 --> 00:00:23,093
+00:00:23,284 --> 00:00:25,573
 Nearly half of it never reaches the police.
 
 8
-00:00:23,093 --> 00:00:26,179
+00:00:25,573 --> 00:00:28,660
 When reaching for a phone isn't safe, her voice is enough.
 
 9
-00:00:27,779 --> 00:00:29,239
+00:00:30,259 --> 00:00:31,719
 First, she says one line.
 
 10
-00:00:29,239 --> 00:00:33,443
+00:00:31,719 --> 00:00:35,923
 Watch Me turns her voice into a voiceprint, drawn here as a fingerprint.
 
 11
-00:00:33,443 --> 00:00:37,879
+00:00:35,923 --> 00:00:40,359
 From now on, only this voice can start Watch Me, stop it, or answer, I'm OK.
 
 12
-00:00:40,679 --> 00:00:42,719
+00:00:43,159 --> 00:00:45,199
 At a party, she says: watch me.
 
 13
-00:01:03,379 --> 00:01:06,179
+00:01:05,859 --> 00:01:08,659
 Muse Spark reads what it hears, and decides to ask.
 
 14
-00:01:09,779 --> 00:01:11,370
+00:01:12,259 --> 00:01:13,850
 She's too dizzy to answer.
 
 15
-00:01:11,370 --> 00:01:17,180
+00:01:13,850 --> 00:01:19,660
 So Watch Me texts and calls the people she chose, with what it heard and a map of where she is.
 
 16
-00:01:17,180 --> 00:01:18,219
+00:01:19,660 --> 00:01:20,699
 Here, in dry run.
 
 17
-00:01:28,979 --> 00:01:31,907
+00:01:31,459 --> 00:01:34,387
 Now someone grabs her phone and says, stop watching.
 
 18
-00:01:31,907 --> 00:01:32,977
+00:01:34,387 --> 00:01:35,457
 It isn't her voice.
 
 19
-00:01:32,977 --> 00:01:36,299
+00:01:35,457 --> 00:01:38,780
 Watch Me refuses, keeps recording, and asks her right away.
 
 20
-00:01:38,679 --> 00:01:40,511
+00:01:41,159 --> 00:01:42,991
 Not all harassment is an emergency.
 
 21
-00:01:40,511 --> 00:01:42,866
+00:01:42,991 --> 00:01:45,346
 At office hours, she switches to Notice mode.
 
 22
-00:01:42,866 --> 00:01:44,280
+00:01:45,346 --> 00:01:46,760
 Nothing will interrupt her.
 
 23
-00:02:11,180 --> 00:02:16,352
+00:02:13,659 --> 00:02:18,832
 When she stops, Muse Wonder shows which exact words match how the EEOC describes harassment.
 
 24
-00:02:16,352 --> 00:02:17,278
+00:02:18,832 --> 00:02:19,758
 Strings attached.
 
 25
-00:02:17,278 --> 00:02:18,258
+00:02:19,758 --> 00:02:20,738
 Getting her alone.
 
 26
-00:02:18,258 --> 00:02:19,620
+00:02:20,738 --> 00:02:22,100
 It never decides for her.
 
 27
-00:02:19,680 --> 00:02:20,797
+00:02:22,159 --> 00:02:23,277
 And it counts patterns.
 
 28
-00:02:20,797 --> 00:02:25,800
+00:02:23,277 --> 00:02:28,280
 This is the third time from the same professor, kept in a dated record that shows if anyone changes it.
 
 29
-00:02:26,680 --> 00:02:29,781
+00:02:29,159 --> 00:02:32,261
 Under the hood: Whisper and a voiceprint on the device.
 
 30
-00:02:29,781 --> 00:02:34,856
+00:02:32,261 --> 00:02:37,336
 Muse Voice Transcribe hears the last minute again, and Muse Spark analyses it and decides.
 
 31
-00:02:34,856 --> 00:02:35,984
+00:02:37,336 --> 00:02:38,464
 Muse Wonder reviews.
 
 32
-00:02:35,984 --> 00:02:41,623
+00:02:38,464 --> 00:02:44,103
 On 22 realistic scenes, it asked in nine of eleven harmful ones, with no needless check-ins.
 
 33
-00:02:41,623 --> 00:02:44,499
+00:02:44,103 --> 00:02:46,979
 Given a perfect transcript, Muse caught all eleven.
 
 34
-00:02:46,200 --> 00:02:46,692
+00:02:48,680 --> 00:02:49,172
 Watch Me.
 
 35
-00:02:46,692 --> 00:02:47,513
+00:02:49,172 --> 00:02:49,993
 You turn it on.
 
 36
-00:02:47,513 --> 00:02:49,099
+00:02:49,993 --> 00:02:51,579
 Only your voice turns it off.
 
 37
-00:02:49,099 --> 00:02:50,960
+00:02:51,579 --> 00:02:53,439
 And only you decide what happened.
 

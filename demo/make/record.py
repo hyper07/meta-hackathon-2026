@@ -100,6 +100,12 @@ try:
             ["mark", "done"], ["wait", 1]])
     assert json.loads((data / "profile.json").read_text()).get("voiceprint"), "no voiceprint: record the enroll segment first"
 
+    if want("services"):   # the live app's own list of the models it runs on, for the "under the hood" card
+        record("services", "enroll.wav", [
+            ["wait", 1], ["js", 'document.querySelector("[data-tab=setup]").click()'], ["wait", 0.8],
+            ["js", '$("services").scrollIntoView({behavior:"smooth", block:"center"})'], ["wait", 2],
+            ["mark", "list"], ["wait", 2], ["mark", "end"]])
+
     if want("party"):
         record_session("party", "party-drink.wav", [["wait", 1.2], ["mark", "mic"], ["js", '$("micButton").click()'], ["wait", 54], ["mark", "end"]])
     if want("lock"):

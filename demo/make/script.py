@@ -1,7 +1,8 @@
 """The demo's words: narration, and the scene lines the phone hears. Shared by the other steps."""
 
 NARRATION = {
-    "title": "This is Watch Me. It listens only when you ask it to, and it only answers to your voice.",
+    "title": "This is Watch Me, built during the Meta A I hackathon. It listens only when you ask it to, and it only "
+             "answers to your voice.",
     "problem": "In a recent lawsuit, a student said she felt like bait at a fraternity party, and that she had "
                "been drugged. The case is disputed. Someone who's been drugged can't say they're not OK.",
     "home": "And at home, more than one in three women has faced violence from a partner. Nearly half of it never "

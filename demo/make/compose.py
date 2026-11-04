@@ -67,80 +67,85 @@ def text_block(draw, xy, text, fnt, fill, width, spacing=1.25):
 
 
 # ── cards ────────────────────────────────────────────────────────────────────
+# Every card has the live app on the phone at the left (real footage from the recordings), and its text here.
+CX, CW = 900, 900   # the text column
+
 
 def card_title(img):
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 380), "Watch Me", font=font(150, HEAVY), fill=TEXT, anchor="mm")
-    d.text((W // 2, 520), "Listens only when you ask. Answers only to your voice.", font=font(46, MED), fill=MUTED, anchor="mm")
-    d.rounded_rectangle((W // 2 - 300, 640, W // 2 + 300, 700), 30, fill=(30, 36, 56))
-    d.text((W // 2, 670), "Meta Global AI Developer Hackathon · 2026", font=font(28, DEMI), fill=ACCENT, anchor="mm")
+    d.rounded_rectangle((CX, 170, CX + 640, 226), 28, fill=(30, 36, 56))
+    d.text((CX + 320, 198), "Meta Global AI Developer Hackathon · 2026", font=font(26, DEMI), fill=ACCENT, anchor="mm")
+    d.text((CX, 260), "Watch Me", font=font(150, HEAVY), fill=TEXT)
+    y = text_block(d, (CX, 450), "Listens only when you ask. Answers only to your voice.", font(46, MED), MUTED, CW, 1.25)
+    d.rounded_rectangle((CX, y + 50, CX + CW, y + 280), 22, fill=(20, 40, 32), outline=(52, 120, 76), width=2)
+    d.text((CX + 36, y + 80), "BUILT DURING THE HACKATHON · OCT 27 – NOV 4, 2026", font=font(24, BOLD), fill=GREEN)
+    text_block(d, (CX + 36, y + 125), "All the code: the app and its Muse agents, the phone app and the Charm prototype. "
+               "Before it: idea notes only.", font(32, MED), TEXT, CW - 72, 1.3)
 
 
 def card_problem(img):
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 300), "“I felt like bait.”", font=font(110, HEAVY), fill=TEXT, anchor="mm")
-    d.text((W // 2, 420), "A student, in a recent lawsuit over a fraternity party (reported by AP, October 2026). The allegations are disputed.",
-           font=font(30, MED), fill=MUTED, anchor="mm")
-    d.text((W // 2, 590), "Someone who's been drugged can't say they're not OK.", font=font(52, DEMI), fill=RED, anchor="mm")
-    d.text((W // 2, 680), "At school and at work, harassment often hides inside a joke.", font=font(52, DEMI), fill=PURPLE, anchor="mm")
+    d.text((CX, 170), "“I felt like bait.”", font=font(96, HEAVY), fill=TEXT)
+    y = text_block(d, (CX, 310), "A student, in a recent lawsuit over a fraternity party (reported by AP, October 2026). "
+                   "The allegations are disputed.", font(30, MED), MUTED, CW, 1.3)
+    y = text_block(d, (CX, y + 60), "Someone who's been drugged can't say they're not OK.", font(52, DEMI), RED, CW, 1.2)
+    text_block(d, (CX, y + 50), "At school and at work, harassment often hides inside a joke.", font(52, DEMI), PURPLE, CW, 1.2)
 
 
 def card_home(img):
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 170), "AT HOME", font=font(34, BOLD), fill=RED, anchor="mm")
-    d.text((W // 2, 300), "More than 1 in 3 women", font=font(104, HEAVY), fill=TEXT, anchor="mm")
-    d.text((W // 2, 400), "in the US have faced violence or stalking by a partner (CDC, 2023/2024)",
-           font=font(34, MED), fill=MUTED, anchor="mm")
-    x = 330
+    d.text((CX, 140), "AT HOME", font=font(32, BOLD), fill=RED)
+    d.text((CX, 190), "More than 1 in 3 women", font=font(70, HEAVY), fill=TEXT)
+    y = text_block(d, (CX, 300), "in the US have faced violence or stalking by a partner (CDC, 2023/2024)",
+                   font(30, MED), MUTED, CW, 1.25) + 40
     for big, small in [("Over half", "of women murdered in the US are killed by a current or former partner (CDC)"),
-                       ("44%", "of domestic violence never reaches the police (Bureau of Justice Statistics, 2006–2015)")]:
-        d.text((x, 540), big, font=font(72, HEAVY), fill=RED, anchor="lm")
-        text_block(d, (x, 600), small, font(30, MED), MUTED, 560, 1.25)
-        x += 700
-    d.text((W // 2, 850), "When reaching for a phone isn't safe, her voice is enough.", font=font(52, DEMI), fill=ACCENT,
-           anchor="mm")
+                       ("44%", "of domestic violence never reaches the police (BJS, 2006–2015)")]:
+        d.text((CX, y), big, font=font(64, HEAVY), fill=RED)
+        y = text_block(d, (CX + 330, y + 8), small, font(30, MED), MUTED, CW - 330, 1.25) + 40
+    text_block(d, (CX, y + 20), "When reaching for a phone isn't safe, her voice is enough.", font(48, DEMI), ACCENT, CW, 1.2)
 
 
 def card_hood(img):
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 110), "Every agent has its own model", font=font(64, HEAVY), fill=TEXT, anchor="mm")
+    d.text((CX, 90), "UNDER THE HOOD", font=font(28, BOLD), fill=ACCENT)
+    d.text((CX, 130), "Every agent has its own model", font=font(56, HEAVY), fill=TEXT)
+    d.text((CX, 212), "Measured on 22 scripted scenes, synthetic voices over party and street noise · results in benchmarks/",
+           font=font(21, REG), fill=MUTED)
     rows = [
-        ("Listener", "Whisper + ECAPA voiceprint", "on the device", ACCENT),
-        ("Last minute, again", "Muse Voice Transcribe 1.0", "Meta Model API", ACCENT),
-        ("Analyst", "Muse Spark 1.3", "Meta Model API", ACCENT),
-        ("Decider", "Muse Spark 1.1: discard · ask · alert", "Meta Model API", ACCENT),
-        ("Check-in, Messenger", "Muse Spark writes · Twilio sends", "SMS, call, email", RED),
-        ("Notice reviewer", "Muse Wonder 1.0", "Meta Model API", PURPLE),
+        ("Listener", "Whisper + ECAPA voiceprint, on the device", ACCENT),
+        ("Last minute, again", "Muse Voice Transcribe 1.0", ACCENT),
+        ("Analyst", "Muse Spark 1.3", ACCENT),
+        ("Decider", "Muse Spark 1.1: discard · ask · alert", ACCENT),
+        ("Messenger", "Muse Spark writes · SMS, call, email", RED),
+        ("Notice reviewer", "Muse Wonder 1.0", PURPLE),
     ]
-    y = 180
-    for name, model, where, color in rows:
-        d.rounded_rectangle((260, y, 1660, y + 84), 18, fill=(26, 31, 46), outline=(44, 50, 70), width=2)
-        d.rectangle((260, y + 14, 268, y + 70), fill=color)
-        d.text((300, y + 42), name, font=font(32, DEMI), fill=MUTED, anchor="lm")
-        d.text((760, y + 42), model, font=font(36, BOLD), fill=TEXT, anchor="lm")
-        d.text((1630, y + 42), where, font=font(26, MED), fill=MUTED, anchor="rm")
-        y += 94
-    x = 260
-    for big, small in [("9 / 11", "harmful scenes asked “Are you OK?”"), ("0 / 9", "needless check-ins"),
-                       ("11 / 11", "given a perfect transcript; a phrase list had 2 false alarms"),
-                       ("40 / 40", "public training cases, NY State and EEOC")]:
-        d.text((x, 780), big, font=font(72, HEAVY), fill=GREEN, anchor="lm")
-        text_block(d, (x, 830), small, font(24, MED), MUTED, 320, 1.2)
-        x += 360
-    d.text((260, 905), "22 scripted scenes with synthetic voices and background noise; the perfect transcript is the scenes' "
-           "own script. Test sets in the repo.", font=font(22, REG), fill=MUTED, anchor="lm")
+    y = 255
+    for name, model, color in rows:
+        d.rounded_rectangle((CX, y, CX + CW, y + 56), 14, fill=(26, 31, 46), outline=(44, 50, 70), width=2)
+        d.rectangle((CX, y + 11, CX + 6, y + 45), fill=color)
+        d.text((CX + 28, y + 28), name, font=font(26, DEMI), fill=MUTED, anchor="lm")
+        d.text((CX + 290, y + 28), model, font=font(29, BOLD), fill=TEXT, anchor="lm")
+        y += 64
+    y += 20
+    stats = [("9 / 11", "harmful scenes asked “Are you OK?”"), ("0 / 9", "needless check-ins"),
+             ("11 / 11", "given a perfect transcript (a phrase list: 2 false alarms)"),
+             ("40 / 40", "public harassment cases, EEOC and NY State")]
+    for i, (big, small) in enumerate(stats):
+        x, yy = CX + (i % 2) * 460, y + (i // 2) * 125
+        d.text((x, yy), big, font=font(58, HEAVY), fill=GREEN)
+        text_block(d, (x, yy + 66), small, font(24, MED), MUTED, 420, 1.2)
 
 
 def card_close(img):
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 300), "Watch Me", font=font(120, HEAVY), fill=TEXT, anchor="mm")
+    d.text((CX, 170), "Watch Me", font=font(120, HEAVY), fill=TEXT)
     for i, (t, c) in enumerate([("You turn it on.", TEXT), ("Only your voice turns it off.", ACCENT),
                                 ("Only you decide what happened.", PURPLE)]):
-        d.text((W // 2, 460 + i * 80), t, font=font(54, DEMI), fill=c, anchor="mm")
-    d.text((W // 2, 800), "Opt-in · nothing kept in standby · audio only around flagged moments · no one else's voiceprint stored",
-           font=font(28, MED), fill=MUTED, anchor="mm")
-    d.text((W // 2, 880), "On your phone today. Built for the Muse Charm pendant when Meta opens it to developers.",
-           font=font(30, DEMI), fill=ACCENT, anchor="mm")
+        d.text((CX, 340 + i * 78), t, font=font(52, DEMI), fill=c)
+    y = text_block(d, (CX, 610), "Opt-in · nothing kept in standby · audio only around flagged moments · no one else's "
+                   "voiceprint stored", font(28, MED), MUTED, CW, 1.3)
+    text_block(d, (CX, y + 30), "On your phone today. Built for the Muse Charm pendant when Meta opens it to developers.",
+               font(30, DEMI), ACCENT, CW, 1.3)
 
 
 SEGMENTS = {
@@ -159,12 +164,23 @@ SEGMENTS = {
                             "Patterns per person, in a hash-chained record she can export"]),
 }
 
-CLIPS = [dict(card=card_title, dur=6.0, narr=[["title", 0.5]]),
-         dict(card=card_problem, dur=None, narr=[["problem", 0.6]]),
-         dict(card=card_home, dur=None, narr=[["home", 0.5]])]
+# What the phone shows during each card: a recording and its parts, as in edit.json. The card's phone plays them
+# and then holds the last frame.
+CARD_PHONE = {
+    "title": ("party", [["play", 0.3, 9.0]]),          # off, ready, then "Watch me": watching
+    "problem": ("party", [["play", 28.5, 40.5]]),      # "Are you OK?" counting down, unanswered
+    "home": ("lock", [["play", 1.0, 13.0]]),           # started by her voice, locked to it
+    "hood": ("services", [["play", 0.5, 2.8]]),        # the app's own list of the models it runs on
+    "close": ("notice", [["play", 33.0, 40.0]]),       # stopped by her voice (100%)
+}
+
+CLIPS = [dict(card=card_title, dur=None, narr=[["title", 0.5]], phone="title"),
+         dict(card=card_problem, dur=None, narr=[["problem", 0.6]], phone="problem"),
+         dict(card=card_home, dur=None, narr=[["home", 0.5]], phone="home")]
 for seg in ("enroll", "party", "lock", "notice"):
     CLIPS.append(dict(rec=seg, seg=seg, **EDIT[seg]))
-CLIPS += [dict(card=card_hood, dur=None, narr=[["hood", 0.5]]), dict(card=card_close, dur=None, narr=[["close", 0.5]])]
+CLIPS += [dict(card=card_hood, dur=None, narr=[["hood", 0.5]], phone="hood"),
+          dict(card=card_close, dur=None, narr=[["close", 0.5]], phone="close")]
 
 
 def parts_duration(parts):
@@ -217,7 +233,7 @@ for c in CLIPS:
         t = c["start"] + at
         for s in sentences:
             d = dur * len(s) / chars
-            cues.append((t, t + d, s.replace("E E O C", "EEOC").replace("twenty two", "22").replace("check ins", "check-ins")))
+            cues.append((t, t + d, s.replace("E E O C", "EEOC").replace("twenty two", "22").replace("check ins", "check-ins").replace("A I", "AI")))
             t += d
 
 # ── frames ───────────────────────────────────────────────────────────────────
@@ -246,15 +262,20 @@ def frame_file(rec, t):
     return files[max(0, int(np.searchsorted(times, t, side="right")) - 1)]
 
 
-@lru_cache(maxsize=16)
-def segment_layer(seg):
-    img = BG.copy()
+def phone_body(img):
     d = ImageDraw.Draw(img)
     shadow = Image.new("L", (W, H), 0)
     ImageDraw.Draw(shadow).rounded_rectangle((PHONE_X - 14, PHONE_Y - 14, PHONE_X + PHONE_W + 14, PHONE_Y + PHONE_H + 14), 50, fill=170)
     img.paste((0, 0, 0), (0, 0), shadow.filter(ImageFilter.GaussianBlur(28)))
     d.rounded_rectangle((PHONE_X - 12, PHONE_Y - 12, PHONE_X + PHONE_W + 12, PHONE_Y + PHONE_H + 12), 48,
                         fill=(5, 6, 9), outline=(60, 66, 84), width=3)
+
+
+@lru_cache(maxsize=16)
+def segment_layer(seg):
+    img = BG.copy()
+    phone_body(img)
+    d = ImageDraw.Draw(img)
     s = SEGMENTS[seg]
     color = s.get("color", ACCENT)
     x, width = 900, 900
@@ -271,6 +292,7 @@ def segment_layer(seg):
 @lru_cache(maxsize=16)
 def card_layer(i):
     img = BG.copy()
+    phone_body(img)
     CLIPS[i]["card"](img)
     return img
 
@@ -296,6 +318,9 @@ def render(t):
     local = t - c["start"]
     if "card" in c:
         img = card_layer(CLIPS.index(c)).copy()
+        rec, parts = CARD_PHONE[c["phone"]]
+        im, mask = phone(rec, frame_file(rec, out_to_rec(parts, local)))
+        img.paste(im, (PHONE_X, PHONE_Y), mask)
         fade = min(1.0, local / 0.4, (c["dur"] - local) / 0.4)
     else:
         img = segment_layer(c["seg"]).copy()
@@ -304,11 +329,16 @@ def render(t):
         fade = min(1.0, local / 0.3, (c["dur"] - local) / 0.3)
     cue = next((x for x in cues if x[0] <= t < x[1]), None)
     if cue:
-        img = Image.alpha_composite(img.convert("RGBA"), subtitle_layer(cue[2], "card" in c)).convert("RGB")
+        img = Image.alpha_composite(img.convert("RGBA"), subtitle_layer(cue[2], False)).convert("RGB")
     if fade < 1:
         img = Image.blend(Image.new("RGB", (W, H), BG_TOP), img, max(0.0, fade))
     return img
 
+
+if os.environ.get("PREVIEW"):   # PREVIEW="2 30 160": save those frames as PNGs next to the video, and stop
+    for t in os.environ["PREVIEW"].split():
+        render(float(t)).save(VIDEO.parent / f"preview-{t}.png")
+    sys.exit(0)
 
 # ── audio ────────────────────────────────────────────────────────────────────
 
