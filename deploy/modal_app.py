@@ -7,8 +7,9 @@ Demo mode (app/watchme/config.py, DEMO_MODE=1): one visitor at a time, 10 minute
 visitor's page may use the API; alerts are always a dry run and no audio is kept, whatever else is
 set; everything the visitor left is wiped when they go.
 
-Only the Meta Model API key leaves this machine: it's read from MODEL_API_KEY or META_API_KEY in the
-environment or in .env, and sent to Modal as this app's one secret. Twilio, SMTP and any other keys
+Only the model keys leave this machine: the Meta Model API key (MODEL_API_KEY or META_API_KEY), and, if
+set, the Muse Spark Open backup's endpoint and proxy token (OPEN_WEIGHTS_MODEL, MODAL_PROXY_TOKEN). They're
+read from the environment or .env and sent to Modal as this app's secret. Twilio, SMTP and any other keys
 in .env are never sent, so the demo couldn't text or call anyone even by mistake.
 
 One container serves everyone (max_containers=1), because the demo keeps its one visit in memory.
@@ -21,6 +22,20 @@ import modal
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = "/root/app"
+
+
+def env_value(*names: str) -> str:
+    """One setting from the environment, or from its line in .env; empty if it isn't set."""
+    for name in names:
+        if os.environ.get(name):
+            return os.environ[name]
+    env = ROOT / ".env"
+    if env.exists():
+        for line in env.read_text().splitlines():
+            name, _, value = line.partition("=")
+            if name.strip() in names and value.strip():
+                return value.strip().strip('"').strip("'")
+    return ""
 
 
 def meta_key() -> str:
@@ -59,7 +74,17 @@ image = (
 )
 
 app = modal.App("watch-me-demo")
-secret = modal.Secret.from_dict({"MODEL_API_KEY": meta_key()}) if modal.is_local() else modal.Secret.from_dict({})
+def secrets_for_the_demo() -> dict:
+    """The Meta Model API key, and the Muse Spark Open backup's endpoint and proxy token if they're set.
+    Nothing else from .env is sent."""
+    values = {"MODEL_API_KEY": meta_key()}
+    open_key, open_model = env_value("OPEN_WEIGHTS_API_KEY", "MODAL_PROXY_TOKEN"), env_value("OPEN_WEIGHTS_MODEL")
+    if open_key and open_model:
+        values.update(OPEN_WEIGHTS_API_KEY=open_key, OPEN_WEIGHTS_MODEL=open_model)
+    return values
+
+
+secret = modal.Secret.from_dict(secrets_for_the_demo()) if modal.is_local() else modal.Secret.from_dict({})
 
 
 @app.function(image=image, secrets=[secret], cpu=2.0, memory=4096, timeout=3600,

@@ -260,6 +260,8 @@ async def main(args: list[str]) -> None:
     RESULTS.mkdir(exist_ok=True)
     stamp = real_time.strftime("%Y%m%d-%H%M")
     name = f"{stamp}-{'phrases' if phrases_only else 'agents'}{'-' + hearing if hearing else ''}"
+    if not phrases_only and "open" in (settings.analyst_model, settings.decider_model):
+        name += "-open"                    # Muse Spark Open, the open-weight model, ran the agents
     (RESULTS / f"{name}.json").write_text(json.dumps(rows, indent=2))
     (RESULTS / f"{name}.md").write_text(report + "\n")
     print("\n" + report)

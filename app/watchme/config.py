@@ -40,6 +40,12 @@ class Settings:
     # Every model agent runs on the Meta Model API (variable names as in Meta's legal-agent-workshop;
     # OpenAI-compatible Chat Completions).
     meta_api_key: str | None = field(default_factory=lambda: _env("MODEL_API_KEY", "META_API_KEY"))
+    # Muse Spark Open: Meta's open-weight model, on a Modal shared endpoint (OpenAI-compatible).
+    # It's the backup: when a Meta Model API call fails, the same request goes here before the fixed
+    # rules take over. An agent set to "open" (ANALYST_MODEL=open, ...) uses it directly.
+    open_weights_base: str = field(default_factory=lambda: _env("OPEN_WEIGHTS_BASE", default="https://inference.us-west.modal.direct/v1"))
+    open_weights_key: str | None = field(default_factory=lambda: _env("OPEN_WEIGHTS_API_KEY", "MODAL_PROXY_TOKEN"))
+    open_weights_model: str = field(default_factory=lambda: _env("OPEN_WEIGHTS_MODEL", default="") or "")
     meta_api_base: str = field(default_factory=lambda: _env("MODEL_API_BASE_URL", "META_API_BASE", default="https://api.meta.ai/v1"))
     meta_model: str = field(default_factory=lambda: _env("MODEL_API_MODEL", "META_MODEL", default="muse-spark-1.3"))
     # Muse Spark reasons before it answers. "low" keeps an analysis near 3 s; the default effort
@@ -129,7 +135,11 @@ class Settings:
 
     @property
     def muse_ready(self) -> bool:
-        return bool(self.meta_api_key)
+        return bool(self.meta_api_key) or self.open_ready
+
+    @property
+    def open_ready(self) -> bool:
+        return bool(self.open_weights_key and self.open_weights_model)
 
     @property
     def sms_ready(self) -> bool:
@@ -150,6 +160,7 @@ class Settings:
             "writer": (self.writer_model or self.meta_model) if self.muse_ready else "templates",
             "debrief_speech": "Muse Voice Transcribe" if self.voice_api_key else f"Whisper {self.whisper_model}",
             "decider": self.decider_model if self.muse_ready else "not configured (fixed rules)",
+            "backup": "Muse Spark Open (open weights, Modal)" if self.open_ready else "fixed rules",
             "sms_and_calls": "Twilio" if self.sms_ready else "dry run",
             "email": self.smtp_host if self.email_ready else "dry run",
             "whisper": (f"Muse Voice Transcribe (Whisper {self.whisper_model} as fallback)"

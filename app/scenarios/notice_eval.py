@@ -70,7 +70,7 @@ async def main(args: list[str]) -> None:
     report = "\n".join(lines)
     RESULTS.mkdir(exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M")
-    stamp += "-notice" + ("-training" if training else "")
+    stamp += "-notice" + ("-training" if training else "") + ("-open" if settings.reviewer_model == "open" else "")
     (RESULTS / f"{stamp}.json").write_text(json.dumps(rows, indent=2))
     (RESULTS / f"{stamp}.md").write_text(report + "\n")
     print("\n" + report)
