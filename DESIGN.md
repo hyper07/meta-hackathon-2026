@@ -124,7 +124,8 @@ The user switches it on for a specific situation: a party, a date, walking home.
               ▼ trigger
    speech-to-text of the buffer (on device)
               ▼
-   decision: Muse Spark (a probability for each option on a fixed menu; about 3 s, see benchmarks/)
+   decision: Muse Spark Open, open weights on Baseten, with hosted Muse Spark 1.1 as backup (a probability
+     for each option on a fixed menu; about 1.6 s, see benchmarks/)
      reads the transcript and context (time, place type, the user's own settings) as its state,
      scores the menu, and the rules below turn the scores into one action:
        discard   → discard the buffer
@@ -134,22 +135,22 @@ The user switches it on for a specific situation: a party, a date, walking home.
                    alert the user's chosen contacts with location; 911 guidance;
                    keep the buffer as evidence only where the recording law allows
               ▼ after the action, not before it
-   agent (Muse Spark 1.1 via the Meta Model API): explains the decision to the user, writes the
+   agent (Muse Spark Open, hosted Muse Spark 1.3 as backup): explains the decision to the user, writes the
      alert message for the contacts, and runs the conversation afterwards (see §2)
 ```
 
 **Decision step: Muse Spark on a fixed menu**
 
-The model scores a fixed menu, and rules, not the model, pick the action. Every model runs on the Meta Model API.
+The model scores a fixed menu, and rules, not the model, pick the action. The live agents run on Muse Spark Open (open weights, on Baseten) with the hosted Meta Model API as their backup; Muse Wonder and Muse Voice Transcribe run on the Meta Model API.
 
-- **Why a menu and not free text.** Muse Spark 1.1 (`DECIDER_MODEL`) returns a probability for every option as JSON. Anything off the menu or unreadable falls back to the rules, which ask. In an emergency, that matters more than eloquence.
+- **Why a menu and not free text.** Muse Spark Open (or Muse Spark 1.1, `DECIDER_MODEL`) returns a probability for every option as JSON. Anything off the menu or unreadable falls back to the rules, which ask. In an emergency, that matters more than eloquence.
 - **The menu.** `discard`, `ask`, `alert`. The state is the transcript plus context and the Analyst's reading, written as a short text brief.
 - **Rules between the scores and the action.** The rule is **ask when unsure**:
   - `discard` only when its probability is at least `MIN_LIFT` times a blind guess (start at 2.5 of 3 options, so p ≥ 0.83).
   - Anything else becomes `ask`. Uncertainty never discards silently and never alerts silently.
   - `alert` without asking happens only on the user's own SOS phrase, a rule they set. Otherwise alerting needs a missed "ask".
   - The asymmetry is deliberate: a needless "Are you OK?" costs a tap, while a missed emergency costs far more.
-- **Measured.** About 2 s per decision, inside one 4-second chunk. On the 22 test scenes: 9 of 11 harmful scenes asked, 0 of 9 needless check-ins ([app/scenarios/README.md](app/scenarios/README.md)).
+- **Measured.** 1.6 s per decision with Muse Spark Open, against 2.6 s for hosted Muse Spark 1.1 (medians of 20, the same afternoon), inside one 4-second chunk. Given a perfect transcript, both asked in 11 of 11 harmful scenes with 0 of 9 needless check-ins; with Whisper hearing the noisy scenes, the hosted agents asked in 9 of 11 and Muse Spark Open in 8 of 11, the difference being one session that never started ([benchmarks/README.md](benchmarks/README.md)).
 - **Later.** A small Llama fine-tuned with LoRA on Muse Spark's labels could make the same decision on the phone; it would be evaluated on a held-out, human-checked set (recall on real distress, and how often it asks needlessly).
 
 **Rules that keep it safe**

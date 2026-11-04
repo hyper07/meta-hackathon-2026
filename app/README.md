@@ -39,8 +39,10 @@ Keys go in the repo-root `.env`; copy [.env.example](../.env.example) (`cp -n .e
 | `MODEL_API_KEY` (or `META_API_KEY`) | every model agent on the Meta Model API (`api.meta.ai`): Muse Spark as Analyst, Decider and writer, Muse Wonder for Notice, Muse Voice Transcribe for speech-to-text. This is all the app needs. | phrase list and fixed rules |
 | `TWILIO_*` | real SMS and voice calls | dry run: shown on screen and in the log |
 | `SMTP_*` | real email | dry run |
+| `BASETEN_API_KEY` | Muse Spark Open (open weights, on Baseten) runs the Analyst, the Decider and the writer, and the hosted Muse models become their backup | everything on the Meta Model API |
+| `MODEL_PLAN` | which models the agents may call, for cost: `auto`, `open`, `hosted` or `local` (also in Setup › Models and cost) | `auto` |
 
-**First time:** open Setup. Enter your name, a PIN, an SOS phrase, an optional duress phrase and your contacts, then tap "Record my voice" and say the one line shown, once. It is cut into three overlapping pieces; how well they agree says whether the recording was clean. Then go to Watch, turn on listening and say "Watch me".
+**First time:** open Setup. Enter your name, a PIN, an SOS phrase, an optional duress phrase, your contacts and a model plan, then tap "Record my voice" and say the one line shown, once. It is cut into three overlapping pieces; how well they agree says whether the recording was clean. Then go to Watch, turn on listening and say "Watch me".
 
 ### On your phone
 
@@ -65,34 +67,38 @@ Keep the screen on: the page asks for a wake lock, but a phone browser stops the
                                ▼ while watching
                            Scribe ── every line, score and decision, hash-chained; audio of flagged moments
                                │
-              phrase list ─────┤ instant score, colours the line
+              phrase list ─────┤ instant score, colours the line; a drink pushed on her, then "I feel dizzy",
+                               │          within a minute asks even with no model
                                ▼ marked, loud, or every 30 s
                            Analyst ── Muse Voice Transcribe re-hears the last minute (speaker turns),
-                               │       then Muse Spark: categories, exact quotes (checked), score, reason
+                               │       then Muse Spark Open (hosted Muse Spark 1.3 as backup): categories,
+                               │       exact quotes (checked), score, reason
                                ▼ score ≥ 0.45
-                           Decider ── Muse Spark 1.1: discard / ask / alert probabilities, ~2 s
+                           Decider ── Muse Spark Open (backup Muse Spark 1.1): discard / ask / alert, ~1.6 s
                                │       rules: discard only if p ≥ 0.83; "alert" → urgent ask
                                ▼ ask
                            Check-in ── "Are you OK?" (vibrate + voice), 30 s (15 s urgent)
-                               │       answered by owner's voice, PIN tap, or "Get help"
+                               │       answered by "I'm OK" in her voice (never a tap), or "Get help"
                                ▼ no answer · "not OK" · SOS · duress · phone drops off
-                           Messenger ── Muse Spark writes it; Twilio SMS + call, email
+                           Messenger ── Muse Spark Open writes it (a template if it fails); Twilio SMS + call, email
 ```
 
 | File | What it is |
 |---|---|
 | [watchme/session.py](watchme/session.py) | the session and the agents: Listener, Gatekeeper, Scribe, Analyst hand-off, Decider hand-off, Check-in, escalation |
 | [watchme/speech.py](watchme/speech.py) | Whisper and Muse Voice Transcribe, sentence splitting and trimming, the ECAPA voiceprint, the 0–100% display match |
-| [scenarios/](scenarios/README.md) | 20 realistic test scenes (Kokoro voices, background noise), the evaluator, and how the voice lock was calibrated |
+| [scenarios/](scenarios/README.md) | 22 realistic test scenes (Kokoro voices, background noise), the evaluator, and how the voice lock was calibrated; published as an open dataset, [hyper07/watch-me-safety-scenes](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes) |
 | [watchme/commands.py](watchme/commands.py) | voice commands |
 | [watchme/lexicon.py](watchme/lexicon.py) | the instant phrase list (a starting list; refine with advocates) |
 | [watchme/notice.py](watchme/notice.py) | Notice mode: the types with their EEOC and Department of Education sources, the review, the notice book, patterns, export |
-| [watchme/muse.py](watchme/muse.py) | Analyst, alert writer, session summary |
+| [watchme/muse.py](watchme/muse.py) | Analyst, alert writer, session summary; the two providers (Muse Spark Open on Baseten, the Meta Model API) and the model plan |
+| [watchme/public_cases.json](watchme/public_cases.json) | the 40 public Notice cases, for the similar cases shown next to a review |
+| [demo_seed/](demo_seed/README.md) | the live demo's example history: three recorded sessions and a Notice book |
 | [watchme/decider.py](watchme/decider.py) | the Decider: Muse Spark's probabilities and the "ask when unsure" rules |
 | [watchme/messenger.py](watchme/messenger.py) | Twilio and SMTP |
 | [watchme/store.py](watchme/store.py) | profile, append-only hash-chained log, clips |
 | [static/](static/) | the phone page: Watch (the orb, Emergency or Notice, the voice lock), Review, Notice, Setup; one HTML file, one stylesheet, one script, no framework |
-| [static/voice/](static/voice/) | what the app says out loud (“Are you OK? Say I'm OK, or tap the screen.”, “Alerting your people now.”): recorded files in a natural synthetic voice (Chatterbox, see [../demo/make/](../demo/make/README.md)); the browser's own speech is only the fallback |
+| [static/voice/](static/voice/) | what the app says out loud (“Are you OK? Say I'm OK.”, “Alerting your people now.”): recorded files in a natural synthetic voice (Chatterbox, see [../demo/make/](../demo/make/README.md)); the browser's own speech is only the fallback |
 
 ## Models per agent
 
@@ -103,10 +109,10 @@ Each agent can use its own model (`ANALYST_MODEL`, `DECIDER_MODEL`, `REVIEWER_MO
 | Listener (live 4-second chunks) | Whisper base, on this machine: 0.3 s a chunk, fewer errors than Muse on short chunks, and tight clips for the voice lock |
 | What the Analyst reads | Muse Voice Transcribe 1.0: the last minute, transcribed again in one request before each analysis, each turn labelled you or someone else by the voiceprint. On whole stretches of noisy, overlapping speech it made far fewer errors than Whisper (party-grab 8% against 57%) |
 | Audio kept while offline, and spoken Notice accounts | Muse Voice Transcribe, once the connection is back |
-| Analyst (live) | Muse Spark 1.3, reasoning low |
-| Decider | Muse Spark 1.1: a probability for discard, ask and alert, then the "ask when unsure" rules |
+| Analyst (live) | Muse Spark Open (open weights, on Baseten) when a Baseten key is set, with Muse Spark 1.3 as its backup; otherwise Muse Spark 1.3, reasoning low |
+| Decider | Muse Spark Open, with Muse Spark 1.1 as its backup (or Muse Spark 1.1 alone): a probability for discard, ask and alert, then the "ask when unsure" rules |
 | Notice reviewer | Muse Wonder 1.0: 40 of 40 public training cases |
-| Alerts and summaries | Muse Spark 1.3 |
+| Alerts and summaries | Muse Spark Open, with Muse Spark 1.3 as its backup (or Muse Spark 1.3 alone) |
 
 ## Measured (M5 Max)
 
@@ -116,11 +122,13 @@ Each agent can use its own model (`ANALYST_MODEL`, `DECIDER_MODEL`, `REVIEWER_MO
 | Voiceprint (ECAPA), a sentence | ~50 ms | the closest other voice scored 0.328; the stop bar is 0.36. See [scenarios/README.md](scenarios/README.md) |
 | Analyst (Muse Spark 1.3 on the Meta Model API, reasoning low; 2026-10-31) | 2.6–4.1 s | drink pressure 0.85; "don't tell anyone" 0.75; banter and a gym trainer 0.0. At the default effort it reasoned for 1,500 tokens and cut its answer off |
 | Decider (Muse Spark 1.1 on the Meta Model API; 2026-10-31) | ~2 s | on the 22 scenes: 9 of 11 harmful asked, 0 of 9 needless check-ins |
+| Analyst, Muse Spark Open on Baseten (2026-11-04, median of 20) | 1.69 s | hosted Muse Spark 1.3 the same afternoon: 7.20 s |
+| Decider, Muse Spark Open on Baseten (2026-11-04, median of 20) | 1.59 s | hosted Muse Spark 1.1 the same afternoon: 2.62 s; given a perfect transcript both asked in 11 of 11 harmful scenes, 0 of 9 needless |
 | Alert text (Muse Spark 1.3) | a few seconds, 10 s timeout | template fallback is instant |
 
 Measured again on 2026-11-03, 20 runs of each Meta Model API stage ([benchmarks/results/latency-20261103-2336.md](../benchmarks/results/latency-20261103-2336.md)): Muse Voice Transcribe on the last minute 3.8 s, Analyst 7.4 s, Decider 3.1 s, alert text 6.3 s (2 of 20 fell back to the template), Notice review 4.8 s (medians); Whisper on a 4 s chunk 0.34 s and the voiceprint 27 ms (50 runs). The API's speed varies by time of day; `uv run python ../benchmarks/latency.py` measures it again.
 
-Detection and voice-lock results on the 20 test scenes are in [scenarios/README.md](scenarios/README.md). The scenes are synthetic and n is small: calibrate with real people before relying on them.
+Detection and voice-lock results on the 22 test scenes are in [scenarios/README.md](scenarios/README.md), and the same-afternoon comparison of open weights and hosted models in [../benchmarks/README.md](../benchmarks/README.md). The scenes are synthetic and n is small: calibrate with real people before relying on them.
 
 ## Rules that keep it on the owner's side
 
@@ -131,6 +139,8 @@ Detection and voice-lock results on the 20 test scenes are in [scenarios/README.
 - **Audio is kept only around flagged moments**: the chunk before, and 30 s after. With `RECORDING_RULE=all-party`, no audio is kept at all, only the text notes. Check the law where you are ([../SAFETY_AND_LAW.md](../SAFETY_AND_LAW.md)).
 - **Notice mode never interrupts or alerts.** No check-ins, no alert when the phone drops off. The SOS and duress phrases still alert, since saying one is never an accident. Live notice mode is refused under `RECORDING_RULE=all-party`, and nobody's voiceprint is stored except the owner's: she names people herself.
 - **Notice describes, it doesn't decide.** Every match quotes words that are really in the text (others are dropped), names a type from the EEOC's wording, and links the source. It says it isn't legal advice, and lists next steps only "if you want to".
+- **Next steps are information, never advice.** After a review, Notice can show up to three real public cases (EEOC, New York State) whose official answer named the same kinds of conduct, chosen by rule so none can be invented, never one about a different basis, and labelled when they come from the rescinded 2024 EEOC guidance; verified numbers to turn to; her own Title IX or HR contact from Setup; and an export about one person that she shares herself.
+- **She picks what it costs.** Setup › Models and cost: the recommended mix, open weights only, the Meta Model API only, or on this device only (no model calls; the check-ins and alerts still work). A single-provider plan never calls the other provider.
 - **It works without the network.** Live speech-to-text (Whisper), the voiceprint, the phrase list and the fixed rules are local, so "Watch me", the voice lock and "Are you OK?" keep working when the Meta Model API can't be reached. Meanwhile every chunk of audio is kept in one-minute clips (under the same recording rule), and what needs the API (the Analyst's reading, a Notice review) is queued with its time. When the connection is back, the catch-up loop first has Muse Voice Transcribe transcribe the kept clips (each turn labelled you or someone else by the voiceprint), then runs the queued analyses on that transcript instead of Whisper's, appending to the same logs. The screen shows an "Offline" bar with a count and a retry button. Offline, detection is the phrase list's: in the evaluation it asked in 8 of 11 harmful scenes against the agents' 9, and a moment the list scores just under the trigger waits for the model.
 - **Every line is dated.** Each log line carries the epoch time and a readable local time (`at`), so an exported record reads as a dated log on its own.
 - **Evidence integrity:** every log line carries the SHA-256 of the line before it. The review screen re-checks the chain and shows where it breaks if anything was changed.

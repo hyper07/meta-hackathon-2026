@@ -17,7 +17,7 @@ The phone app for Watch Me, in React Native with Expo (SDK 58). It speaks the sa
 | **Watch** | The orb, Emergency or Notice, start and stop listening, the voice-lock gauge, the live transcript, alerts. "Are you OK?" appears over every tab, plays the spoken prompt and vibrates. |
 | **Review** | Past sessions, colour-coded, with the hash-chain check. |
 | **Notice** | "Tell me what happened": typed, pasted or spoken. Shows which words match the EEOC's descriptions, and patterns per person. |
-| **Setup** | The server address, you, the people to alert (default contacts, else family), your voice, and the models in use. |
+| **Setup** | The server address, you, the people to alert (default contacts, else family), who you'd report to (Title IX coordinator or HR), your voice, Models and cost (the recommended mix, open weights only, the Meta Model API only, or on this phone only, free), and the models in use. |
 
 ## How it feels
 

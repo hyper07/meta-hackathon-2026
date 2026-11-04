@@ -35,6 +35,28 @@ The evaluator always forces alerts to dry run: it never texts or calls anyone, w
 
 Use the numbers to compare versions of the app, not as a claim about real-world accuracy.
 
+## Muse Spark Open against the hosted models (2026-11-04)
+
+Since 2026-11-04 the live Analyst, Decider and writer run on Muse Spark Open (open weights, on Baseten) when a
+Baseten key is set, with the hosted models as their backup. On the same scenes:
+
+| | Muse Spark Open | Hosted Muse Spark 1.3 + 1.1 |
+|---|---|---|
+| The scripts word for word: harmful asked · needless | 11 of 11 · 0 of 9 (`results/20261104-1423-agents-script-open.md`) | 11 of 11 · 0 of 9 (`results/20261101-1104-agents-script.md`) |
+| Whisper hearing the audio: started · asked · needless | 19 of 22 · 8 of 11 · 0 of 9 (`results/20261104-1508-agents-open.md`) | 20 of 22 · 9 of 11 · 0 of 9 (`results/20261101-0823-agents.md`) |
+| Notice reviewer, 40 public cases | 38 of 40 (`results/20261104-1432-notice-training-open.md`) | Muse Wonder 40 of 40, which stays the reviewer |
+
+With Whisper hearing, the one difference is party-drink, which didn't start: Whisper and the voiceprint didn't
+accept "Watch me" over the music in that run, and no model is involved in starting.
+
+**The phrase list alone** (no model at all, the "on this device only" plan) now looks across the last minute for a
+drink pushed on her and then feeling unwell: on the scripts it asked in 11 of 11 harmful scenes (10 of 11
+before), with the same 2 of 9 needless check-ins (`results/20261104-1541-phrases-script.md`).
+
+**The scenes are an open dataset:** [hyper07/watch-me-safety-scenes](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes)
+on Hugging Face, with the scripts, the synthetic audio, the enrollment lines and the 56 Notice cases
+(`benchmarks/publish_dataset.py` builds and uploads it).
+
 ## Results (2026-11-01, realistic voices)
 
 Agents, all on the Meta Model API (reasoning low): Muse Voice Transcribe re-hears the last minute for the Analyst, Muse Spark 1.3 is the Analyst, Muse Spark 1.1 the Decider. Whisper transcribes the live 4-second chunks. 22 scenes, with a sentence cut off at the end of a chunk held for the next one.

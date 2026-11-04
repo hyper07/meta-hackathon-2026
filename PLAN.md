@@ -1,5 +1,7 @@
 # Build plan: Oct 26 to Nov 4, 2026
 
+*This is the plan as written at the start. What was built, and how it changed along the way (Muse Spark Open on Baseten, the live demo, Notice next steps, the open dataset), is in [README.md](README.md).*
+
 Applications close **Oct 25, 11:59 PM ET**. Apply early; spots are capped at 20,000. The submission is due **Nov 4, 9:00 PM ET**.
 
 ## Before Oct 25: application
