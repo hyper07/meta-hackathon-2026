@@ -6,6 +6,7 @@
 
 [![Try it live](https://img.shields.io/badge/try%20it-live%20demo-2ea44f)](https://kibaek-kim2018--watch-me-demo-web.us-east.modal.run)
 [![Demo video](https://img.shields.io/badge/demo-video%202%3A55-red?logo=youtube)](https://www.youtube.com/watch?v=gvQYQSsyERI)
+[![Dataset on Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20dataset-watch--me--safety--scenes-yellow)](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes)
 [![CI](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/hyper07/meta-hackathon-2026/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Version 0.1.0](https://img.shields.io/badge/version-0.1.0-informational)](app/pyproject.toml)
@@ -25,6 +26,7 @@
 | **3-minute demo video** | https://www.youtube.com/watch?v=gvQYQSsyERI (2:55; the provenance line is spoken and on screen at 0:00) |
 | **Quickstart & keyless mode** | `cp -n .env.example .env`, set `MODEL_API_KEY`, then `docker compose up --build` (http://localhost:8000) or `cd app && uv sync && ./run.sh` ([Run it](#run-it)). With no key, the whole check-in loop still runs on the device: Whisper, the voiceprint, the phrase list and the fixed rules. Alerts are a dry run until Twilio or SMTP keys are set. Recorded runs of the real models, scene by scene, are in [app/scenarios/results/](app/scenarios/results/) ([keyless mode and recorded traces](#without-a-key-and-recorded-traces)) |
 | **Measured** | Open weights against hosted, the same tests: given a perfect transcript, Muse Spark Open and the hosted Muse agents both asked in 11 of 11 harmful scenes with 0 of 9 needless check-ins; Muse Spark Open decided in 1.6 s against 2.6 s and analysed in 1.7 s against 7.2 s (medians of 20, run the same afternoon); on the live demo, "Are you OK?" came 9.6 s after the first harmful line, against 15.0 s. Notice: Muse Wonder right on 40 of 40 public EEOC and NY State cases. On the device, Whisper hears a 4 s chunk in 0.34 s and the voiceprint takes 27 ms ([Benchmarks](#benchmarks)) |
+| **Open dataset** | [huggingface.co/datasets/hyper07/watch-me-safety-scenes](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes): the 22 scenes with their scripts and audio, the owner's enrollment lines, and the 56 Notice cases with their official sources, so other systems can be measured on the same test (CC BY 4.0) |
 | **Bonus prize categories targeted** | **Best Build on Meta Open Weight Models**: Muse Spark Open runs the live safety loop (Analyst, Decider, alert writer), measured against the hosted models on the same tests · **Best Agentic Use-Case**: five agents on Muse models, with fixed rules that decide to discard, ask or alert |
 | **Next devices** | Meta's Muse Charm pendant (a stealth design, already prototyped on an ESP32-C6 board) · Meta's AI glasses (hands-free, with the check-in in her ear) |
 | **Where things are** | [app/](app/README.md): the server, agents and web page · [mobile/](mobile/README.md): the iPhone and Android app · [device/](device/README.md): a Charm stand-in on an ESP32-C6 board · [demo/](demo/): the video and how it's made |
@@ -254,7 +256,7 @@ flowchart TD
 
 ## Benchmarks
 
-Measured with the app's own code on 22 scripted scenes (11 harmful, 9 harmless including hard cases, 2 school and work), voiced by synthetic voices over party, bar, street and TV noise, and streamed through the real agents in the same 4-second chunks the phone sends. Method, limits and every raw result: [benchmarks/](benchmarks/README.md) and [app/scenarios/](app/scenarios/README.md). These are single runs on scripted scenes written by the people who built the app: good for comparing versions, not a claim about real-world accuracy.
+The test set is public: [hyper07/watch-me-safety-scenes](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes) on Hugging Face. Measured with the app's own code on 22 scripted scenes (11 harmful, 9 harmless including hard cases, 2 school and work), voiced by synthetic voices over party, bar, street and TV noise, and streamed through the real agents in the same 4-second chunks the phone sends. Method, limits and every raw result: [benchmarks/](benchmarks/README.md) and [app/scenarios/](app/scenarios/README.md). These are single runs on scripted scenes written by the people who built the app: good for comparing versions, not a claim about real-world accuracy.
 
 ### Accuracy: does it ask "Are you OK?" when it should, and only then?
 
@@ -291,7 +293,7 @@ Muse Spark Open (open weights, on Baseten) and the hosted Muse models (Muse Spar
 |---|---|---|---|
 | 22 scenes, perfect hearing: harmful scenes asked | **11 of 11** | 11 of 11 | [open](app/scenarios/results/20261104-1423-agents-script-open.md) · [hosted](app/scenarios/results/20261101-1104-agents-script.md) |
 | the same: harmless scenes with a needless check-in | **0 of 9** | 0 of 9 | |
-| 22 scenes, noisy hearing (Whisper live): started · asked · needless | 19 of 22 · 8 of 11 · **0 of 9** | 20 of 22 · 9 of 11 · 0 of 9 | [open](app/scenarios/results/20261104-1508-agents-open.md) · [hosted](app/scenarios/results/20261101-0756-agents.md) |
+| 22 scenes, noisy hearing (Whisper live): started · asked · needless | 19 of 22 · 8 of 11 · **0 of 9** | 20 of 22 · 9 of 11 · 0 of 9 | [open](app/scenarios/results/20261104-1508-agents-open.md) · [hosted](app/scenarios/results/20261101-0823-agents.md) |
 | Notice reviewer, 40 public EEOC and NY State cases | 38 of 40 | **40 of 40** (Muse Wonder 1.0) | [open](app/scenarios/results/20261104-1432-notice-training-open.md) |
 | Notice reviewer, our 16 cases | 16 of 16 | 16 of 16 | [open](app/scenarios/results/20261104-1433-notice-open.md) |
 | Analyst, median of 20 | **1.69 s** | 7.20 s (1 of 20 failed) | [open](benchmarks/results/latency-20261104-1438-open.md) · [hosted](benchmarks/results/latency-20261104-1448.md) |
@@ -344,7 +346,7 @@ What that means for her:
 | [app/tests/test_demo.py](app/tests/test_demo.py) | 8 | the public demo: a second visitor waits; only the visitor's page can use the API (the audio player carries its token in the clip's URL); alerts and audio stay off whatever is set; everything is wiped when they leave; a closed tab frees the demo; every visit starts with the example history |
 | [tests/test_bridge.py](tests/test_bridge.py) | 11 | the Charm board's USB link: CRC-16, frames split across reads, damaged frames dropped, noise never mistaken for a frame, 4-second audio chunks with missing blocks dropped |
 
-**The evaluation set** ([app/scenarios/](app/scenarios/README.md)):
+**The evaluation set** ([app/scenarios/](app/scenarios/README.md)), published as an open dataset on Hugging Face: **[hyper07/watch-me-safety-scenes](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes)** (scripts, synthetic audio, labels, the Notice cases with their sources; rebuilt and uploaded by [benchmarks/publish_dataset.py](benchmarks/publish_dataset.py)):
 
 - **22 scenes, streamed through the real agents in 4-second chunks.** 11 harmful: drink pressure then "I feel dizzy", unwanted touching, "don't tell anyone", followed on the way home, others talking about her while she can't respond, quiet pressure on a date, street harassment, a stranger saying "stop watching", a rideshare driver going the wrong way, a former partner's threat, drugging symptoms. 9 harmless hard cases: banter ("stop it, that's hilarious"), flirting, a horror film retold ("I'll kill you"), a crime report on TV, someone else's story retold, board-game trash talk, a gym trainer ("don't stop"), ordering food, walking home with a friend. 2 Notice scenes: office hours, a meeting joke.
 - **56 written Notice cases:** 40 public training examples with an official answer (EEOC, New York State, StopBullying.gov), 32 that should match and 8 that should not, and 16 of our own.

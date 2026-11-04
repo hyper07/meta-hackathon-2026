@@ -1,6 +1,6 @@
 # Benchmarks
 
-What Watch Me was measured on, the headline numbers, and how to run it again. The test scenes, the evaluator and every raw result live in [app/scenarios/](../app/scenarios/README.md). This page is the summary.
+What Watch Me was measured on, the headline numbers, and how to run it again. The test set itself is on Hugging Face: [hyper07/watch-me-safety-scenes](https://huggingface.co/datasets/hyper07/watch-me-safety-scenes) (`publish_dataset.py` builds and uploads it). The test scenes, the evaluator and every raw result live in [app/scenarios/](../app/scenarios/README.md). This page is the summary.
 
 **The test set:** 22 scripted scenes (11 harmful, 9 harmless including hard cases, 2 school and work), voiced by synthetic voices over party, bar, street and TV noise. Each is streamed through the real agents in the same 4-second chunks the phone sends. Alerts are always forced to dry run.
 
