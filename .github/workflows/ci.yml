@@ -32,6 +32,25 @@ jobs:
       - name: Framing, CRC and audio chunks of the USB link (device/bridge.py)
         run: uvx pytest -q tests
 
+  mobile:
+    name: Phone app type-check and lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: TypeScript
+        run: npm run typecheck
+      - name: ESLint (expo lint)
+        run: npm run lint
+
   docker:
     name: Docker image builds
     runs-on: ubuntu-latest
