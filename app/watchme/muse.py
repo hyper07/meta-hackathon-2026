@@ -14,6 +14,7 @@ key or a slow network never stops the safety loop.
 
 from __future__ import annotations
 
+import contextvars
 import json
 import re
 import time
@@ -51,27 +52,53 @@ app marked and why, and anything an alert was sent for. Do not tell them what "r
 happened, do not diagnose, and do not use alarming language. If nothing was marked, say so."""
 
 
-async def _chat(system: str, user: str, max_tokens: int = 1500, timeout: float = 20, model: str = "") -> str:
+OPEN = "open"   # an agent's model set to this runs on Muse Spark Open
+# Which model answered the last call in this task: the caller reads it to log the engine.
+answered_by: contextvars.ContextVar[str] = contextvars.ContextVar("answered_by", default="")
+
+
+async def _post(base: str, key: str, model: str, system: str, user: str, max_tokens: int, timeout: float,
+                reasoning: bool) -> str:
     # max_tokens covers the model's reasoning as well as its answer; too small and the answer is empty.
     body = {
-        "model": model or settings.meta_model,
+        "model": model,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "temperature": 0,
         "max_tokens": max_tokens,
     }
-    if settings.reasoning_effort:
+    if reasoning and settings.reasoning_effort:
         body["reasoning_effort"] = settings.reasoning_effort
     async with httpx.AsyncClient(timeout=timeout) as client:
-        response = await client.post(
-            settings.meta_api_base.rstrip("/") + "/chat/completions",
-            headers={"Authorization": f"Bearer {settings.meta_api_key}"},
-            json=body,
-        )
+        response = await client.post(base.rstrip("/") + "/chat/completions",
+                                     headers={"Authorization": f"Bearer {key}"}, json=body)
         response.raise_for_status()
         content = response.json()["choices"][0]["message"].get("content")
         if not content:
             raise ValueError("the model used its whole budget reasoning and gave no answer")
         return content.strip()
+
+
+async def _open(system: str, user: str, max_tokens: int, timeout: float) -> str:
+    answered_by.set("muse-spark-open")
+    return await _post(settings.open_weights_base, settings.open_weights_key or "", settings.open_weights_model,
+                       system, user, max(max_tokens, 3000), timeout, reasoning=False)
+
+
+async def _chat(system: str, user: str, max_tokens: int = 1500, timeout: float = 20, model: str = "") -> str:
+    """One call to a Muse model. On the Meta Model API by default; when that call fails (no network,
+    a timeout, the service busy or down, or an empty answer), the same request goes to Muse Spark Open,
+    the open-weight model, if it's configured. Only if both fail does the caller fall back to its rules."""
+    name = model or settings.meta_model
+    if name == OPEN or not settings.meta_api_key:
+        return await _open(system, user, max_tokens, timeout)
+    answered_by.set(name)
+    try:
+        return await _post(settings.meta_api_base, settings.meta_api_key, name, system, user, max_tokens, timeout,
+                           reasoning=True)
+    except Exception as error:
+        if settings.open_ready and (retryable(error) or isinstance(error, ValueError)):
+            return await _open(system, user, max_tokens, timeout)
+        raise
 
 
 def retryable(error: Exception) -> bool:

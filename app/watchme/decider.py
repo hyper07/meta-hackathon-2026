@@ -87,7 +87,8 @@ async def decide_with_muse(transcript: str, analysis: dict, context: dict, start
     action, urgent, why = apply_rules(probabilities)
     return {
         "action": action, "urgent": urgent, "why": f"{why}; {str(answer.get('why', ''))[:120]}".rstrip("; "),
-        "engine": "muse-spark", "probabilities": {o: round(p, 3) for o, p in probabilities.items()},
+        "engine": "muse-spark", "model": muse.answered_by.get(),
+        "probabilities": {o: round(p, 3) for o, p in probabilities.items()},
         "in_danger": answer.get("in_danger"), "ms": round((time.perf_counter() - started) * 1000),
     }
 
