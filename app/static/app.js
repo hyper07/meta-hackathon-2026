@@ -479,7 +479,7 @@ function showCheckin(m) {
 // once. unlockSound() runs inside a tap and keeps these elements, so later prompts can play by themselves.
 const voices = {};
 function say(name, fallbackText) {
-  const a = voices[name] || new Audio(`/static/voice/${name}.wav`);
+  const a = voices[name] || (voices[name] = new Audio(`/static/voice/${name}.wav`));   // kept, so it can be stopped
   a.currentTime = 0;
   a.play().catch(() => { try { speechSynthesis.speak(new SpeechSynthesisUtterance(fallbackText)); } catch {} });
 }
@@ -938,7 +938,21 @@ function renderServices(s) {
 
 // ── wiring ────────────────────────────────────────────────────────────────
 
+// Leaving a tab, or the page going to the background, stops what's playing: a session's kept audio,
+// or a spoken prompt. Not while "Are you OK?" is on screen: that's the one sound she must hear.
+function stopPlayback() {
+  const checkinOpen = !$("checkin").hidden;
+  document.querySelectorAll("audio").forEach((a) => { a.pause(); });
+  for (const [name, a] of Object.entries(voices)) {
+    if (checkinOpen && name === "are-you-ok") continue;
+    a.pause(); a.currentTime = 0;
+  }
+  if (!checkinOpen) { try { speechSynthesis.cancel(); } catch {} }
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden) stopPlayback(); });
+
 document.querySelectorAll(".tab").forEach((t) => (t.onclick = () => {
+  stopPlayback();
   document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
   document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "tab-" + t.dataset.tab));
   if (t.dataset.tab === "review") loadSessions();
