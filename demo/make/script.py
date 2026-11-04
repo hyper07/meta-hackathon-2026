@@ -22,9 +22,9 @@ NARRATION = {
     "notice3": "And it counts patterns. This is the third time from the same professor, kept in a dated record "
                "that shows if anyone changes it.",
     "hood": "Under the hood: Whisper and a voiceprint on the device. Muse Voice Transcribe hears the last minute "
-            "again, and Muse Spark analyses it and decides. Muse Wonder reviews. On twenty two realistic scenes, it "
-            "asked in nine of eleven harmful ones, with no needless check ins. Given a perfect transcript, Muse caught "
-            "all eleven.",
+            "again. Muse Spark Open, Meta's open weight model, analyses and decides, backed by the hosted models. "
+            "Given a perfect transcript, it caught all eleven harmful scenes, and live, it asked six seconds sooner. "
+            "Muse Wonder reviews.",
     "close": "Watch Me. You turn it on. Only your voice turns it off. And only you decide what happened.",
 }
 
